@@ -1203,7 +1203,23 @@ namespace ASALI
 					i++;
 				}
 			}
+
+			bool test = false;
+			for (unsigned int i=0;i<inletName_.size();i++)
+			{
+				if ( inletName_[i] == inert_)
+				{
+					test = true;
+				}
+			}
 			
+			if ( test == false )
+			{
+				error();
+				std::cout << "key word || inert || MUST BE one of the feed species!\n" << std::endl;
+				exit (EXIT_FAILURE);
+			}
+
 			feed_ = inputVector_[fractionIndex_];
 		}
 	}
