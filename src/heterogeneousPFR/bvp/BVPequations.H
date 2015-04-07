@@ -353,7 +353,7 @@
 							       + QfromGas_/(rhoBulk_*cp_*epsi_);//DIFFERENTIAL
 				dyOS_[counter++] = + newCondSolid_*jwall_[i+1]/(rhoSolid_*cpSolid_)
 							       + h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))
-							       + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1-epsi_));//DIFFERENTIAL 
+							       + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1.-epsi_));//DIFFERENTIAL 
 			}
 			else
 			{

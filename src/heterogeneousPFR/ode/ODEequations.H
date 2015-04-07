@@ -82,13 +82,10 @@
 		{
 			kineticsMap_.ReactionRates(cBulk_);
 			kineticsMap_.FormationRates(&RfromGas_);
-			QfromGas_ = kineticsMap_.HeatRelease(RfromGas_);
 			ElementByElementProduct(RfromGas_, thermodynamicsMap_.MW(), &RfromGas_);
 		}
 		else
 		{
-			QfromGas_ = 0.;
-
 			for (unsigned int j=1;j<=NC_;j++)
 				RfromGas_[j] = 0.;
 		}
@@ -129,8 +126,6 @@
 		for (unsigned int j=1;j<=NC_;j++)
 			jSolid_[i][j] = Kmat_[j]*(omegaBulk_[i][j] - omegaWall_[i][j]);
 
-		HeatTransferCoefficient(z_[i]);
-
 		//-Setting conditions for SOLID phase
 		thermodynamicsMap_.SetTemperature(Twall_[i+1]);
 		thermodynamicsMap_.SetPressure(p_);
@@ -163,7 +158,6 @@
 			kineticsSurfaceMap_.ArrheniusKineticConstants();
 			kineticsSurfaceMap_.ReactionRates(cWall_, teta_[i], fakebulk, fakephase);
 			kineticsSurfaceMap_.FormationRates(&RfromSurface_, &Rsurface_, &fakebulk, &RsurfacePhases_);
-			QfromSurface_ = kineticsSurfaceMap_.HeatRelease(RfromSurface_, Rsurface_, dummy);
 			ElementByElementProduct(RfromSurface_, thermodynamicsMap_.MW(), &RfromSurface_);
 		}
 		else
@@ -174,8 +168,6 @@
 				fakephase[j] = thermodynamicsSurfaceMap_.matrix_densities_site_phases()[0][j-1];
 
 			SD_ = fakephase[1];
-
-			QfromSurface_ = 0.;
 
 			for (unsigned int j=1;j<=NC_;j++)
 				RfromSurface_[j] = 0.;
@@ -195,9 +187,6 @@
 		{
 			alfa_ = alfaTemp_;
 		}
-
-		//Solid conductivity
-		newCondSolid_ = condSolid_ + (16./3.)*(5.67*1.e-08)*((1.12*Dh_)/2.)*std::pow(Twall_[i+1],3.);
 
 		//Gas thermal flux
 		if (i==0)

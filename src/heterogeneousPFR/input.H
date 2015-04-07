@@ -174,47 +174,23 @@ ASALI::GROWgrid  *growGrid;
 		for (unsigned int k=2;k<=z.Size();k++)
 			z[k] = z[k-1] + step;
 
-		if ( input.getEnergy() == true )
+		ChangeDimensions(NE, &x0, true);
+		unsigned int counter = 1;
+		for (unsigned int k=1;k<=N;k++)
 		{
-			ChangeDimensions(NE, &x0, true);
-			unsigned int counter = 1;
-			for (unsigned int k=1;k<=N;k++)
+			for (unsigned int j=1;j<=NC;j++)
 			{
-				for (unsigned int j=1;j<=NC;j++)
-				{
-					if (k==1)
-						x0[counter++] = x0bulk[j];
-					else
-						x0[counter++] = x0bulk[j];
-				}
-				for (unsigned int j=1;j<=NC;j++)
+				if (k==1)
 					x0[counter++] = x0bulk[j];
-				for (unsigned int j=1;j<=SURF_NC;j++)
-					x0[counter++] = x0site[j];
-				x0[counter++] = T0;
-				x0[counter++] = input.getSolidTemperature();
+				else
+					x0[counter++] = x0bulk[j];
 			}
-		}
-		else if ( input.getEnergy() == false )
-		{
-			ChangeDimensions(NE, &x0, true);
-			unsigned int counter = 1;
-			for (unsigned int k=1;k<=N;k++)
-			{
-				for (unsigned int j=1;j<=NC;j++)
-				{
-					if (k==1)
-						x0[counter++] = x0bulk[j];
-					else
-						x0[counter++] = x0wall[j];
-				}
-				for (unsigned int j=1;j<=NC;j++)
-					x0[counter++] = x0wall[j];
-				for (unsigned int j=1;j<=SURF_NC;j++)
-					x0[counter++] = x0site[j];
-				x0[counter++] = T0;
-				x0[counter++] = input.getSolidTemperature();
-			}
+			for (unsigned int j=1;j<=NC;j++)
+				x0[counter++] = x0bulk[j];
+			for (unsigned int j=1;j<=SURF_NC;j++)
+				x0[counter++] = x0site[j];
+			x0[counter++] = T0;
+			x0[counter++] = input.getSolidTemperature();
 		}
 	}
 	else if ( input.getStart() == "latest" || input.getStart() == "converter" || input.getStart() == "sampling")
@@ -373,14 +349,13 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
 							   *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
 							   *transportMapXML);
 
-	ode->setSolid(input.getSolidDensity(),input.getSolidConductivity(),input.getSolidSpecificHeat());
 	ode->setHomogeneusReactions(input.getHomogeneousReactions());
 	ode->setHeterogeneusReactions(input.getHeterogenousReactions());
 	ode->setEnergyEquation(input.getEnergy());
 	ode->setReactorGeometry(input.getAlfa(),             input.getVoidFraction(), input.getSherwood(),
 							 input.getCatalyticLength(),  input.getInertLength(),
 							 input.getChannelDiameter(),  G);
-	ode->setFeedValue(input.getPressure(),T0,x0bulk, x0site);
+	ode->setFeedValue(input.getPressure(),T0,x0bulk);
 	ode->setInert(input.getInert());
 
 	bvp = new ASALI::BVPSystem(*thermodynamicsMapXML,        *kineticsMapXML,
@@ -394,7 +369,7 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
 	bvp->setReactorGeometry(input.getAlfa(),             input.getVoidFraction(), input.getSherwood(),
 							input.getCatalyticLength(),  input.getInertLength(),
 							input.getChannelDiameter(),  G);
-	bvp->setFeedValue(input.getPressure(),T0,x0bulk, x0site);
+	bvp->setFeedValue(input.getPressure(),T0,x0bulk);
 	bvp->setInert(input.getInert());
 
 	growGrid = new ASALI::GROWgrid(NC, SURF_NC);

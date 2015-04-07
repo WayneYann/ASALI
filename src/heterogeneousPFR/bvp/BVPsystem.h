@@ -69,8 +69,7 @@ public:
 							 const double Dh,           const double G);
 
 	void setFeedValue(const double p, const double T0,
-					  const OpenSMOKE::OpenSMOKEVectorDouble x0bulk,
-					  const OpenSMOKE::OpenSMOKEVectorDouble x0site);
+					  const OpenSMOKE::OpenSMOKEVectorDouble x0bulk);
 
 	void setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z);
 
@@ -170,7 +169,6 @@ private:
 	OpenSMOKE::OpenSMOKEVectorDouble  jwall_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  x0bulk_;
-	OpenSMOKE::OpenSMOKEVectorDouble  x0site_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  z_;
 	OpenSMOKE::OpenSMOKEVectorDouble  Dz_;
@@ -283,18 +281,13 @@ void BVPSystem::setReactorGeometry( const double alfa,         const double epsi
 }
 
 void BVPSystem::setFeedValue(const double p, const double T0,
-							 const OpenSMOKE::OpenSMOKEVectorDouble x0bulk,
-							 const OpenSMOKE::OpenSMOKEVectorDouble x0site)
+							 const OpenSMOKE::OpenSMOKEVectorDouble x0bulk)
 {
 	p_				= p;
 	T0_				= T0;
 	ChangeDimensions(x0bulk.Size(), &x0bulk_, true);
 	for (unsigned int j=1;j<=x0bulk.Size();j++)
 		x0bulk_[j] = x0bulk[j];
-
-	ChangeDimensions(x0site.Size(), &x0site_, true);
-	for (unsigned int j=1;j<=x0site.Size();j++)
-		x0site_[j] = x0site[j];
 }
 
 void BVPSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
@@ -488,7 +481,16 @@ void BVPSystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
 			for (unsigned int j=1;j<=NC_;j++)
 				algebraic[counter++] = true;
 			for (unsigned int j=1;j<=SURF_NC_;j++)
-				algebraic[counter++] = false;
+			{
+				if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+				{
+					algebraic[counter++] = false;
+				}
+				else
+				{
+					algebraic[counter++] = true;
+				}
+			}
 			algebraic[counter++] = true;
 			algebraic[counter++] = true;
 		}
@@ -499,7 +501,16 @@ void BVPSystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
 			for (unsigned int j=1;j<=NC_;j++)
 				algebraic[counter++] = true;
 			for (unsigned int j=1;j<=SURF_NC_;j++)
-				algebraic[counter++] = false;
+			{
+				if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+				{
+					algebraic[counter++] = false;
+				}
+				else
+				{
+					algebraic[counter++] = true;
+				}
+			}
 			algebraic[counter++] = true;
 			algebraic[counter++] = true;
 		}
@@ -519,7 +530,16 @@ void BVPSystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
 			for (unsigned int j=1;j<=NC_;j++)
 				algebraic[counter++] = true;
 			for (unsigned int j=1;j<=SURF_NC_;j++)
-				algebraic[counter++] = false;
+			{
+				if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+				{
+					algebraic[counter++] = false;
+				}
+				else
+				{
+					algebraic[counter++] = true;
+				}
+			}
 			algebraic[counter++] = false;
 			algebraic[counter++] = false;
 		}
