@@ -46,7 +46,7 @@ file    = new std::string(argv[1]);
 ASALI::READinput  input(*file);
 ASALI::ODESystem *ode;
 {
-	std::string folderPath = input.getTransportPath() + "/";
+	std::string folderPath = input.getKineticsPath() + "/";
 	boost::filesystem::path path_kinetics(folderPath);
 	{
 		rapidxml::xml_document<> doc;

@@ -59,7 +59,7 @@ namespace ASALI
 
 			std::string getSpecie()                    const  { return name_;};
 			std::string getReactorType()               const  { return reactorType_;};
-			std::string getTransportPath()              const  { return transportPath_;};
+			std::string getKineticsPath()              const  { return kineticsPath_;};
 			std::string getPressureCorrelation()       const  { return pCorr_;};
 			std::string getHeatTransferCorrelation()   const  { return hCorr_;};
 			std::string getThermophysicalProperties()  const  { return thermo_;};
@@ -80,7 +80,7 @@ namespace ASALI
 
 			std::string name_;
 			std::string reactorType_;
-			std::string transportPath_;
+			std::string kineticsPath_;
 			std::string thermo_;
 			std::string hCorr_;
 			std::string pCorr_;
@@ -91,7 +91,7 @@ namespace ASALI
 			unsigned int propertiesIndex_;
 			unsigned int solverIndex_;
 			unsigned int numericalIndex_;
-			unsigned int transportIndex_;
+			unsigned int kineticsIndex_;
 
 			const std::string& file_;
 
@@ -106,7 +106,7 @@ namespace ASALI
 			void solver();
 			void operating();
 			void numerical();
-			void transport();
+			void kinetics();
 
 			template < typename T > std::string to_string( const T& v )
 			{
@@ -134,7 +134,7 @@ namespace ASALI
 		propertiesIndex_   = 0;
 		solverIndex_       = 0;
 		numericalIndex_    = 0;
-		transportIndex_     = 0;
+		kineticsIndex_     = 0;
 
 		//- Check input
 		{
@@ -152,7 +152,7 @@ namespace ASALI
 		save();
 		check();
 		type();
-		transport();
+		kinetics();
 		reactor();
 		operating();
 		solver();
@@ -201,23 +201,22 @@ namespace ASALI
 			words[2] = "Reactor properties";
 			words[3] = "Solver options";
 			words[4] = "Numerical solvers";
-			words[5] = "Transport properties path";
+			words[5] = "Kinetics path";
 
 			for (unsigned int i=0;i<inputVector_.size();i++)
 			{
 				if 		(inputVector_[i]   == "Reactor" &&
-						 inputVector_[i+1] == "type" ) 				{checkWord[0]  = true; typeIndex_            = i;}
+						 inputVector_[i+1] == "type" ) 				{checkWord[0]  = true; typeIndex_  = i;}
 				else if (inputVector_[i]   == "Operating" &&
-						 inputVector_[i+1] == "conditions" ) 		{checkWord[1]  = true; operatingIndex_       = i;}
+						 inputVector_[i+1] == "conditions" ) 		{checkWord[1]  = true; operatingIndex_     = i;}
 				else if (inputVector_[i]   == "Reactor" &&
-						 inputVector_[i+1] == "properties" ) 		{checkWord[2]  = true; propertiesIndex_      = i;}
+						 inputVector_[i+1] == "properties" ) 		{checkWord[2]  = true; propertiesIndex_     = i;}
 				else if (inputVector_[i]   == "Solver" &&
-						 inputVector_[i+1] == "options" ) 			{checkWord[3]  = true; solverIndex_          = i;}
+						 inputVector_[i+1] == "options" ) 			{checkWord[3]  = true; solverIndex_       = i;}
 				else if (inputVector_[i]   == "Numerical" &&
 						 inputVector_[i+1] == "solvers" ) 			{checkWord[4]  = true; numericalIndex_       = i;}
-				else if (inputVector_[i]   == "Transport" &&
-						 inputVector_[i+1] == "properties" &&
-						 inputVector_[i+2] == "path" ) 				{checkWord[5]  = true; transportIndex_       = i;}
+				else if (inputVector_[i]   == "Kinetics" &&
+						 inputVector_[i+1] == "path" ) 				{checkWord[5]  = true; kineticsIndex_       = i;}
 			}
 			
 			for (unsigned int i=0;i<checkWord.size();i++)
@@ -499,9 +498,9 @@ namespace ASALI
 		}
 	}
 
-	void READinput::transport()
+	void READinput::kinetics()
 	{
-		transportPath_ = inputVector_[transportIndex_+3];
+		kineticsPath_ = inputVector_[kineticsIndex_+2];
 	}
 
 	void READinput::solver()
