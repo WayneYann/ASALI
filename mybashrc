@@ -4,8 +4,8 @@ export BOOST=$HOME/NumericalLibraries/Boost/boost_1_57_0/build
 export RAPIDXML=$HOME/NumericalLibraries/Rapidxml/rapidxml-1.13 
 export OPENSMOKE=$HOME/NumericalLibraries/OpenSMOKEpp/source
 
-#External support options (one of them is compulsory)
-export SUPPORT='-DOPENSMOKE_USE_MKL=1 -DASALI_USE_SUNDIALS=0 -DASALI_USE_BZZ=1'
+#External support options for MKL
+export SUPPORT='-DOPENSMOKE_USE_MKL=1'
 
 #MLK library options
 export MKL_INCLUDE=$HOME/NumericalLibraries/MKL/mkl/include
