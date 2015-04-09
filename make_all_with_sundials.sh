@@ -1,2 +1,3 @@
 ./make_heterogeneousPFR_with_sundials.sh
 ./make_idealPFR_heatTransfer_with_sundials.sh
+./make_idealPFR_with_sundials.sh
