@@ -82,10 +82,13 @@
 		{
 			kineticsMap_.ReactionRates(cBulk_);
 			kineticsMap_.FormationRates(&RfromGas_);
+			QfromGas_ = kineticsMap_.HeatRelease(RfromGas_);
 			ElementByElementProduct(RfromGas_, thermodynamicsMap_.MW(), &RfromGas_);
 		}
 		else
 		{
+			QfromGas_ = 0.;
+
 			for (unsigned int j=1;j<=NC_;j++)
 				RfromGas_[j] = 0.;
 		}
@@ -126,6 +129,8 @@
 		for (unsigned int j=1;j<=NC_;j++)
 			jSolid_[i][j] = Kmat_[j]*(omegaBulk_[i][j] - omegaWall_[i][j]);
 
+		HeatTransferCoefficient(z_[i]);
+
 		//-Setting conditions for SOLID phase
 		thermodynamicsMap_.SetTemperature(Twall_[i+1]);
 		thermodynamicsMap_.SetPressure(p_);
@@ -158,6 +163,7 @@
 			kineticsSurfaceMap_.ArrheniusKineticConstants();
 			kineticsSurfaceMap_.ReactionRates(cWall_, teta_[i], fakebulk, fakephase);
 			kineticsSurfaceMap_.FormationRates(&RfromSurface_, &Rsurface_, &fakebulk, &RsurfacePhases_);
+			QfromSurface_ = kineticsSurfaceMap_.HeatRelease(RfromSurface_, Rsurface_, dummy);
 			ElementByElementProduct(RfromSurface_, thermodynamicsMap_.MW(), &RfromSurface_);
 		}
 		else
@@ -168,6 +174,8 @@
 				fakephase[j] = thermodynamicsSurfaceMap_.matrix_densities_site_phases()[0][j-1];
 
 			SD_ = fakephase[1];
+
+			QfromSurface_ = 0.;
 
 			for (unsigned int j=1;j<=NC_;j++)
 				RfromSurface_[j] = 0.;
@@ -187,6 +195,9 @@
 		{
 			alfa_ = alfaTemp_;
 		}
+
+		//Solid conductivity
+		newCondSolid_ = condSolid_ + (16./3.)*(5.67*1.e-08)*((1.12*Dh_)/2.)*std::pow(Twall_[i+1],3.);
 
 		//Gas thermal flux
 		if (i==0)
@@ -224,7 +235,7 @@
 			{
 				if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
 				{
-					dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j];// ALGEBRAIC
+					dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*(x0bulk_[j] - omegaBulk_[i][j]); //- (diffG_[j]*rhoBulk_/(G_*epsi_))*((omegaBulk_[i+1][j]-omegaBulk_[i][j])/Dz_[i-1+1]);// ALGEBRAIC
 				}
 				else
 				{
@@ -253,7 +264,7 @@
 					dyOS_[counter++] = 1e06*(1. - teta_[i].SumElements());
 				}
 			}
-			dyOS_[counter++] = T0_ - Tbulk_[i+1]; // + (condBulk_/(G_*cp_))*((Tbulk_[i+1+1]-Tbulk_[i+1])/Dz_[i+1]); // ALGEBRAIC
+			dyOS_[counter++] = T0_ - Tbulk_[i+1] + (condBulk_/(G_*cp_))*((Tbulk_[i+1+1]-Tbulk_[i+1])/Dz_[i+1]); // ALGEBRAIC
 			dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
 		}
 		else if (i==(NP_-1))

@@ -69,7 +69,8 @@ public:
 							 const double Dh,           const double G);
 
 	void setFeedValue(const double p, const double T0,
-					  const OpenSMOKE::OpenSMOKEVectorDouble x0bulk);
+					  const OpenSMOKE::OpenSMOKEVectorDouble x0bulk,
+					  const OpenSMOKE::OpenSMOKEVectorDouble x0site);
 
 	void setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z);
 
@@ -122,6 +123,14 @@ private:
 	double h_;
 	double t_;
 
+	double rhoSolid_;
+	double cpSolid_;
+	double condSolid_;
+	double newCondSolid_;
+
+	double QfromGas_;
+	double QfromSurface_;
+
 	unsigned int NC_;
 	unsigned int SURF_NP_;
 	unsigned int SURF_NC_;
@@ -157,6 +166,7 @@ private:
 	OpenSMOKE::OpenSMOKEVectorDouble  jwall_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  x0bulk_;
+	OpenSMOKE::OpenSMOKEVectorDouble  x0site_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  z_;
 	OpenSMOKE::OpenSMOKEVectorDouble  Dz_;
@@ -177,6 +187,7 @@ private:
 	OpenSMOKE::OpenSMOKEVectorDouble dyOS_;
 	OpenSMOKE::OpenSMOKEVectorDouble  yOS_;
 
+	void HeatTransferCoefficient(const double z);
 	void MassTransferCoefficient(const double z);
 
 };
@@ -239,6 +250,13 @@ void ODESystem::resize(const unsigned int NP)
 	ChangeDimensions(NE_, &yOS_, true);
 }
 
+void ODESystem::setSolid(const double rhoSolid, const double condSolid, const double cpSolid)
+{
+	rhoSolid_	= rhoSolid;
+	condSolid_	= condSolid;
+	cpSolid_	= cpSolid;
+}
+
 void ODESystem::setInert(const std::string inert)
 {
 	inert_		= inert;
@@ -259,13 +277,18 @@ void ODESystem::setReactorGeometry( const double alfa,         const double epsi
 }
 
 void ODESystem::setFeedValue(const double p, const double T0,
-							 const OpenSMOKE::OpenSMOKEVectorDouble x0bulk)
+							 const OpenSMOKE::OpenSMOKEVectorDouble x0bulk,
+							 const OpenSMOKE::OpenSMOKEVectorDouble x0site)
 {
 	p_				= p;
 	T0_				= T0;
 	ChangeDimensions(x0bulk.Size(), &x0bulk_, true);
 	for (unsigned int j=1;j<=x0bulk.Size();j++)
 		x0bulk_[j] = x0bulk[j];
+
+	ChangeDimensions(x0site.Size(), &x0site_, true);
+	for (unsigned int j=1;j<=x0site.Size();j++)
+		x0site_[j] = x0site[j];
 }
 
 void ODESystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
@@ -277,6 +300,29 @@ void ODESystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 	ChangeDimensions((NP_- 1), &Dz_, true);
 	for (unsigned int k=1;k<=Dz_.Size();k++)
 		Dz_[k] = z_[k+1] - z_[k];
+}
+
+void ODESystem::HeatTransferCoefficient(const double z)
+{
+	double Re = G_*Dh_/(etaMix_*epsi_);
+	double Pr = cp_*etaMix_/condBulk_;
+
+	double Nu;
+	double zNew;
+	double zStar;
+	if ( z > Linert_)
+	{
+		zNew  = std::max( z - Linert_, 1e-06);
+		zStar = zNew/(Dh_*Re*Pr);
+		zStar = fabs(zStar);
+		Nu    = AsymptoticSh_ + 8.827*pow((1000.*zStar),-0.545)*exp(-48.2*zStar);
+	}
+	else
+	{
+		Nu = AsymptoticSh_;
+	}
+
+	h_ = Nu*condBulk_/Dh_;
 }
 
 void ODESystem::MassTransferCoefficient(const double z)

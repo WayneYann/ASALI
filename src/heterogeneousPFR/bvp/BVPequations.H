@@ -76,7 +76,7 @@
 
 		cTotBulk_ = p_/(PhysicalConstants::R_J_kmol*Tbulk_[i+1]); 	// [Kmol/m3]
 		rhoBulk_  = cTotBulk_*MWbulk_;
-		v_[i+1]   = G_/(epsi_*rhoBulk_);
+		v_[i+1]   = G_/rhoBulk_;
 		Product(cTotBulk_, xBulk_, &cBulk_);
 
 		if ( homogeneusReactions_ == true )
@@ -236,7 +236,7 @@
 			{
 				if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
 				{
-					dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*(x0bulk_[j] - omegaBulk_[i][j]);// ALGEBRAIC
+					dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*(x0bulk_[j] - omegaBulk_[i][j]); //- (diffG_[j]*rhoBulk_/(G_*epsi_))*((omegaBulk_[i+1][j]-omegaBulk_[i][j])/Dz_[i-1+1]);// ALGEBRAIC
 				}
 				else
 				{
@@ -265,7 +265,7 @@
 					dyOS_[counter++] = 1. - teta_[i].SumElements();
 				}
 			}
-			dyOS_[counter++] = T0_ - Tbulk_[i+1]; // + (condBulk_/(G_*cp_))*((Tbulk_[i+1+1]-Tbulk_[i+1])/Dz_[i+1]); // ALGEBRAIC
+			dyOS_[counter++] = T0_ - Tbulk_[i+1] + (condBulk_/(G_*cp_))*((Tbulk_[i+1+1]-Tbulk_[i+1])/Dz_[i+1]); // ALGEBRAIC
 			dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
 		}
 		else if (i==(NP_-1))
@@ -353,7 +353,7 @@
 							       + QfromGas_/(rhoBulk_*cp_*epsi_);//DIFFERENTIAL
 				dyOS_[counter++] = + newCondSolid_*jwall_[i+1]/(rhoSolid_*cpSolid_)
 							       + h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))
-							       + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1.-epsi_));//DIFFERENTIAL 
+							       + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1-epsi_));//DIFFERENTIAL 
 			}
 			else
 			{
