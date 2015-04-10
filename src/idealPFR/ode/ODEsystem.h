@@ -245,7 +245,7 @@ void ODESystem::MassTransferCoefficient(const double z)
 		zStar = zNew/(Dh_*Re*Sc[i]);
 		zStar = fabs(zStar);
 		Sh[i] = 5.21 + 6.874*pow((1000.*zStar),-0.35)*exp(-71.2*zStar);
-		Kmat_[i] = 100.; //Sh[i]*diffG_[i]/Dh_;
+		Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
 	}
 }
 
