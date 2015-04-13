@@ -183,53 +183,44 @@ namespace ASALI
 
 	void READinput::check()
 	{
-		if (inputVector_[0] != "#")
+		std::vector<bool>         checkWord(6);
+		std::vector<std::string>  words(6);
+
+		for (unsigned int i=0;i<checkWord.size();i++)
+			checkWord[i] = false;
+
+		words[0] = "Reactor type";
+		words[1] = "Operating conditions";
+		words[2] = "Reactor properties";
+		words[3] = "Solver options";
+		words[4] = "Numerical solvers";
+		words[5] = "Kinetics path";
+
+		for (unsigned int i=0;i<inputVector_.size();i++)
 		{
-			error();
-			exit(EXIT_FAILURE);
+			if 		(inputVector_[i]   == "Reactor" &&
+					 inputVector_[i+1] == "type" ) 				{checkWord[0]  = true; typeIndex_  = i;}
+			else if (inputVector_[i]   == "Operating" &&
+					 inputVector_[i+1] == "conditions" ) 		{checkWord[1]  = true; operatingIndex_     = i;}
+			else if (inputVector_[i]   == "Reactor" &&
+					 inputVector_[i+1] == "properties" ) 		{checkWord[2]  = true; propertiesIndex_     = i;}
+			else if (inputVector_[i]   == "Solver" &&
+					 inputVector_[i+1] == "options" ) 			{checkWord[3]  = true; solverIndex_       = i;}
+			else if (inputVector_[i]   == "Numerical" &&
+					 inputVector_[i+1] == "solvers" ) 			{checkWord[4]  = true; numericalIndex_       = i;}
+			else if (inputVector_[i]   == "Kinetics" &&
+					 inputVector_[i+1] == "path" ) 				{checkWord[5]  = true; kineticsIndex_       = i;}
 		}
-		else
+		
+		for (unsigned int i=0;i<checkWord.size();i++)
 		{
-			std::vector<bool>         checkWord(6);
-			std::vector<std::string>  words(6);
-
-			for (unsigned int i=0;i<checkWord.size();i++)
-				checkWord[i] = false;
-
-			words[0] = "Reactor type";
-			words[1] = "Operating conditions";
-			words[2] = "Reactor properties";
-			words[3] = "Solver options";
-			words[4] = "Numerical solvers";
-			words[5] = "Kinetics path";
-
-			for (unsigned int i=0;i<inputVector_.size();i++)
+			if ( checkWord[i] == false )
 			{
-				if 		(inputVector_[i]   == "Reactor" &&
-						 inputVector_[i+1] == "type" ) 				{checkWord[0]  = true; typeIndex_  = i;}
-				else if (inputVector_[i]   == "Operating" &&
-						 inputVector_[i+1] == "conditions" ) 		{checkWord[1]  = true; operatingIndex_     = i;}
-				else if (inputVector_[i]   == "Reactor" &&
-						 inputVector_[i+1] == "properties" ) 		{checkWord[2]  = true; propertiesIndex_     = i;}
-				else if (inputVector_[i]   == "Solver" &&
-						 inputVector_[i+1] == "options" ) 			{checkWord[3]  = true; solverIndex_       = i;}
-				else if (inputVector_[i]   == "Numerical" &&
-						 inputVector_[i+1] == "solvers" ) 			{checkWord[4]  = true; numericalIndex_       = i;}
-				else if (inputVector_[i]   == "Kinetics" &&
-						 inputVector_[i+1] == "path" ) 				{checkWord[5]  = true; kineticsIndex_       = i;}
-			}
-			
-			for (unsigned int i=0;i<checkWord.size();i++)
-			{
-				if ( checkWord[i] == false )
-				{
-					error();
-					std::cout << "key word || " << words[i] << " || " << "is MISSING!\n" << std::endl;
-					exit (EXIT_FAILURE);
-				}
+				error();
+				std::cout << "key word || " << words[i] << " || " << "is MISSING!\n" << std::endl;
+				exit (EXIT_FAILURE);
 			}
 		}
-
 	}
 
 	void READinput::type()

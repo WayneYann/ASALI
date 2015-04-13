@@ -327,64 +327,55 @@ namespace ASALI
 
 	void READinput::check()
 	{
-		if (inputVector_[0] != "#")
+		std::vector<bool>         checkWord(10);
+		std::vector<std::string>  words(10);
+
+		for (unsigned int i=0;i<checkWord.size();i++)
+			checkWord[i] = false;
+
+		words[0] = "Temperature";
+		words[1] = "Pressure";
+		words[2] = "Reactor";
+		words[3] = "Catalyst";
+		words[4] = "Mole fractions || Mass fractions";
+		words[5] = "Solver options";
+		words[6] = "Volumetric flow rate || Velocity";
+		words[7] = "Solid";
+		words[8] = "Numerical solvers";
+		words[9] = "Kinetics path";
+
+		for (unsigned int i=0;i<inputVector_.size();i++)
 		{
-			error();
-			exit(EXIT_FAILURE);
+			if 		(inputVector_[i]   == "Temperature") 		{checkWord[0]  = true; temperatureIndex_  = i;}
+			else if (inputVector_[i]   == "Pressure") 			{checkWord[1]  = true;}
+			else if (inputVector_[i]   == "Reactor") 			{checkWord[2]  = true; reactorIndex_      = i;}
+			else if (inputVector_[i]   == "Catalyst") 			{checkWord[3]  = true; catalystIndex_     = i;}
+			else if (inputVector_[i]   == "Mole" &&
+					 inputVector_[i+1] == "fractions" ) 		{checkWord[4]  = true; fractionIndex_     = i;}
+			else if (inputVector_[i]   == "Mass" &&
+					 inputVector_[i+1] == "fractions" ) 		{checkWord[4]  = true; fractionIndex_     = i;}
+			else if (inputVector_[i]   == "Solver" &&
+					 inputVector_[i+1] == "options" ) 			{checkWord[5]  = true; solverIndex_       = i;}
+			else if (inputVector_[i]   == "Volumetric" &&
+					 inputVector_[i+1] == "flow" &&
+					 inputVector_[i+2] == "rate" ) 				{checkWord[6]  = true;}
+			else if (inputVector_[i]   == "Velocity") 			{checkWord[6]  = true;}
+			else if (inputVector_[i]   == "Solid") 				{checkWord[7]  = true; solidIndex_        = i;}
+			else if (inputVector_[i]   == "Numerical" &&
+					 inputVector_[i+1] == "solvers" ) 			{checkWord[8]  = true; numericalIndex_       = i;}
+			else if (inputVector_[i]   == "Kinetics" &&
+					 inputVector_[i+1] == "path" ) 				{checkWord[9]  = true; kineticsIndex_       = i;}
 		}
-		else
+		
+		for (unsigned int i=0;i<checkWord.size();i++)
 		{
-			std::vector<bool>         checkWord(10);
-			std::vector<std::string>  words(10);
-
-			for (unsigned int i=0;i<checkWord.size();i++)
-				checkWord[i] = false;
-
-			words[0] = "Temperature";
-			words[1] = "Pressure";
-			words[2] = "Reactor";
-			words[3] = "Catalyst";
-			words[4] = "Mole fractions || Mass fractions";
-			words[5] = "Solver options";
-			words[6] = "Volumetric flow rate || Velocity";
-			words[7] = "Solid";
-			words[8] = "Numerical solvers";
-			words[9] = "Kinetics path";
-
-			for (unsigned int i=0;i<inputVector_.size();i++)
+			if ( checkWord[i] == false )
 			{
-				if 		(inputVector_[i]   == "Temperature") 		{checkWord[0]  = true; temperatureIndex_  = i;}
-				else if (inputVector_[i]   == "Pressure") 			{checkWord[1]  = true;}
-				else if (inputVector_[i]   == "Reactor") 			{checkWord[2]  = true; reactorIndex_      = i;}
-				else if (inputVector_[i]   == "Catalyst") 			{checkWord[3]  = true; catalystIndex_     = i;}
-				else if (inputVector_[i]   == "Mole" &&
-						 inputVector_[i+1] == "fractions" ) 		{checkWord[4]  = true; fractionIndex_     = i;}
-				else if (inputVector_[i]   == "Mass" &&
-						 inputVector_[i+1] == "fractions" ) 		{checkWord[4]  = true; fractionIndex_     = i;}
-				else if (inputVector_[i]   == "Solver" &&
-						 inputVector_[i+1] == "options" ) 			{checkWord[5]  = true; solverIndex_       = i;}
-				else if (inputVector_[i]   == "Volumetric" &&
-						 inputVector_[i+1] == "flow" &&
-						 inputVector_[i+2] == "rate" ) 				{checkWord[6]  = true;}
-				else if (inputVector_[i]   == "Velocity") 			{checkWord[6]  = true;}
-				else if (inputVector_[i]   == "Solid") 				{checkWord[7]  = true; solidIndex_        = i;}
-				else if (inputVector_[i]   == "Numerical" &&
-						 inputVector_[i+1] == "solvers" ) 			{checkWord[8]  = true; numericalIndex_       = i;}
-				else if (inputVector_[i]   == "Kinetics" &&
-						 inputVector_[i+1] == "path" ) 				{checkWord[9]  = true; kineticsIndex_       = i;}
-			}
-			
-			for (unsigned int i=0;i<checkWord.size();i++)
-			{
-				if ( checkWord[i] == false )
-				{
-					error();
-					std::cout << "key word || " << words[i] << " || " << "is MISSING!\n" << std::endl;
-					exit (EXIT_FAILURE);
-				}
+				error();
+				std::cout << "key word || " << words[i] << " || " << "is MISSING!\n" << std::endl;
+				exit (EXIT_FAILURE);
 			}
 		}
-
 	}
 
 	void READinput::solver()
@@ -567,7 +558,7 @@ namespace ASALI
 								
 								i++;
 							}
-							else if ( dummyVector[i] == "Heterogenous" )
+							else if ( dummyVector[i] == "Heterogeneous" )
 							{
 								if ( dummyVector[i+1] == "on" )
 									het_ = true;
@@ -585,7 +576,7 @@ namespace ASALI
 							else
 							{
 								error();
-								std::cout << "key word || Homogeneous || Heterogenous || is MISSING in Solver options/Reactions sub-dictionary!\n" << std::endl;
+								std::cout << "key word || Homogeneous || Heterogeneous || is MISSING in Solver options/Reactions sub-dictionary!\n" << std::endl;
 								exit (EXIT_FAILURE);
 							}
 						}
