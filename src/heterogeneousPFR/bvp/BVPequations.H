@@ -76,7 +76,7 @@
 
 		cTotBulk_ = p_/(PhysicalConstants::R_J_kmol*Tbulk_[i+1]); 	// [Kmol/m3]
 		rhoBulk_  = cTotBulk_*MWbulk_;
-		v_[i+1]   = G_/rhoBulk_;
+		v_[i+1]   = G_/(rhoBulk_*epsi_);
 		Product(cTotBulk_, xBulk_, &cBulk_);
 
 		if ( homogeneusReactions_ == true )
