@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html>
+<body>
+<style>
+p {
+    display: block;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+</style>
+
+<center id="head1"></center>
+<center id="head2"><</center>
+<p><br>
+</p>
+<center id="head3"><</center>
+<!--Kinetics path-->
+<p><br>
+<input type="text"   id="kineticsPath"                                                        value="Kinetics path">
+<input type="button" id="saveKineticsPath"       onclick="saveKineticsPathFunction()"         value="save">
+<input type="button" id="clearKineticsPath"      onclick="claerKineticsPathFunction()"        value="clear">
+<input type="button" id="infoKineticsPath"       onclick="infoKineticsPathFunction()"         value="info">
+</p>
+<!--Volumetric flow rate-->
+<p><br>
+<input type="text"   id="volumetriFlowRate"                                                   value="Volumetric flow rate"> 
+<input type="text"   id="volumetriFlowRateUnit"                                               value="Nl/min"> 
+<input type="button" id="saveVolumetriFlowRate"  onclick="saveVolumetriFlowRateFunction()"    value="save">
+<input type="button" id="clearVolumetriFlowRate" onclick="clearVolumetriFlowRateFunction()"   value="clear">
+<input type="button" id="infoVolumetriFlowRate"  onclick="infoVolumetriFlowRateFunction()"    value="info">
+</p>
+<!--Pressure-->
+<p><br>
+<input type="text"   id="pressure"                                                            value="Pressure"> 
+<input type="text"   id="pressureUnit"                                                        value="bar"> 
+<input type="button" id="savePressure"           onclick="savePressureFunction()"             value="save">
+<input type="button" id="clearPressure"          onclick="clearPressureFunction()"            value="clear">
+<input type="button" id="infoPressure"           onclick="infoPressureFunction()"             value="info">
+</p>
+<!--SOLID temperature-->
+<p><br>
+<input type="text"   id="Tsolid"                                                              value="SOLID temperature"> 
+<input type="text"   id="TsolidUnit"                                                          value="K"> 
+<input type="button" id="saveTsolid"             onclick="saveTsolidFunction()"               value="save">
+<input type="button" id="clearTsolid"            onclick="clearTsolidFunction()"              value="clear">
+<input type="button" id="infoTsolid"             onclick="infoTsolidFunction()"               value="info">
+</p>
+<!--GAS temperature-->
+<p><br>
+<input type="text"   id="Tgas"                                                                value="GAS temperature"> 
+<input type="text"   id="TgasUnit"                                                            value="K"> 
+<input type="button" id="saveTgas"               onclick="saveTgasFunction()"                 value="save">
+<input type="button" id="clearTgas"              onclick="clearTgasFunction()"                value="clear">
+<input type="button" id="infoTgas"               onclick="infoTgasFunction()"                 value="info">
+</p>
+<!--INERT length-->
+<p><br>
+<input type="text"   id="Linert"                                                              value="INERT length"> 
+<input type="text"   id="LinertUnit"                                                          value="m"> 
+<input type="button" id="saveLinert"             onclick="saveLinertFunction()"               value="save">
+<input type="button" id="clearLinert"            onclick="clearLinertFunction()"              value="clear">
+<input type="button" id="infoLinert"             onclick="infoLinertFunction()"               value="info">
+</p>
+<!--CATALYTIC length-->
+<p><br>
+<input type="text"   id="Lcat"                                                                value="CATALYTIC length"> 
+<input type="text"   id="LcatUnit"                                                            value="m"> 
+<input type="button" id="saveLcat"               onclick="saveLcatFunction()"                 value="save">
+<input type="button" id="clearLcat"              onclick="clearLcatFunction()"                value="clear">
+<input type="button" id="infoLcat"               onclick="infoLcatFunction()"                 value="info">
+</p>
+<!--Hydraulic diameter-->
+<p><br>
+<input type="text"   id="Dh"                                                                  value="Hydraulic diameter"> 
+<input type="text"   id="DhUnit"                                                              value="m"> 
+<input type="button" id="saveDh"                 onclick="saveDhFunction()"                   value="save">
+<input type="button" id="clearDh"                onclick="clearDhFunction()"                  value="clear">
+<input type="button" id="infoDh"                 onclick="infoDhFunction()"                   value="info">
+</p>
+<!--Channel diameter-->
+<p><br>
+<input type="text"   id="Dchannel"                                                            value="Channel diameter"> 
+<input type="text"   id="DchannelUnit"                                                        value="m"> 
+<input type="button" id="saveDchannel"           onclick="saveDchannelFunction()"             value="save">
+<input type="button" id="clearDchannel"          onclick="clearDchannelFunction()"            value="clear">
+<input type="button" id="infoDchannel"           onclick="infoDchannelFunction()"             value="info">
+</p>
+<!--Channel shape-->
+<p><br>
+<input type="text"   id="channelShape"                                                        value="Channel shape">
+<input type="button" id="savechannelShape"       onclick="savechannelShapeFunction()"         value="save">
+<input type="button" id="clearchannelShape"      onclick="clearchannelShapeFunction()"        value="clear">
+<input type="button" id="infochannelShape"       onclick="infochannelShapeFunction()"         value="info">
+</p>
+<!--Void fraction-->
+<p><br>
+<input type="text"   id="voidFraction"                                                        value="Void fraction">
+<input type="button" id="savevoidFraction"       onclick="savevoidFractionFunction()"         value="save">
+<input type="button" id="clearvoidFraction"      onclick="clearvoidFractionFunction()"        value="clear">
+<input type="button" id="infovoidFraction"       onclick="infovoidFractionFunction()"         value="info">
+</p>
+<!--External limitation-->
+<p><br>
+<input type="text"   id="external"                                                            value="External limitation">
+<input type="button" id="saveexternal"           onclick="saveexternalFunction()"             value="save">
+<input type="button" id="clearexternal"          onclick="clearexternalFunction()"            value="clear">
+<input type="button" id="infoexternal"           onclick="infoexternalFunction()"             value="info">
+</p>
+<!--Catalyst mass-->
+<p><br>
+<input type="text"   id="catalystMass"                                                        value="Mass of catalyst">
+<input type="text"   id="catalystUnit"                                                        value="mg"> 
+<input type="button" id="savecatalyst"           onclick="savecatalystFunction()"             value="save">
+<input type="button" id="clearcatalyst"          onclick="clearcatalystFunction()"            value="clear">
+<input type="button" id="infocatalyst"           onclick="infocatalystFunction()"             value="info">
+</p>
+<!--Energy-->
+<p><br>
+<input type="text"   id="energy"                                                              value="Energy equation">
+<input type="button" id="saveEnergy"             onclick="saveEnergyFunction()"               value="save">
+<input type="button" id="clearEnergy"            onclick="claerEnergyFunction()"              value="clear">
+<input type="button" id="infoEnergy"             onclick="infoEnergyFunction()"               value="info">
+</p>
+<!--Homogeneous reactions-->
+<p><br>
+<input type="text"   id="homo"                                                                value="Homogeneous reactions">
+<input type="button" id="saveHomo"               onclick="saveHomoFunction()"                 value="save">
+<input type="button" id="clearHomo"              onclick="claerHomoFunction()"                value="clear">
+<input type="button" id="infoHomo"               onclick="infoHomoFunction()"                 value="info">
+</p>
+<!--Heterogeneous reactions-->
+<p><br>
+<input type="text"   id="het"                                                                 value="Heterogeneous reactions">
+<input type="button" id="saveHet"                onclick="saveHetFunction()"                  value="save">
+<input type="button" id="clearHet"               onclick="claerHetFunction()"                 value="clear">
+<input type="button" id="infoHet"                onclick="infoHetFunction()"                  value="info">
+</p>
+<!--Integration time-->
+<p><br>
+<input type="text"   id="tMax"                                                                value="Integration time"> 
+<input type="text"   id="tMaxUnit"                                                            value="s"> 
+<input type="button" id="savetMax"               onclick="savetMaxFunction()"                 value="save">
+<input type="button" id="cleartMax"              onclick="cleartMaxFunction()"                value="clear">
+<input type="button" id="infotMax"               onclick="infotMaxFunction()"                 value="info">
+</p>
+<!--Results-->
+<p><br>
+<input type="text"   id="results"                                                             value="Results">
+<input type="button" id="saveResults"            onclick="saveResultsFunction()"              value="save">
+<input type="button" id="clearResults"           onclick="claerResultsFunction()"             value="clear">
+<input type="button" id="infoResults"            onclick="infoResultsFunction()"              value="info">
+</p>
+<!--Feed fraction-->
+<p><br>
+<input type="text"   id="feed"                                                                value="Feed fraction">
+<input type="button" id="saveFeed"               onclick="saveFeedFunction()"                 value="save">
+<input type="button" id="clearFeed"              onclick="claerFeedFunction()"                value="clear">
+<input type="button" id="infoFeed"               onclick="infoFeedFunction()"                 value="info">
+</p>
+<p><br>
+<input type="text"   id="specie1n"                                                            value="Name">
+<input type="text"   id="specie1v"                                                            value="Value">
+</p>
+<p><br>
+<input type="text"   id="specie2n"                                                            value="Name">
+<input type="text"   id="specie2v"                                                            value="Value">
+</p>
+<p><br>
+<input type="text"   id="specie3n"                                                            value="Name">
+<input type="text"   id="specie3v"                                                            value="Value">
+</p>
+<p><br>
+<input type="text"   id="specie4n"                                                            value="Name">
+<input type="text"   id="specie4v"                                                            value="Value">
+</p>
+<p><br>
+<input type="text"   id="specie5n"                                                            value="Name">
+<input type="text"   id="specie5v"                                                            value="Value">
+</p>
+<p><br>
+<input type="text"   id="specie6n"                                                            value="Name">
+<input type="text"   id="specie6v"                                                            value="Value">
+</p>
+<p><br>
+<input type="text"   id="specie7n"                                                            value="Name">
+<input type="text"   id="specie7v"                                                            value="Value">
+</p>
+<p><br>
+<input type="text"   id="specie8n"                                                            value="Name">
+<input type="text"   id="specie8v"                                                            value="Value">
+</p>
+<p><br>
+<input type="text"   id="specie9n"                                                            value="Name">
+<input type="text"   id="specie9v"                                                            value="Value">
+<input type="button" id="saveSpecie"           onclick="saveSpecieFunction()"                 value="save feed composition">
+<input type="button" id="clearSpecie"          onclick="clearSpecieFunction()"                value="clear feed composition">
+<input type="button" id="infoSpecie"           onclick="infoSpecieFunction()"                 value="info">
+</p>
+<!--Inert-->
+<p><br>
+<input type="text"   id="inert"                                                           value="Inert specie">
+<input type="button" id="saveInert"            onclick="saveInertFunction()"              value="save">
+<input type="button" id="clearInert"           onclick="claerInertFunction()"             value="clear">
+<input type="button" id="infoInert"            onclick="infoInertFunction()"              value="info">
+</p>
+<!--Final buttons-->
+<p><br>
+<input type="button" id="done"         onclick="done()"        value="create file">
+<input type="button" id="done"         onclick="saveALL()"     value="save all">
+<input type="button" id="done"         onclick="clearALL()"    value="clear all">
+</p>
+<!--Print on the page-->
+<p><br>
+<center id="information"></center>
+<p><br>
+<p id="line1"></p>
+<p id="line2"></p>
+<p id="line3"></p>
+<p id="line4"></p>
+<p id="line5"></p>
+<p id="kineticsPathSaved"></p>
+<p id="volumetriFlowRateSaved"></p>
+<p id="pressureSaved"></p>
+<p id="temperature"></p>
+<p id="openTemperature"></p>
+	<p id="TgasSaved"></p>
+	<p id="TsolidSaved"></p>
+<p id="closeTemperature"></p>
+<p id="reactor"></p>
+<p id="openReactor"></p>
+	<p id="LinertSaved"></p>
+	<p id="LcatSaved"></p>
+	<p id="DhSaved"></p>
+	<p id="DchannelSaved"></p>
+	<p id="channelShapeSaved"></p>
+	<p id="voidFractionSaved"></p>
+	<p id="externalSaved"></p>
+<p id="closeReactor"></p>
+<p id="catalyst"></p>
+<p id="openCatalyst"></p>
+	<p id="catalystSaved"></p>
+	<p id="dispersionSaved"></p>
+	<p id="RhfractionSaved"></p>
+	<p id="deactivationSaved"></p>
+<p id="closeCatalyst"></p>
+<p id="solid"></p>
+<p id="openSolid"></p>
+	<p id="solidDensitySaved"></p>
+	<p id="solidCondSaved"></p>
+	<p id="solidCpSaved"></p>
+<p id="closeSolid"></p>
+<p id="feedSaved"></p>
+<p id="openFeed"></p>
+	<p id="specie1Saved"></p>
+	<p id="specie2Saved"></p>
+	<p id="specie3Saved"></p>
+	<p id="specie4Saved"></p>
+	<p id="specie5Saved"></p>
+	<p id="specie6Saved"></p>
+	<p id="specie7Saved"></p>
+	<p id="specie8Saved"></p>
+	<p id="specie9Saved"></p>
+	<p id="inertSpecieSaved"></p>
+<p id="closeFeed"></p>
+<p id="solver"></p>
+<p id="openSolver"></p>
+	<p id="constraintsSaved"></p>
+	<p id="abs"></p>
+	<p id="openAbs"></p>
+		<p id="absSpecieSaved"></p>
+		<p id="absTempSaved"></p>
+	<p id="closeAbs"></p>
+	<p id="rel"></p>
+	<p id="openRel"></p>
+		<p id="relSpecieSaved"></p>
+		<p id="relTempSaved"></p>
+	<p id="closeRel"></p>
+	<p id="energySaved"></p>
+	<p id="reactions"></p>
+	<p id="openReactions"></p>
+		<p id="homoSaved"></p>
+		<p id="hetSaved"></p>
+	<p id="closeReactions"></p>
+	<p id="grid"></p>
+	<p id="openGrid"></p>
+		<p id="growSaved"></p>
+		<p id="minSaved"></p>
+		<p id="maxSaved"></p>
+		<p id="addSaved"></p>
+		<p id="resSaved"></p>
+		<p id="errSaved"></p>
+	<p id="closeGrid"></p>
+	<p id="tMaxSaved"></p>
+	<p id="resultsSaved"></p>
+<p id="closeSolver"></p>
+<p id="numerical"></p>
+<p id="openNumerical"></p>
+	<p id="odeSaved"></p>
+	<p id="daeSaved"></p>
+<p id="closeNumerical"></p>
+<script>
+	//- Head
+	var head1 = "Input generation for: "
+	var head2 = "Complex PFR";
+	var head3 = "(associated solver: heterogeneousPFR.sh)";
+	document.getElementById("head1").innerHTML = head1.fontcolor("black").fontsize(8).fixed()
+	document.getElementById("head2").innerHTML = head2.fontcolor("black").fontsize(8).fixed().bold();
+	document.getElementById("head3").innerHTML = head3.fontcolor("black").fontsize(4).fixed().italics();
+
+	//- Kinetics path
+	var kineticPath = "not defined";
+	function saveKineticsPathFunction()
+	{
+		kineticPath = document.getElementById("kineticsPath").value;
+	}
+	function claerKineticsPathFunction()
+	{
+		document.getElementById("kineticsPath").value = "Kinetics path";
+	}
+	function infoKineticsPathFunction()
+	{
+		alert("Write the kinetics path\n\nExample: ../../CH4/kinetics");
+	}
+
+	//- Volumetric flow rate
+	var Q = "not defined";
+	function saveVolumetriFlowRateFunction()
+	{
+		Q = document.getElementById("volumetriFlowRate").value + " " + document.getElementById("volumetriFlowRateUnit").value;
+	}
+	function clearVolumetriFlowRateFunction()
+	{
+		document.getElementById("volumetriFlowRate").value     = "Volumetric flow rate";
+		document.getElementById("volumetriFlowRateUnit").value = "Nl/min";
+	}
+	function infoVolumetriFlowRateFunction()
+	{
+		alert("Write the feed flow rate or the feed velocity\n\nExample: 10 Nl/m\n\nExample: 1 m/s");
+	}
+
+	//- Pressure
+	var p = "not defined";
+	function savePressureFunction()
+	{
+		p = document.getElementById("pressure").value + " " + document.getElementById("pressureUnit").value;
+	}
+	function clearPressureFunction()
+	{
+		document.getElementById("pressure").value = "Pressure";
+		document.getElementById("pressureUnit").value = "bar";
+	}
+	function infoPressureFunction()
+	{
+		alert("Write the reactor pressure\n\nExample: 101325 Pa");
+	}
+
+	//- SOLID temperature
+	var Tsolid = "not defined";
+	function saveTsolidFunction()
+	{
+		Tsolid = document.getElementById("Tsolid").value + " " + document.getElementById("TsolidUnit").value;
+	}
+	function clearTsolidFunction()
+	{
+		document.getElementById("Tsolid").value = "SOLID temperature";
+		document.getElementById("TsolidUnit").value = "K";
+	}
+	function infoTsolidFunction()
+	{
+		alert("Write the initial solid temperature\n\nExample: 773 K");
+	}
+
+	//- GAS temperature
+	var Tgas = "not defined";
+	function saveTgasFunction()
+	{
+		Tgas = document.getElementById("Tgas").value + " " + document.getElementById("TgasUnit").value;
+	}
+	function clearTgasFunction()
+	{
+		document.getElementById("Tgas").value = "GAS temperature";
+		document.getElementById("TgasUnit").value = "K";
+	}
+	function infoTgasFunction()
+	{
+		alert("Write the gas feed temperature\n\nExample: 298 K");
+	}
+
+	//- INERT length
+	var Linert = "not defined";
+	function saveLinertFunction()
+	{
+		Linert = document.getElementById("Linert").value + " " + document.getElementById("LinertUnit").value;
+	}
+	function clearLinertFunction()
+	{
+		document.getElementById("Linert").value = "INERT length";
+		document.getElementById("LinertUnit").value = "m";
+	}
+	function infoLinertFunction()
+	{
+		alert("Write the axial inert length at the reactor entrance\n\nExample: 0.5 cm");
+	}
+
+	//- CATALYTIC length
+	var Lcat = "not defined";
+	function saveLcatFunction()
+	{
+		Lcat = document.getElementById("Lcat").value + " " + document.getElementById("LcatUnit").value;
+	}
+	function clearLcatFunction()
+	{
+		document.getElementById("Lcat").value = "CATALYTIC length";
+		document.getElementById("LcatUnit").value = "m";
+	}
+	function infoLcatFunction()
+	{
+		alert("Write the axial catalytic length in the reactor\n\nExample: 25 cm");
+	}
+
+	//- Hydraulic diameter
+	var Dh = "not defined";
+	function saveDhFunction()
+	{
+		Dh = document.getElementById("Dh").value + " " + document.getElementById("DhUnit").value;
+	}
+	function clearDhFunction()
+	{
+		document.getElementById("Dh").value = "Hydraulic diameter";
+		document.getElementById("DhUnit").value = "m";
+	}
+	function infoDhFunction()
+	{
+		alert("Write the hydraulic diamter of the whole honeycomb matrix\n\nExample: 24 cm");
+	}
+
+	//- Channel diameter
+	var Dchannel = "not defined";
+	function saveDchannelFunction()
+	{
+		Dchannel = document.getElementById("Dchannel").value + " " + document.getElementById("DchannelUnit").value;
+	}
+	function clearDchannelFunction()
+	{
+		document.getElementById("Dchannel").value = "Channel diameter"
+		document.getElementById("DchannelUnit").value = "m";
+	}
+	function infoDchannelFunction()
+	{
+		alert("Write the hydraulic diamter of the single channel\n\nExample: 1.1 mm");
+	}
+
+	//- Channel shape
+	var channelShape = "not defined";
+	function savechannelShapeFunction()
+	{
+		channelShape = document.getElementById("channelShape").value;
+	}
+	function clearchannelShapeFunction()
+	{
+		document.getElementById("channelShape").value = "Channel shape";
+	}
+	function infochannelShapeFunction()
+	{
+		alert("Write the shape of the single channel\n\nExample: circle");
+	}
+
+	//- Void fraction
+	var voidFraction = "not defined";
+	function savevoidFractionFunction()
+	{
+		voidFraction = document.getElementById("voidFraction").value;
+	}
+	function clearvoidFractionFunction()
+	{
+		document.getElementById("voidFraction").value = "Void fraction";
+	}
+	function infovoidFractionFunction()
+	{
+		alert("Write the void fraction of the whole honeycomb matrix\n\nExample: 0.75");
+	}
+
+	//- External limitation
+	var external = "not defined";
+	function saveexternalFunction()
+	{
+		external = document.getElementById("external").value;
+	}
+	function clearexternalFunction()
+	{
+		document.getElementById("external").value = "External limitation";
+	}
+	function infoexternalFunction()
+	{
+		alert("Write the chemical phenomenon that is controlling the reactor\n\nExample: massTransfer");
+	}
+
+	//- Catalyst mass
+	var mCat = "not defined";
+	function savecatalystFunction()
+	{
+		mCat = document.getElementById("catalystMass").value + " " + document.getElementById("catalystUnit").value;
+	}
+	function clearcatalystFunction()
+	{
+		document.getElementById("catalystMass").value = "Mass of catalyst";
+		document.getElementById("catalystUnit").value = "mg";
+	}
+	function infocatalystFunction()
+	{
+		alert("Write the catalytic mass load in the whole reactor\n\nExample: 800 mg");
+	}
+
+	//- Energy
+	var energy = "not defined";
+	function saveEnergyFunction()
+	{
+		energy = document.getElementById("energy").value;
+	}
+	function claerEnergyFunction()
+	{
+		document.getElementById("energy").value = "Energy equation";
+	}
+	function infoEnergyFunction()
+	{
+		alert("Energy equation switched on/off\n\nExample: on");
+	}
+
+	//- Homogeneous reactions
+	var homo = "not defined";
+	function saveHomoFunction()
+	{
+		homo = document.getElementById("homo").value;
+	}
+	function claerHomoFunction()
+	{
+		document.getElementById("homo").value = "Homogeneous reactions";
+	}
+	function infoHomoFunction()
+	{
+		alert("Homogeneous reactions switched on/off\n\nExample: on");
+	}
+
+	//- Heterogeneous reactions
+	var het = "not defined";
+	function saveHetFunction()
+	{
+		het = document.getElementById("het").value;
+	}
+	function claerHetFunction()
+	{
+		document.getElementById("het").value = "Heterogeneous reactions";
+	}
+	function infoHetFunction()
+	{
+		alert("Heterogeneous reactions switched on/off\n\nExample: on");
+	}
+
+	//- Integration time
+	var tMax = "not defined";
+	function savetMaxFunction()
+	{
+		tMax = document.getElementById("tMax").value + " " + document.getElementById("tMaxUnit").value;
+	}
+	function cleartMaxFunction()
+	{
+		document.getElementById("tMax").value = "Integration time";
+		document.getElementById("tMaxUnit").value = "s";
+	}
+	function infotMaxFunction()
+	{
+		alert("Write the total integration time\n\nExample: 500 s");
+	}
+
+	//- Results
+	var results = "not defined";
+	function saveResultsFunction()
+	{
+		results = document.getElementById("results").value;
+	}
+	function claerResultsFunction()
+	{
+		document.getElementById("results").value = "Results";
+	}
+	function infoResultsFunction()
+	{
+		alert("Results are written in mole/mass fraction\n\nExample: mass");
+	}
+
+	//- Feed fraction
+	var feed = "not defined";
+	function saveFeedFunction()
+	{
+		feed = document.getElementById("feed").value;
+	}
+	function claerFeedFunction()
+	{
+		document.getElementById("feed").value = "Feed fraction";
+	}
+	function infoFeedFunction()
+	{
+		alert("Feed fraction could be mole/mass fraction\n\nExample: Mass");
+	}
+
+	//- Feed species
+	var specieV = [];
+	var specieN = [];
+	function saveSpecieFunction()
+	{
+		specieV[0] = document.getElementById("specie1v").value;
+		specieV[1] = document.getElementById("specie2v").value;
+		specieV[2] = document.getElementById("specie3v").value;
+		specieV[3] = document.getElementById("specie4v").value;
+		specieV[4] = document.getElementById("specie5v").value;
+		specieV[5] = document.getElementById("specie6v").value;
+		specieV[6] = document.getElementById("specie7v").value;
+		specieV[7] = document.getElementById("specie8v").value;
+		specieV[8] = document.getElementById("specie9v").value;
+
+		specieN[0] = document.getElementById("specie1n").value;
+		specieN[1] = document.getElementById("specie2n").value;
+		specieN[2] = document.getElementById("specie3n").value;
+		specieN[3] = document.getElementById("specie4n").value;
+		specieN[4] = document.getElementById("specie5n").value;
+		specieN[5] = document.getElementById("specie6n").value;
+		specieN[6] = document.getElementById("specie7n").value;
+		specieN[7] = document.getElementById("specie8n").value;
+		specieN[8] = document.getElementById("specie9n").value;
+	}
+	function clearSpecieFunction()
+	{
+		document.getElementById("specie1v").value = "Value";
+		document.getElementById("specie2v").value = "Value";
+		document.getElementById("specie3v").value = "Value";
+		document.getElementById("specie4v").value = "Value";
+		document.getElementById("specie5v").value = "Value";
+		document.getElementById("specie6v").value = "Value";
+		document.getElementById("specie7v").value = "Value";
+		document.getElementById("specie8v").value = "Value";
+		document.getElementById("specie9v").value = "Value";
+
+		document.getElementById("specie1n").value = "Name";
+		document.getElementById("specie2n").value = "Name";
+		document.getElementById("specie3n").value = "Name";
+		document.getElementById("specie4n").value = "Name";
+		document.getElementById("specie5n").value = "Name";
+		document.getElementById("specie6n").value = "Name";
+		document.getElementById("specie7n").value = "Name";
+		document.getElementById("specie8n").value = "Name";
+		document.getElementById("specie9n").value = "Name";
+	}
+	function infoSpecieFunction()
+	{
+		alert("Feed mole/mass fraction\n\nExample:\nCH4\t0.27\nO2\t0.1593\nN2\t0.5707\n\nIMPO: Leave 'Name' and 'Value' for not used boxes");
+	}
+
+	//- Inert specie
+	var inert = "not defined";
+	function saveInertFunction()
+	{
+		inert = document.getElementById("inert").value;
+	}
+	function claerInertFunction()
+	{
+		document.getElementById("inert").value = "Inert specie";
+	}
+	function infoInertFunction()
+	{
+		alert("An inert specie is required for calculation\n\nExample: N2");
+	}
+
+	//- Save all
+	function saveALL()
+	{
+		kineticPath  = document.getElementById("kineticsPath").value;
+		Q            = document.getElementById("volumetriFlowRate").value + " " + document.getElementById("volumetriFlowRateUnit").value;
+		p            = document.getElementById("pressure").value          + " " + document.getElementById("pressureUnit").value;
+		Tsolid       = document.getElementById("Tsolid").value            + " " + document.getElementById("TsolidUnit").value;
+		Tgas         = document.getElementById("Tgas").value              + " " + document.getElementById("TgasUnit").value;
+		Linert       = document.getElementById("Linert").value            + " " + document.getElementById("LinertUnit").value;
+		Lcat         = document.getElementById("Lcat").value              + " " + document.getElementById("LcatUnit").value;
+		Dh           = document.getElementById("Dh").value                + " " + document.getElementById("DhUnit").value;
+		Dchannel     = document.getElementById("Dchannel").value          + " " + document.getElementById("DchannelUnit").value;
+		channelShape = document.getElementById("channelShape").value;
+		voidFraction = document.getElementById("voidFraction").value;
+		external     = document.getElementById("external").value;
+		mCat         = document.getElementById("catalystMass").value      + " " + document.getElementById("catalystUnit").value;
+		energy       = document.getElementById("energy").value;
+		homo         = document.getElementById("homo").value;
+		het          = document.getElementById("het").value;
+		tMax         = document.getElementById("tMax").value + " " + document.getElementById("tMaxUnit").value;
+		results      = document.getElementById("results").value;
+		feed         = document.getElementById("feed").value;
+		inert        = document.getElementById("inert").value;
+
+		specieV[0] = document.getElementById("specie1v").value;
+		specieV[1] = document.getElementById("specie2v").value;
+		specieV[2] = document.getElementById("specie3v").value;
+		specieV[3] = document.getElementById("specie4v").value;
+		specieV[4] = document.getElementById("specie5v").value;
+		specieV[5] = document.getElementById("specie6v").value;
+		specieV[6] = document.getElementById("specie7v").value;
+		specieV[7] = document.getElementById("specie8v").value;
+		specieV[8] = document.getElementById("specie9v").value;
+
+		specieN[0] = document.getElementById("specie1n").value;
+		specieN[1] = document.getElementById("specie2n").value;
+		specieN[2] = document.getElementById("specie3n").value;
+		specieN[3] = document.getElementById("specie4n").value;
+		specieN[4] = document.getElementById("specie5n").value;
+		specieN[5] = document.getElementById("specie6n").value;
+		specieN[6] = document.getElementById("specie7n").value;
+		specieN[7] = document.getElementById("specie8n").value;
+		specieN[8] = document.getElementById("specie9n").value;
+
+	}
+
+	//- Clear
+	function clearALL()
+	{
+		document.getElementById("kineticsPath").value            = "Kinetics path";
+		document.getElementById("volumetriFlowRate").value       = "Volumetric flow rate";
+		document.getElementById("volumetriFlowRateUnit").value   = "Nl/min";
+		document.getElementById("pressure").value                = "Pressure";
+		document.getElementById("pressureUnit").value            = "bar";
+		document.getElementById("Tsolid").value                  = "SOLID temperature";
+		document.getElementById("TsolidUnit").value              = "K";
+		document.getElementById("Tgas").value                    = "GAS temperature";
+		document.getElementById("TgasUnit").value                = "K";
+		document.getElementById("Linert").value                  = "INERT length";
+		document.getElementById("LinertUnit").value              = "m";
+		document.getElementById("Lcat").value                    = "CATALYTIC length";
+		document.getElementById("LcatUnit").value                = "m";
+		document.getElementById("Dh").value                      = "Hydraulic diameter";
+		document.getElementById("DhUnit").value                  = "m";
+		document.getElementById("Dchannel").value                = "Channel diameter"
+		document.getElementById("DchannelUnit").value            = "m";
+		document.getElementById("channelShape").value            = "Channel shape";
+		document.getElementById("voidFraction").value            = "Void fraction";
+		document.getElementById("external").value                = "External limitation";
+		document.getElementById("catalystMass").value            = "Mass of catalyst";
+		document.getElementById("catalystUnit").value            = "mg";
+		document.getElementById("energy").value                  = "Energy equation";
+		document.getElementById("homo").value                    = "Homogeneous reactions";
+		document.getElementById("het").value                     = "Heterogeneous reactions";
+		document.getElementById("tMax").value                    = "Integration time";
+		document.getElementById("tMaxUnit").value                = "s";
+		document.getElementById("results").value                 = "Results";
+		document.getElementById("feed").value                    = "Feed fraction";
+		document.getElementById("inert").value                   = "Inert specie";
+
+		document.getElementById("specie1v").value = "Value";
+		document.getElementById("specie2v").value = "Value";
+		document.getElementById("specie3v").value = "Value";
+		document.getElementById("specie4v").value = "Value";
+		document.getElementById("specie5v").value = "Value";
+		document.getElementById("specie6v").value = "Value";
+		document.getElementById("specie7v").value = "Value";
+		document.getElementById("specie8v").value = "Value";
+		document.getElementById("specie9v").value = "Value";
+
+		document.getElementById("specie1n").value = "Name";
+		document.getElementById("specie2n").value = "Name";
+		document.getElementById("specie3n").value = "Name";
+		document.getElementById("specie4n").value = "Name";
+		document.getElementById("specie5n").value = "Name";
+		document.getElementById("specie6n").value = "Name";
+		document.getElementById("specie7n").value = "Name";
+		document.getElementById("specie8n").value = "Name";
+		document.getElementById("specie9n").value = "Name";
+
+	}
+
+	//- Final print
+	function done() 
+	{
+		//- Extra function
+		document.getElementById("temperature").innerHTML   = "Temperature";
+		document.getElementById("reactor").innerHTML       = "Reactor";
+		document.getElementById("catalyst").innerHTML      = "Catalyst";
+		document.getElementById("solid").innerHTML         = "Solid";
+		document.getElementById("solver").innerHTML        = "Solver options";
+		document.getElementById("reactions").innerHTML     = "Reactions";
+		document.getElementById("grid").innerHTML          = "Grid";
+		document.getElementById("abs").innerHTML           = "Absolute tollerance";
+		document.getElementById("rel").innerHTML           = "Relative tollerance";
+		document.getElementById("numerical").innerHTML     = "Numerical solvers";
+		document.getElementById("feedSaved").innerHTML     = feed + " fractions";
+
+		document.getElementById("openTemperature").innerHTML   = "{";
+		document.getElementById("openReactor").innerHTML       = "{";
+		document.getElementById("openCatalyst").innerHTML      = "{";
+		document.getElementById("openSolid").innerHTML         = "{";
+		document.getElementById("openSolver").innerHTML        = "{";
+		document.getElementById("openReactions").innerHTML     = "(";
+		document.getElementById("openGrid").innerHTML          = "(";
+		document.getElementById("openAbs").innerHTML           = "(";
+		document.getElementById("openRel").innerHTML           = "(";
+		document.getElementById("openNumerical").innerHTML     = "{";
+		document.getElementById("openFeed").innerHTML          = "{";
+
+		document.getElementById("closeTemperature").innerHTML  = "}";
+		document.getElementById("closeReactor").innerHTML      = "}";
+		document.getElementById("closeCatalyst").innerHTML     = "}";
+		document.getElementById("closeSolid").innerHTML        = "}";
+		document.getElementById("closeSolver").innerHTML       = "}";
+		document.getElementById("closeReactions").innerHTML    = ")";
+		document.getElementById("closeGrid").innerHTML         = ")";
+		document.getElementById("closeAbs").innerHTML          = ")";
+		document.getElementById("closeRel").innerHTML          = ")";
+		document.getElementById("closeNumerical").innerHTML    = "}";
+		document.getElementById("closeFeed").innerHTML         = "}";
+
+		var informationTXT = "Copy and paste the lines below in a text file:";
+		document.getElementById("information").innerHTML = informationTXT.fontsize(6).fontcolor("black").fixed();
+		document.getElementById("line1").innerHTML = "##########################";
+		document.getElementById("line2").innerHTML = "ASALI";
+		document.getElementById("line3").innerHTML = "input file";
+		document.getElementById("line4").innerHTML = "heterogeneous PFR";
+		document.getElementById("line5").innerHTML = "##########################";
+		document.getElementById("kineticsPathSaved").innerHTML      = "Kinetics path " + kineticPath;
+		document.getElementById("volumetriFlowRateSaved").innerHTML = "Volumetric flow rate " + Q;
+		document.getElementById("pressureSaved").innerHTML          = "Pressure " + p;
+		document.getElementById("TsolidSaved").innerHTML            = "solid " + Tsolid;
+		document.getElementById("TgasSaved").innerHTML              = "gas " + Tgas;
+		document.getElementById("LinertSaved").innerHTML            = "inert length " + Linert;
+		document.getElementById("LcatSaved").innerHTML              = "catalytic length " + Lcat;
+		document.getElementById("DhSaved").innerHTML                = "hydraulic diameter " + Dh;
+		document.getElementById("DchannelSaved").innerHTML          = "channel diameter " + Dchannel;
+		document.getElementById("channelShapeSaved").innerHTML      = "channel shape " + channelShape;
+		document.getElementById("voidFractionSaved").innerHTML      = "void fraction " + voidFraction;
+		document.getElementById("externalSaved").innerHTML          = "external limitations " + external;
+		document.getElementById("catalystSaved").innerHTML          = "mass " + mCat;
+		document.getElementById("dispersionSaved").innerHTML        = "dispersion 0.2";
+		document.getElementById("RhfractionSaved").innerHTML        = "Rh fraction 0.02";
+		document.getElementById("deactivationSaved").innerHTML      = "deactivation factor 1.0";
+		document.getElementById("solidDensitySaved").innerHTML      = "density 2300 Kg/m3";
+		document.getElementById("solidCondSaved").innerHTML         = "conductivity 2.5  W/m/K";
+		document.getElementById("solidCpSaved").innerHTML           = "specific heat 925 J/Kg/K";
+		document.getElementById("energySaved").innerHTML            = "Energy equation " + energy;
+		document.getElementById("homoSaved").innerHTML              = "Homogeneous " + homo;
+		document.getElementById("hetSaved").innerHTML               = "Heterogeneous " + het;
+		document.getElementById("tMaxSaved").innerHTML              = "Integration time " + tMax;
+		document.getElementById("resultsSaved").innerHTML           = "Results " + results;
+		document.getElementById("growSaved").innerHTML              = "Growing on";
+		document.getElementById("minSaved").innerHTML               = "Minimum number of points 12";
+		document.getElementById("maxSaved").innerHTML               = "Maximum number of points 800";
+		document.getElementById("addSaved").innerHTML               = "Add number of points 300";
+		document.getElementById("resSaved").innerHTML               = "Resolution type new";
+		document.getElementById("errSaved").innerHTML               = "Accepted error 1e-08";
+		document.getElementById("absSpecieSaved").innerHTML         = "specie 1e-14";
+		document.getElementById("absTempSaved").innerHTML           = "temperature 1e-06";
+		document.getElementById("relSpecieSaved").innerHTML         = "specie 1e-10";
+		document.getElementById("relTempSaved").innerHTML           = "temperature 1e-07";
+		document.getElementById("constraintsSaved").innerHTML       = "Constraints true";
+		document.getElementById("odeSaved").innerHTML               = "ODE BzzMath";
+		document.getElementById("daeSaved").innerHTML               = "DAE BzzMath";
+		document.getElementById("inertSpecieSaved").innerHTML       = "inert " + inert;
+
+		if ( specieN[0] != "Name" )
+		{
+			document.getElementById("specie1Saved").innerHTML           = specieN[0] + " " + specieV[0];
+		}
+		else
+		{
+			document.getElementById("specie1Saved").innerHTML           = " ";
+		}
+
+		if ( specieN[1] != "Name" )
+		{
+			document.getElementById("specie2Saved").innerHTML           = specieN[1] + " " + specieV[1];
+		}
+		else
+		{
+			document.getElementById("specie2Saved").innerHTML           = " ";
+		}
+
+		if ( specieN[2] != "Name" )
+		{
+			document.getElementById("specie3Saved").innerHTML           = specieN[2] + " " + specieV[2];
+		}
+		else
+		{
+			document.getElementById("specie3Saved").innerHTML           = " ";
+		}
+
+		if ( specieN[3] != "Name" )
+		{
+			document.getElementById("specie4Saved").innerHTML           = specieN[3] + " " + specieV[3];
+		}
+		else
+		{
+			document.getElementById("specie4Saved").innerHTML           = " ";
+		}
+
+		if ( specieN[4] != "Name" )
+		{
+			document.getElementById("specie5Saved").innerHTML           = specieN[4] + " " + specieV[4];
+		}
+		else
+		{
+			document.getElementById("specie5Saved").innerHTML           = " ";
+		}
+
+		if ( specieN[5] != "Name" )
+		{
+			document.getElementById("specie6Saved").innerHTML           = specieN[5] + " " + specieV[5];
+		}
+		else
+		{
+			document.getElementById("specie6Saved").innerHTML           = " ";
+		}
+
+		if ( specieN[6] != "Name" )
+		{
+			document.getElementById("specie7Saved").innerHTML           = specieN[6] + " " + specieV[6];
+		}
+		else
+		{
+			document.getElementById("specie7Saved").innerHTML           = " ";
+		}
+
+		if ( specieN[7] != "Name" )
+		{
+			document.getElementById("specie8Saved").innerHTML           = specieN[7] + " " + specieV[7];
+		}
+		else
+		{
+			document.getElementById("specie8Saved").innerHTML           = " ";
+		}
+
+		if ( specieN[8] != "Name" )
+		{
+			document.getElementById("specie9Saved").innerHTML           = specieN[8] + " " + specieV[8];
+		}
+		else
+		{
+			document.getElementById("specie9Saved").innerHTML           = " ";
+		}
+	}
+	
+</script>
+
+
+</body>
+</html>
