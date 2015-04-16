@@ -254,17 +254,14 @@
 	std::vector<double> IN;
 	std::vector<double> OUT;
 	{
-		double dummy;
-		OpenSMOKE::OpenSMOKEVectorDouble x(NC);
 		OpenSMOKE::OpenSMOKEVectorDouble h(NC);
 		thermodynamicsMapXML->SetPressure(input.getPressure());
 		thermodynamicsMapXML->SetTemperature(Tbulk[1]);
 		thermodynamicsMapXML->hMolar_Species(h);
-		thermodynamicsMapXML->MoleFractions_From_MassFractions(x,dummy,omegaBulk[0]);
 		for (unsigned int j=1;j<=NC;j++)
 		{
-			MassFluxIn += x[j]*G;
-			EnthalpyFluxIn += x[j]*h[j]*G;
+			MassFluxIn += omegaBulk[0][j]*G;
+			EnthalpyFluxIn += omegaBulk[0][j]*h[j]*G/thermodynamicsMapXML->MW()[j];
 		}
 
 		Eigen::MatrixXd SpecieAtomicComposition;
@@ -283,32 +280,31 @@
 		}
 	}
 
-	double dummy;
-	OpenSMOKE::OpenSMOKEVectorDouble x(NC);
-	OpenSMOKE::OpenSMOKEVectorDouble h(NC);
-	thermodynamicsMapXML->SetPressure(input.getPressure());
-	thermodynamicsMapXML->SetTemperature(Tbulk[N]);
-	thermodynamicsMapXML->hMolar_Species(h);
-	thermodynamicsMapXML->MoleFractions_From_MassFractions(x,dummy,omegaBulk[N-1]);
-	for (unsigned int j=1;j<=NC;j++)
 	{
-		MassFluxOut += x[j]*G;
-		EnthalpyFluxOut += x[j]*h[j]*G;
-	}
+		OpenSMOKE::OpenSMOKEVectorDouble h(NC);
+		thermodynamicsMapXML->SetPressure(input.getPressure());
+		thermodynamicsMapXML->SetTemperature(Tbulk[N]);
+		thermodynamicsMapXML->hMolar_Species(h);
+		for (unsigned int j=1;j<=NC;j++)
+		{
+			MassFluxOut += omegaBulk[N-1][j]*G;
+			EnthalpyFluxOut += omegaBulk[N-1][j]*h[j]*G/thermodynamicsMapXML->MW()[j];
+		}
 
-	Eigen::MatrixXd SpecieAtomicComposition;
-	Eigen::VectorXd Element;
-	std::vector<std::string> ElementsNames;
-	ElementsNames = thermodynamicsMapXML->elements();
-	SpecieAtomicComposition = thermodynamicsMapXML->atomic_composition();
-	Element.resize(NC);
-	OUT.resize(ElementsNames.size());
-	for (unsigned int k=0;k<ElementsNames.size();k++)
-	{
-		OUT[k] = 0.;
-		Element = SpecieAtomicComposition.col(k);
-		for (unsigned int j=0;j<NC;j++)
-			OUT[k] += omegaBulk[N-1][j+1]*G*Element[j]/thermodynamicsMapXML->MW()[j+1];
+		Eigen::MatrixXd SpecieAtomicComposition;
+		Eigen::VectorXd Element;
+		std::vector<std::string> ElementsNames;
+		ElementsNames = thermodynamicsMapXML->elements();
+		SpecieAtomicComposition = thermodynamicsMapXML->atomic_composition();
+		Element.resize(NC);
+		OUT.resize(ElementsNames.size());
+		for (unsigned int k=0;k<ElementsNames.size();k++)
+		{
+			OUT[k] = 0.;
+			Element = SpecieAtomicComposition.col(k);
+			for (unsigned int j=0;j<NC;j++)
+				OUT[k] += omegaBulk[N-1][j+1]*G*Element[j]/thermodynamicsMapXML->MW()[j+1];
+		}
 	}
 
 	if ( input.getStart() == "new" || input.getStart() == "latest" )
