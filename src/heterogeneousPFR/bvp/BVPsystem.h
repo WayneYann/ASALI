@@ -121,6 +121,7 @@ private:
 	double Dh_;
 	double Lcat_;
 	double Linert_;
+	double L_;
 	double AsymptoticSh_;
 	double alfa_;
 	double alfaTemp_;
@@ -291,7 +292,8 @@ void BVPSystem::setReactorGeometry( const double alfa,         const double epsi
 	Dh_				= Dh;
 	epsi_			= epsi;
 	Lcat_			= Lcat;
-	Linert_			= Linert;
+	L_				= Lcat_ + Linert;
+	Linert_			= Linert/L_;
 	AsymptoticSh_	= AsymptoticSh;
 	G_				= G;
 	av_				= 4.*epsi/Dh;
@@ -311,7 +313,7 @@ void BVPSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 {
 	ChangeDimensions(z.Size(), &z_, true);
 	for (unsigned int k=1;k<=z_.Size();k++)
-		z_[k] = z[k];
+		z_[k] = z[k]/L_;
 }
 
 void BVPSystem::HeatTransferCoefficient(const double z)
@@ -562,15 +564,15 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::FirstOrderDerivate (const OpenSMOKE:
 		{
 			if ( k == 1 )
 			{
-				dvalue_[k] = (value[k+1] - value[k])/(z_[k+1] - z_[k]);
+				dvalue_[k] = ((value[k+1] - value[k])/(z_[k+1] - z_[k]))/L_;
 			}
 			else if ( k == NP_ )
 			{
-				dvalue_[k] = (value[k] - value[k-1])/(z_[k] - z_[k-1]);
+				dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]))/L_;
 			}
 			else
 			{
-				dvalue_[k] = (value[k+1] - value[k-1])/(z_[k+1] - z_[k-1]);
+				dvalue_[k] = ((value[k+1] - value[k-1])/(z_[k+1] - z_[k-1]))/L_;
 			}
 		}
 	}
@@ -580,15 +582,15 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::FirstOrderDerivate (const OpenSMOKE:
 		{
 			if ( k == 1 )
 			{
-				dvalue_[k] = (value[k+1] - value[k])/(z_[k+1] - z_[k]);
+				dvalue_[k] = ((value[k+1] - value[k])/(z_[k+1] - z_[k]))/L_;
 			}
 			else if ( k == NP_ )
 			{
-				dvalue_[k] = (value[k] - value[k-1])/(z_[k] - z_[k-1]);
+				dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]))/L_;
 			}
 			else
 			{
-				dvalue_[k] = (value[k] - value[k-1])/(z_[k] - z_[k-1]);
+				dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]))/L_;
 			}
 		}
 	}
@@ -613,7 +615,7 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE
 			}
 			else
 			{
-				dvalue_[k] = (value[k+1]*(z_[k]-z_[k-1]) + value[k-1]*(z_[k+1]-z_[k]) - value[k]*(z_[k+1]-z_[k-1]))/(0.5*(z_[k+1]-z_[k-1])*(z_[k+1]-z_[k])*(z_[k]-z_[k-1]));
+				dvalue_[k] = ((value[k+1]*(z_[k]-z_[k-1]) + value[k-1]*(z_[k+1]-z_[k]) - value[k]*(z_[k+1]-z_[k-1]))/(0.5*(z_[k+1]-z_[k-1])*(z_[k+1]-z_[k])*(z_[k]-z_[k-1])))/(L_*L_);
 			}
 		}
 	}
@@ -631,7 +633,7 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE
 			}
 			else
 			{
-				dvalue_[k] = (value[k+1]*(z_[k]-z_[k-1]) + value[k-1]*(z_[k+1]-z_[k]) - value[k]*(z_[k+1]-z_[k-1]))/((z_[k+1]-z_[k])*(z_[k+1]-z_[k])*(z_[k]-z_[k-1]));
+				dvalue_[k] = ((value[k+1]*(z_[k]-z_[k-1]) + value[k-1]*(z_[k+1]-z_[k]) - value[k]*(z_[k+1]-z_[k-1]))/((z_[k+1]-z_[k])*(z_[k+1]-z_[k])*(z_[k]-z_[k-1])))/(L_*L_);
 			}
 		}
 	}

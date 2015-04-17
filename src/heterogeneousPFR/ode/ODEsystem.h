@@ -111,6 +111,7 @@ private:
 	double Dh_;
 	double Lcat_;
 	double Linert_;
+	double L_;
 	double AsymptoticSh_;
 	double alfa_;
 	double alfaTemp_;
@@ -243,7 +244,8 @@ void ODESystem::setReactorGeometry( const double alfa,         const double epsi
 	Dh_				= Dh;
 	epsi_			= epsi;
 	Lcat_			= Lcat;
-	Linert_			= Linert;
+	L_				= Lcat_ + Linert;
+	Linert_			= Linert/L_;
 	AsymptoticSh_	= AsymptoticSh;
 	G_				= G;
 	av_				= 4.*epsi/Dh;
@@ -263,7 +265,7 @@ void ODESystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 {
 	ChangeDimensions(z.Size(), &z_, true);
 	for (unsigned int k=1;k<=z_.Size();k++)
-		z_[k] = z[k];
+		z_[k] = z[k]/L_;
 }
 
 void ODESystem::MassTransferCoefficient(const double z)

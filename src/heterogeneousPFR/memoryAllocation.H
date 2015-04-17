@@ -65,6 +65,4 @@ double T0               = 0;
 bool grow               = false;
 bool ended              = false;
 
-std::string discretizationScheme = "FDS";
-
-std::vector<double> NJvector;
+std::string discretizationScheme = "BDS";

@@ -311,16 +311,9 @@
 	if ( grow == true) 
 	{
 		NJ++;
-		NJvector.resize(NJ);
-		NJvector[NJ-1] = (EnthalpyFluxIn - EnthalpyFluxOut)/EnthalpyFluxIn;
-		
 		if ( NJ > 1 )
 		{
-			if ( fabs(NJvector[NJ-1]) <= input.getEnergyError() )
-			{
-				discretizationScheme = "CDS";
-			}
-			else if ( fabs(NJvector[NJ-1] - NJvector[NJ-2]) <= 0.01 )
+			if ( fabs((EnthalpyFluxIn - EnthalpyFluxOut)/EnthalpyFluxIn) <= input.getEnergyError() )
 			{
 				discretizationScheme = "CDS";
 			}
