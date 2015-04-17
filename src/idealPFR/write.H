@@ -190,15 +190,12 @@
 		std::vector<double> OUT;
 
 		{
-			double MW;
-			OpenSMOKE::OpenSMOKEVectorDouble x(NC);
 			thermodynamicsMapXML->SetPressure(input.getPressure());
 			thermodynamicsMapXML->SetTemperature(input.getTemperature());
-			thermodynamicsMapXML->MoleFractions_From_MassFractions(x,MW,x0bulk);
 			MassFluxIn = 0.;
 			for (unsigned int j=1;j<=NC;j++)
 			{
-				MassFluxIn += x[j]*G;
+				MassFluxIn += x0bulk[j]*G;
 			}
 
 			Eigen::MatrixXd SpecieAtomicComposition;
@@ -218,15 +215,12 @@
 		}
 
 		{
-			double MW;
-			OpenSMOKE::OpenSMOKEVectorDouble x(NC);
 			thermodynamicsMapXML->SetPressure(input.getPressure());
 			thermodynamicsMapXML->SetTemperature(input.getTemperature());
-			thermodynamicsMapXML->MoleFractions_From_MassFractions(x,MW,omegaBulk);
-			MassFluxOut = 0.;
+				MassFluxOut = 0.;
 			for (unsigned int j=1;j<=NC;j++)
 			{
-				MassFluxOut += x[j]*G;
+				MassFluxOut += omegaBulk[j]*G;
 			}
 
 			Eigen::MatrixXd SpecieAtomicComposition;
