@@ -56,13 +56,11 @@ public:
 
 	#include "vector.h"
 
-	void setSolid(const double rhoSolid, const double condSolid, const double cpSolid);
-
 	void setHomogeneusReactions(const bool flag)   { homogeneusReactions_ = flag; }
 
 	void setHeterogeneusReactions(const bool flag) { heterogeneusReactions_ = flag; }
 
-	void setEnergyEquation(const bool flag)        { energy_ = flag; }
+	void setDiffusion(const bool flag)             { gasDiffusion_ = flag; }
 
 	void setReactorGeometry( const double alfa,      const double epsi, 
 							 const double AsymptoticSh, const double Lcat, const double Linert,
@@ -122,13 +120,6 @@ private:
 	double h_;
 	double t_;
 
-	double rhoSolid_;
-	double cpSolid_;
-	double condSolid_;
-	double newCondSolid_;
-
-	double QfromGas_;
-	double QfromSurface_;
 
 	unsigned int NC_;
 	unsigned int SURF_NP_;
@@ -143,7 +134,7 @@ private:
 
 	bool homogeneusReactions_ ;
 	bool heterogeneusReactions_;
-	bool energy_;
+	bool gasDiffusion_;
 
 	OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&			thermodynamicsMap_;				//!< thermodynamic map
 	OpenSMOKE::KineticsMap_CHEMKIN<double>&					kineticsMap_;					//!< kinetic map
@@ -154,20 +145,16 @@ private:
 	OpenSMOKE::OpenSMOKEVectorDouble *omegaBulk_;
 	OpenSMOKE::OpenSMOKEVectorDouble *omegaWall_;
 
-	OpenSMOKE::OpenSMOKEVectorDouble *jGas_;
 	OpenSMOKE::OpenSMOKEVectorDouble *jSolid_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble *teta_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  Tbulk_;
 	OpenSMOKE::OpenSMOKEVectorDouble  Twall_;
-	OpenSMOKE::OpenSMOKEVectorDouble  jbulk_;
-	OpenSMOKE::OpenSMOKEVectorDouble  jwall_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  x0bulk_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  z_;
-	OpenSMOKE::OpenSMOKEVectorDouble  Dz_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble RfromGas_;
 	OpenSMOKE::OpenSMOKEVectorDouble RfromSurface_;
@@ -185,7 +172,6 @@ private:
 	OpenSMOKE::OpenSMOKEVectorDouble dyOS_;
 	OpenSMOKE::OpenSMOKEVectorDouble  yOS_;
 
-	void HeatTransferCoefficient(const double z);
 	void MassTransferCoefficient(const double z);
 
 };
@@ -214,7 +200,6 @@ void ODESystem::resize(const unsigned int NP)
 	NE_ = (NC_ + NC_ + SURF_NC_ + 1 + 1)*NP_;
 	
 	omegaBulk_     = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
-	jGas_          = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
 	jSolid_        = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
 	omegaWall_     = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
 	teta_          = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
@@ -223,7 +208,6 @@ void ODESystem::resize(const unsigned int NP)
 	{
 		ChangeDimensions(NC_, &omegaBulk_[i], true);
 		ChangeDimensions(NC_, &omegaWall_[i], true);
-		ChangeDimensions(NC_, &jGas_[i],      true);
 		ChangeDimensions(NC_, &jSolid_[i],    true);
 		ChangeDimensions(SURF_NC_, &teta_[i], true);
 	}
@@ -234,8 +218,6 @@ void ODESystem::resize(const unsigned int NP)
 
 	ChangeDimensions(NP_, &Tbulk_, true);
 	ChangeDimensions(NP_, &Twall_, true);
-	ChangeDimensions(NP_, &jbulk_, true);
-	ChangeDimensions(NP_, &jwall_, true);
 
 	ChangeDimensions(NC_, &xBulk_, true);
 	ChangeDimensions(NC_, &xWall_, true);
@@ -246,13 +228,6 @@ void ODESystem::resize(const unsigned int NP)
 
 	ChangeDimensions(NE_, &dyOS_, true);
 	ChangeDimensions(NE_, &yOS_, true);
-}
-
-void ODESystem::setSolid(const double rhoSolid, const double condSolid, const double cpSolid)
-{
-	rhoSolid_	= rhoSolid;
-	condSolid_	= condSolid;
-	cpSolid_	= cpSolid;
 }
 
 void ODESystem::setInert(const std::string inert)
@@ -289,33 +264,6 @@ void ODESystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 	ChangeDimensions(z.Size(), &z_, true);
 	for (unsigned int k=1;k<=z_.Size();k++)
 		z_[k] = z[k];
-	
-	ChangeDimensions((NP_- 1), &Dz_, true);
-	for (unsigned int k=1;k<=Dz_.Size();k++)
-		Dz_[k] = z_[k+1] - z_[k];
-}
-
-void ODESystem::HeatTransferCoefficient(const double z)
-{
-	double Re = G_*Dh_/(etaMix_*epsi_);
-	double Pr = cp_*etaMix_/condBulk_;
-
-	double Nu;
-	double zNew;
-	double zStar;
-	if ( z > Linert_)
-	{
-		zNew  = std::max( z - Linert_, 1e-06);
-		zStar = zNew/(Dh_*Re*Pr);
-		zStar = fabs(zStar);
-		Nu    = AsymptoticSh_ + 8.827*pow((1000.*zStar),-0.545)*exp(-48.2*zStar);
-	}
-	else
-	{
-		Nu = AsymptoticSh_;
-	}
-
-	h_ = Nu*condBulk_/Dh_;
 }
 
 void ODESystem::MassTransferCoefficient(const double z)
@@ -393,7 +341,6 @@ void ODESystem::end()
 {
 	delete [] omegaBulk_;
 	delete [] omegaWall_;
-	delete [] jGas_;
 	delete [] jSolid_;
 	delete [] teta_;
 	std::cout << "\n######################################" << std::endl;

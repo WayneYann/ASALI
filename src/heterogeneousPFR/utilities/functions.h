@@ -92,6 +92,13 @@ namespace ASALI
 			exit(EXIT_FAILURE);
 		}
 	}
+	
+	void discretizationSchemeOnScreen(const std::string scheme)
+	{
+		std::cout << "\n#################################" << std::endl;
+		std::cout << "# Discretization scheme:    " << scheme << " #" << std::endl;
+		std::cout << "#################################" << std::endl;
+	}
 
     template < typename T > std::string to_string( const T& v )
     {

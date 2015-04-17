@@ -43,6 +43,7 @@ if ( input.getOdeSolver() == "BzzMath")
 	#if ASALI_USE_BZZ == 1
 	bvp->resize(N);
 	bvp->setGrid(z);
+	bvp->setDiscretizationScheme(discretizationScheme);
 
 	BzzVector yFbzz;
 	BzzVector x0bzz;

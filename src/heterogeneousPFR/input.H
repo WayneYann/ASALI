@@ -89,12 +89,19 @@ ASALI::GROWgrid  *growGrid;
 	}
 
 	{
+		discretizationScheme = input.getDiscretizationScheme();
+		ASALI::discretizationSchemeOnScreen(discretizationScheme);
+	}
+
+	{
 		unsigned int WP = 6;
 		std::cout.setf(std::ios::scientific);
 		std::cout.precision(WP);
 	}
 
-	grow = input.getGridType();
+	{
+		grow = input.getGridType();
+	}
 }
 
 {
@@ -351,12 +358,12 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
 
 	ode->setHomogeneusReactions(input.getHomogeneousReactions());
 	ode->setHeterogeneusReactions(input.getHeterogenousReactions());
-	ode->setEnergyEquation(input.getEnergy());
 	ode->setReactorGeometry(input.getAlfa(),             input.getVoidFraction(), input.getSherwood(),
 							 input.getCatalyticLength(),  input.getInertLength(),
 							 input.getChannelDiameter(),  G);
 	ode->setFeedValue(input.getPressure(),T0,x0bulk);
 	ode->setInert(input.getInert());
+	ode->setDiffusion(input.getDiffusion());
 
 	bvp = new ASALI::BVPSystem(*thermodynamicsMapXML,        *kineticsMapXML,
 							   *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
@@ -371,6 +378,8 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
 							input.getChannelDiameter(),  G);
 	bvp->setFeedValue(input.getPressure(),T0,x0bulk);
 	bvp->setInert(input.getInert());
+	bvp->setDiffusion(input.getDiffusion());
+	
 
 	growGrid = new ASALI::GROWgrid(NC, SURF_NC);
 

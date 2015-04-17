@@ -256,12 +256,12 @@
 	{
 		OpenSMOKE::OpenSMOKEVectorDouble h(NC);
 		thermodynamicsMapXML->SetPressure(input.getPressure());
-		thermodynamicsMapXML->SetTemperature(Tbulk[1]);
+		thermodynamicsMapXML->SetTemperature(T0);
 		thermodynamicsMapXML->hMolar_Species(h);
 		for (unsigned int j=1;j<=NC;j++)
 		{
-			MassFluxIn += omegaBulk[0][j]*G;
-			EnthalpyFluxIn += omegaBulk[0][j]*h[j]*G/thermodynamicsMapXML->MW()[j];
+			MassFluxIn += x0bulk[j]*G;
+			EnthalpyFluxIn += x0bulk[j]*h[j]*G/thermodynamicsMapXML->MW()[j];
 		}
 
 		Eigen::MatrixXd SpecieAtomicComposition;
@@ -276,7 +276,7 @@
 			IN[k] = 0.;
 			Element = SpecieAtomicComposition.col(k);
 			for (unsigned int j=0;j<NC;j++)
-				IN[k] += omegaBulk[0][j+1]*G*Element[j]/thermodynamicsMapXML->MW()[j+1];
+				IN[k] += x0bulk[j+1]*G*Element[j]/thermodynamicsMapXML->MW()[j+1];
 		}
 	}
 
@@ -307,9 +307,30 @@
 		}
 	}
 
+	//- Change discretization schemes to CDS
+	if ( grow == true) 
+	{
+		NJ++;
+		NJvector.resize(NJ);
+		NJvector[NJ-1] = (EnthalpyFluxIn - EnthalpyFluxOut)/EnthalpyFluxIn;
+		
+		if ( NJ > 1 )
+		{
+			if ( fabs(NJvector[NJ-1]) <= input.getEnergyError() )
+			{
+				discretizationScheme = "CDS";
+			}
+			else if ( fabs(NJvector[NJ-1] - NJvector[NJ-2]) <= 0.01 )
+			{
+				discretizationScheme = "CDS";
+			}
+		}
+	}
+
 	if ( input.getStart() == "new" || input.getStart() == "latest" )
 	{
 		extra << "Results written in:        " << results << " fractions\n" << std::endl; 
+		extra << "Discretization scheme:     " << discretizationScheme << "\n" << std::endl;  
 		extra << "Number of grid point     = " << N << "\n" << std::endl; 
 		extra << "Mass flux IN             = " << MassFluxIn << "	[Kg/m2/s]" << std::endl;
 		extra << "Mass flux OUT            = " << MassFluxOut << "	[Kg/m2/s]\n" << std::endl;
@@ -317,7 +338,6 @@
 		extra << "Enthalpy flux IN         = " << EnthalpyFluxIn << "	[W/m2]" << std::endl;
 		extra << "Enthalpy flux OUT        = " << EnthalpyFluxOut << "	[W/m2]\n" << std::endl;
 		extra << "ERROR on ENERGY BALANCE  = " << (EnthalpyFluxIn - EnthalpyFluxOut)*100./EnthalpyFluxIn << "	[%]\n" << std::endl;
-		
 		extra << "\nATOMIC BALANCE               " << std::endl;
 		for (unsigned int k=0;k<IN.size();k++)
 		{
@@ -363,8 +383,8 @@
 	}
 	else if ( input.getStart() == "converter" )
 	{
-		extra << "Results written in:        " << results << " fractions\n" << std::endl; 
-		extra << "Number of grid point     = " << N << "\n" << std::endl; 
+		extra << "Results written in:        " << results << " fractions\n" << std::endl;
+		extra << "Number of grid point     = " << N << "\n" << std::endl;
 		extra << "Mass flux IN             = " << MassFluxIn << "	[Kg/m2/s]" << std::endl;
 		extra << "Mass flux OUT            = " << MassFluxOut << "	[Kg/m2/s]\n" << std::endl;
 		extra << "ERROR on MASS BALANCE    = " << (MassFluxIn - MassFluxOut)*100./MassFluxIn << "	[%]\n" << std::endl;

@@ -56,6 +56,46 @@
 		t_ = t;
 	}
 
+	//- Create derivate
+	{
+		//- Temperature
+		cbulk_ = FirstOrderDerivate(Tbulk_);
+		jbulk_ = SecondOrderDerivate(Tbulk_);
+		jwall_ = SecondOrderDerivate(Twall_);
+
+		//- Species
+		OpenSMOKE::OpenSMOKEVectorDouble omegagas_(NP_);
+		OpenSMOKE::OpenSMOKEVectorDouble cgas_(NP_);
+		OpenSMOKE::OpenSMOKEVectorDouble jgas_(NP_);
+		for (unsigned int j=1;j<=NC_;j++)
+		{
+			for (unsigned int i=0;i<NP_;i++)
+			{
+				omegagas_[i+1]   = omegaBulk_[i][j];
+			}
+
+			cgas_   = FirstOrderDerivate(omegagas_);
+
+			if ( gasDiffusion_ == true )
+			{
+				jgas_   = SecondOrderDerivate(omegagas_);
+			}
+			else
+			{
+				for (unsigned int i=0;i<NP_;i++)
+				{
+					jgas_[i+1]   = 0.;
+				}
+			}
+
+			for (unsigned int i=0;i<NP_;i++)
+			{
+				cGas_[i][j] = cgas_[i+1];
+				jGas_[i][j] = jgas_[i+1];
+			}
+		}
+	}
+
 	unsigned int counter = 1;
 	for (unsigned int i=0;i<NP_;i++)
 	{
@@ -96,23 +136,6 @@
 
 		// Diffusity [m2/s]
 		transportMap_.MassDiffusionCoefficients(diffG_, xBulk_);
-
-		// Fluxes in gas[m/s]
-		for (unsigned int j=1;j<=NC_;j++)
-		{
-			if ( i == 0)
-			{
-				jGas_[i][j] = 0.;
-			}
-			else if ( i == (NP_ - 1) )
-			{
-				jGas_[i][j] = 0.;
-			}
-			else
-			{
-				jGas_[i][j] = (omegaBulk_[i+1][j]*Dz_[i+1-1] + omegaBulk_[i-1][j]*Dz_[i+1+1-1]-omegaBulk_[i][j]*(Dz_[i+1+1-1]+Dz_[i+1-1]))/(Dz_[i+1+1-1]*Dz_[i+1+1-1]*Dz_[i+1-1]);
-			}
-		}
 
 		// Viscosity [kg/m/s]
 		transportMap_.DynamicViscosity(etaMix_, xBulk_);
@@ -200,33 +223,6 @@
 		//Solid conductivity
 		newCondSolid_ = condSolid_ + (16./3.)*(5.67*1.e-08)*((1.12*Dh_)/2.)*std::pow(Twall_[i+1],3.);
 
-		//Gas thermal flux
-		if (i==0)
-		{
-			jbulk_[i+1] = 0.;
-		}
-		else if( i == (NP_ - 1) )
-		{
-			jbulk_[i+1] = 0.;
-		}
-		else
-		{
-			jbulk_[i+1] = (Tbulk_[i+1+1]*Dz_[i+1-1] + Tbulk_[i-1+1]*Dz_[i+1+1-1]-Tbulk_[i+1]*(Dz_[i+1+1-1]+Dz_[i+1-1]))/(Dz_[i+1+1-1]*Dz_[i+1+1-1]*Dz_[i+1-1]);
-		}
-		
-		//Solid thermal flux
-		if (i==0)
-		{
-			jwall_[i+1] = 0.;
-		}
-		else if( i == (NP_ - 1) )
-		{
-			jwall_[i+1] = 0.;
-		}
-		else
-		{
-			jwall_[i+1] = (Twall_[i+1+1]*Dz_[i+1-1] + Twall_[i-1+1]*Dz_[i+1+1-1]-Twall_[i+1]*(Dz_[i+1+1-1]+Dz_[i+1-1]))/(Dz_[i+1+1-1]*Dz_[i+1+1-1]*Dz_[i+1-1]);
-		}
 
 		//- Equations
 		if(i==0)
@@ -236,7 +232,14 @@
 			{
 				if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
 				{
-					dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*(x0bulk_[j] - omegaBulk_[i][j]); //- (diffG_[j]*rhoBulk_/(G_*epsi_))*((omegaBulk_[i+1][j]-omegaBulk_[i][j])/Dz_[i-1+1]);// ALGEBRAIC
+					if ( gasDiffusion_ == true )
+					{
+						dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j] + (diffG_[j]*rhoBulk_/(G_*epsi_))*(omegaBulk_[i+1][j]-omegaBulk_[i][j])/(z_[i+1+1] - z_[i+1]);// ALGEBRAIC
+					}
+					else
+					{
+						dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j];// ALGEBRAIC
+					}
 				}
 				else
 				{
@@ -265,7 +268,7 @@
 					dyOS_[counter++] = 1. - teta_[i].SumElements();
 				}
 			}
-			dyOS_[counter++] = T0_ - Tbulk_[i+1] + (condBulk_/(G_*cp_))*((Tbulk_[i+1+1]-Tbulk_[i+1])/Dz_[i+1]); // ALGEBRAIC
+			dyOS_[counter++] = T0_ - Tbulk_[i+1] + (condBulk_/(G_*cp_))*(Tbulk_[i+1+1]-Tbulk_[i+1])/(z[i+1+1] - z[i+1]); // ALGEBRAIC
 			dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
 		}
 		else if (i==(NP_-1))
@@ -275,7 +278,7 @@
 			{
 				if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
 				{
-					dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*((omegaBulk_[i][j]-omegaBulk_[i-1][j])/Dz_[i-1+1]); // ALGEBRAIC
+					dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*(omegaBulk_[i][j]-omegaBulk_[i-1][j])/(z_[i+1] - z[i]); // ALGEBRAIC
 				}
 				else
 				{
@@ -313,7 +316,7 @@
 			{
 				if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
 				{
-					dyOS_[counter++] = (-G_/(rhoBulk_*epsi_))*((omegaBulk_[i][j]-omegaBulk_[i-1][j])/Dz_[i-1+1])
+					dyOS_[counter++] = (-G_/(rhoBulk_*epsi_))*cGas_[i][j]
 									 + diffG_[j]*jGas_[i][j]/epsi_
 									 - av_*rhoBulk_*jSolid_[i][j]/(epsi_*rhoBulk_)
 									 + RfromGas_[j]/rhoBulk_; //DIFFERENTIAL
@@ -347,7 +350,7 @@
 			}
 			if (energy_ == true)
 			{
-				dyOS_[counter++] =(- G_/(rhoBulk_*epsi_))*((Tbulk_[i+1]-Tbulk_[i-1+1])/Dz_[i-1+1])
+				dyOS_[counter++] =(- G_/(rhoBulk_*epsi_))*cbulk_[i+1]
 							       + (condBulk_/(rhoBulk_*cp_))*jbulk_[i+1]/epsi_
 								   - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_*cp_) 
 							       + QfromGas_/(rhoBulk_*cp_*epsi_);//DIFFERENTIAL

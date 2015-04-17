@@ -53,13 +53,18 @@ OpenSMOKE::OpenSMOKEVectorDouble x0bulk;
 OpenSMOKE::OpenSMOKEVectorDouble x0wall;
 OpenSMOKE::OpenSMOKEVectorDouble x0site;
 
-unsigned int N;
-unsigned int NC;
-unsigned int NE;
-unsigned int SURF_NC;
+unsigned int N          = 0;
+unsigned int NC         = 0;
+unsigned int NE         = 0;
+unsigned int SURF_NC    = 0;
+unsigned int NJ         = 0;
 
-double G;
-double T0;
+double G                = 0;
+double T0               = 0;
 
-bool grow;
-bool ended;
+bool grow               = false;
+bool ended              = false;
+
+std::string discretizationScheme = "FDS";
+
+std::vector<double> NJvector;

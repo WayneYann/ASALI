@@ -63,6 +63,10 @@ public:
 	void setHeterogeneusReactions(const bool flag) { heterogeneusReactions_ = flag; }
 
 	void setEnergyEquation(const bool flag)        { energy_ = flag; }
+	
+	void setDiffusion(const bool flag)             { gasDiffusion_ = flag; }
+
+	void setDiscretizationScheme(const std::string discretizationScheme);
 
 	void setReactorGeometry( const double alfa,      const double epsi, 
 							 const double AsymptoticSh, const double Lcat, const double Linert,
@@ -144,10 +148,12 @@ private:
 	unsigned int iteration;
 
 	std::string inert_;
+	std::string discretizationScheme_;
 
 	bool homogeneusReactions_ ;
 	bool heterogeneusReactions_;
 	bool energy_;
+	bool gasDiffusion_;
 
 	OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&			thermodynamicsMap_;				//!< thermodynamic map
 	OpenSMOKE::KineticsMap_CHEMKIN<double>&					kineticsMap_;					//!< kinetic map
@@ -159,6 +165,7 @@ private:
 	OpenSMOKE::OpenSMOKEVectorDouble *omegaWall_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble *jGas_;
+	OpenSMOKE::OpenSMOKEVectorDouble *cGas_;
 	OpenSMOKE::OpenSMOKEVectorDouble *jSolid_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble *teta_;
@@ -166,12 +173,12 @@ private:
 	OpenSMOKE::OpenSMOKEVectorDouble  Tbulk_;
 	OpenSMOKE::OpenSMOKEVectorDouble  Twall_;
 	OpenSMOKE::OpenSMOKEVectorDouble  jbulk_;
+	OpenSMOKE::OpenSMOKEVectorDouble  cbulk_;
 	OpenSMOKE::OpenSMOKEVectorDouble  jwall_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  x0bulk_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble  z_;
-	OpenSMOKE::OpenSMOKEVectorDouble  Dz_;
 
 	OpenSMOKE::OpenSMOKEVectorDouble RfromGas_;
 	OpenSMOKE::OpenSMOKEVectorDouble RfromSurface_;
@@ -192,6 +199,8 @@ private:
 
 	void HeatTransferCoefficient(const double z);
 	void MassTransferCoefficient(const double z);
+	OpenSMOKE::OpenSMOKEVectorDouble FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value);
+	OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value);
 
 };
 
@@ -220,6 +229,7 @@ void BVPSystem::resize(const unsigned int NP)
 	
 	omegaBulk_     = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
 	jGas_          = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
+	cGas_          = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
 	jSolid_        = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
 	omegaWall_     = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
 	teta_          = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
@@ -229,6 +239,7 @@ void BVPSystem::resize(const unsigned int NP)
 		ChangeDimensions(NC_, &omegaBulk_[i], true);
 		ChangeDimensions(NC_, &omegaWall_[i], true);
 		ChangeDimensions(NC_, &jGas_[i],      true);
+		ChangeDimensions(NC_, &cGas_[i],      true);
 		ChangeDimensions(NC_, &jSolid_[i],    true);
 		ChangeDimensions(SURF_NC_, &teta_[i], true);
 	}
@@ -240,6 +251,7 @@ void BVPSystem::resize(const unsigned int NP)
 	ChangeDimensions(NP_, &Tbulk_, true);
 	ChangeDimensions(NP_, &Twall_, true);
 	ChangeDimensions(NP_, &jbulk_, true);
+	ChangeDimensions(NP_, &cbulk_, true);
 	ChangeDimensions(NP_, &jwall_, true);
 	ChangeDimensions(NP_, &v_,     true);
 
@@ -264,6 +276,11 @@ void BVPSystem::setSolid(const double rhoSolid, const double condSolid, const do
 void BVPSystem::setInert(const std::string inert)
 {
 	inert_		= inert;
+}
+
+void BVPSystem::setDiscretizationScheme(const std::string discretizationScheme)
+{
+	discretizationScheme_ = discretizationScheme;
 }
 
 void BVPSystem::setReactorGeometry( const double alfa,         const double epsi, 
@@ -295,10 +312,6 @@ void BVPSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 	ChangeDimensions(z.Size(), &z_, true);
 	for (unsigned int k=1;k<=z_.Size();k++)
 		z_[k] = z[k];
-	
-	ChangeDimensions((NP_- 1), &Dz_, true);
-	for (unsigned int k=1;k<=Dz_.Size();k++)
-		Dz_[k] = z_[k+1] - z_[k];
 }
 
 void BVPSystem::HeatTransferCoefficient(const double z)
@@ -531,11 +544,98 @@ void BVPSystem::end()
 	delete [] omegaBulk_;
 	delete [] omegaWall_;
 	delete [] jGas_;
+	delete [] cGas_;
 	delete [] jSolid_;
 	delete [] teta_;
 	std::cout << "\n######################################" << std::endl;
 	std::cout << "# DAE system:                 END    #" << std::endl;
 	std::cout << "######################################\n" << std::endl;
+}
+
+OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value)
+{
+	OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
+
+	if ( discretizationScheme_ == "CDS" )
+	{
+		for (unsigned int k=1;k<=NP_;k++)
+		{
+			if ( k == 1 )
+			{
+				dvalue_[k] = (value[k+1] - value[k])/(z_[k+1] - z_[k]);
+			}
+			else if ( k == NP_ )
+			{
+				dvalue_[k] = (value[k] - value[k-1])/(z_[k] - z_[k-1]);
+			}
+			else
+			{
+				dvalue_[k] = (value[k+1] - value[k-1])/(z_[k+1] - z_[k-1]);
+			}
+		}
+	}
+	else if ( discretizationScheme_ == "BDS" )
+	{
+		for (unsigned int k=1;k<=NP_;k++)
+		{
+			if ( k == 1 )
+			{
+				dvalue_[k] = (value[k+1] - value[k])/(z_[k+1] - z_[k]);
+			}
+			else if ( k == NP_ )
+			{
+				dvalue_[k] = (value[k] - value[k-1])/(z_[k] - z_[k-1]);
+			}
+			else
+			{
+				dvalue_[k] = (value[k] - value[k-1])/(z_[k] - z_[k-1]);
+			}
+		}
+	}
+	return dvalue_;
+}
+
+OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value)
+{
+	OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
+
+	if ( discretizationScheme_ == "CDS" )
+	{
+		for (unsigned int k=1;k<=NP_;k++)
+		{
+			if ( k == 1 )
+			{
+				dvalue_[k] = 0.;
+			}
+			else if ( k == NP_ )
+			{
+				dvalue_[k] = 0.;
+			}
+			else
+			{
+				dvalue_[k] = (value[k+1]*(z_[k]-z_[k-1]) + value[k-1]*(z_[k+1]-z_[k]) - value[k]*(z_[k+1]-z_[k-1]))/(0.5*(z_[k+1]-z_[k-1])*(z_[k+1]-z_[k])*(z_[k]-z_[k-1]));
+			}
+		}
+	}
+	else if ( discretizationScheme_ == "BDS" )
+	{
+		for (unsigned int k=1;k<=NP_;k++)
+		{
+			if ( k == 1 )
+			{
+				dvalue_[k] = 0.;
+			}
+			else if ( k == NP_ )
+			{
+				dvalue_[k] = 0.;
+			}
+			else
+			{
+				dvalue_[k] = (value[k+1]*(z_[k]-z_[k-1]) + value[k-1]*(z_[k+1]-z_[k]) - value[k]*(z_[k+1]-z_[k-1]))/((z_[k+1]-z_[k])*(z_[k+1]-z_[k])*(z_[k]-z_[k-1]));
+			}
+		}
+	}
+	return dvalue_;
 }
 
 }

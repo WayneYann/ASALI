@@ -123,6 +123,13 @@ p {
 <input type="button" id="clearEnergy"            onclick="claerEnergyFunction()"              value="clear">
 <input type="button" id="infoEnergy"             onclick="infoEnergyFunction()"               value="info">
 </p>
+<!--Gas diffusion-->
+<p><br>
+<input type="text"   id="diffusion"                                                           value="Gas diffusion">
+<input type="button" id="saveDiffusion"          onclick="saveDiffusionFunction()"            value="save">
+<input type="button" id="clearDiffusion"         onclick="claerDiffusionFunction()"           value="clear">
+<input type="button" id="infoDiffusion"          onclick="infoDiffusionFunction()"            value="info">
+</p>
 <!--Homogeneous reactions-->
 <p><br>
 <input type="text"   id="homo"                                                                value="Homogeneous reactions">
@@ -278,6 +285,7 @@ p {
 		<p id="relTempSaved"></p>
 	<p id="closeRel"></p>
 	<p id="energySaved"></p>
+	<p id="diffSaved"></p>
 	<p id="reactions"></p>
 	<p id="openReactions"></p>
 		<p id="homoSaved"></p>
@@ -290,8 +298,13 @@ p {
 		<p id="maxSaved"></p>
 		<p id="addSaved"></p>
 		<p id="resSaved"></p>
-		<p id="errSaved"></p>
+		<p id="schemeSaved"></p>
 	<p id="closeGrid"></p>
+	<p id="err"></p>
+	<p id="openErr"></p>
+		<p id="errGridSaved"></p>
+		<p id="errTempSaved"></p>
+	<p id="closeErr"></p>
 	<p id="tMaxSaved"></p>
 	<p id="resultsSaved"></p>
 <p id="closeSolver"></p>
@@ -528,6 +541,21 @@ p {
 		alert("Energy equation switched on/off\n\nExample: on");
 	}
 
+	//- Gas diffusion
+	var diff = "not defined";
+	function saveDiffusionFunction()
+	{
+		diff = document.getElementById("diffusion").value;
+	}
+	function claerDiffusionFunction()
+	{
+		document.getElementById("diffusion").value = "Gas diffusion";
+	}
+	function infoDiffusionFunction()
+	{
+		alert("Diffusion in gas phase switched on/off\n\nExample: on");
+	}
+
 	//- Homogeneous reactions
 	var homo = "not defined";
 	function saveHomoFunction()
@@ -694,6 +722,7 @@ p {
 		results      = document.getElementById("results").value;
 		feed         = document.getElementById("feed").value;
 		inert        = document.getElementById("inert").value;
+		diff         = document.getElementById("diffusion").value;
 
 		specieV[0] = document.getElementById("specie1v").value;
 		specieV[1] = document.getElementById("specie2v").value;
@@ -750,6 +779,7 @@ p {
 		document.getElementById("results").value                 = "Results";
 		document.getElementById("feed").value                    = "Feed fraction";
 		document.getElementById("inert").value                   = "Inert specie";
+		document.getElementById("diffusion").value               = "Gas diffusion";
 
 		document.getElementById("specie1v").value = "Value";
 		document.getElementById("specie2v").value = "Value";
@@ -788,6 +818,7 @@ p {
 		document.getElementById("rel").innerHTML           = "Relative tollerance";
 		document.getElementById("numerical").innerHTML     = "Numerical solvers";
 		document.getElementById("feedSaved").innerHTML     = feed + " fractions";
+		document.getElementById("err").innerHTML           = "Accepted errors";
 
 		document.getElementById("openTemperature").innerHTML   = "{";
 		document.getElementById("openReactor").innerHTML       = "{";
@@ -798,6 +829,7 @@ p {
 		document.getElementById("openGrid").innerHTML          = "(";
 		document.getElementById("openAbs").innerHTML           = "(";
 		document.getElementById("openRel").innerHTML           = "(";
+		document.getElementById("openErr").innerHTML           = "(";
 		document.getElementById("openNumerical").innerHTML     = "{";
 		document.getElementById("openFeed").innerHTML          = "{";
 
@@ -810,6 +842,7 @@ p {
 		document.getElementById("closeGrid").innerHTML         = ")";
 		document.getElementById("closeAbs").innerHTML          = ")";
 		document.getElementById("closeRel").innerHTML          = ")";
+		document.getElementById("closeErr").innerHTML          = ")";
 		document.getElementById("closeNumerical").innerHTML    = "}";
 		document.getElementById("closeFeed").innerHTML         = "}";
 
@@ -840,6 +873,7 @@ p {
 		document.getElementById("solidCondSaved").innerHTML         = "conductivity 2.5  W/m/K";
 		document.getElementById("solidCpSaved").innerHTML           = "specific heat 925 J/Kg/K";
 		document.getElementById("energySaved").innerHTML            = "Energy equation " + energy;
+		document.getElementById("diffSaved").innerHTML              = "Diffusion in gas " + diff;
 		document.getElementById("homoSaved").innerHTML              = "Homogeneous " + homo;
 		document.getElementById("hetSaved").innerHTML               = "Heterogeneous " + het;
 		document.getElementById("tMaxSaved").innerHTML              = "Integration time " + tMax;
@@ -849,7 +883,7 @@ p {
 		document.getElementById("maxSaved").innerHTML               = "Maximum number of points 800";
 		document.getElementById("addSaved").innerHTML               = "Add number of points 300";
 		document.getElementById("resSaved").innerHTML               = "Resolution type new";
-		document.getElementById("errSaved").innerHTML               = "Accepted error 1e-08";
+		document.getElementById("schemeSaved").innerHTML            = "Discretization scheme BDS";
 		document.getElementById("absSpecieSaved").innerHTML         = "specie 1e-14";
 		document.getElementById("absTempSaved").innerHTML           = "temperature 1e-06";
 		document.getElementById("relSpecieSaved").innerHTML         = "specie 1e-10";
@@ -858,6 +892,8 @@ p {
 		document.getElementById("odeSaved").innerHTML               = "ODE BzzMath";
 		document.getElementById("daeSaved").innerHTML               = "DAE BzzMath";
 		document.getElementById("inertSpecieSaved").innerHTML       = "inert " + inert;
+		document.getElementById("errGridSaved").innerHTML           = "grid 1e-08";
+		document.getElementById("errTempSaved").innerHTML           = "energy 1e-02";
 
 		if ( specieN[0] != "Name" )
 		{

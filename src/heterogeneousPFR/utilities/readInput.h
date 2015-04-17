@@ -53,7 +53,8 @@ namespace ASALI
 			double getTemperatureAbsTol()   const  { return absTemperatureTol_;};
 			double getTemperatureRelTol()   const  { return relTemperatureTol_;};
 			double getIntegrationTime()     const  { return tMax_;};
-			double getGridError()           const  { return error_;};
+			double getGridError()           const  { return errorOnGrid_;};
+			double getEnergyError()         const  { return errorOnEnergy_;};
 			double getInertLength()         const  { return Linert_;};
 			double getCatalyticLength()     const  { return Lcat_;};
 			double getReactorLength()       const  { return Lcat_ + Linert_;};
@@ -75,22 +76,24 @@ namespace ASALI
 			unsigned int getAddPointsNumber()       const  { return int(addN_);};
 			unsigned int getSamplingGridDimension() const  { return int(NS_);};
 
-			std::string getResults()        const  { return results_;};
-			std::string getFeed()           const  { return feed_;};
-			std::string getStart()          const  { return start_;};
-			std::string getChannelShape()   const  { return shape_;};
-			std::string getLimitations()    const  { return limitations_;};
-			std::string getInert()          const  { return inert_;};
-			std::string getRestartResults() const  { return restartResults_;};
-			std::string getOdeSolver()      const  { return odeSolver_;};
-			std::string getDaeSolver()      const  { return daeSolver_;};
-			std::string getKineticsPath()   const  { return kineticsPath_;};
+			std::string getResults()              const  { return results_;};
+			std::string getFeed()                 const  { return feed_;};
+			std::string getStart()                const  { return start_;};
+			std::string getChannelShape()         const  { return shape_;};
+			std::string getLimitations()          const  { return limitations_;};
+			std::string getInert()                const  { return inert_;};
+			std::string getRestartResults()       const  { return restartResults_;};
+			std::string getOdeSolver()            const  { return odeSolver_;};
+			std::string getDaeSolver()            const  { return daeSolver_;};
+			std::string getKineticsPath()         const  { return kineticsPath_;};
+			std::string getDiscretizationScheme() const  { return discretizationScheme_;};
 
 			bool getEnergy()                const  { return energy_;};
 			bool getHomogeneousReactions()  const  { return homo_;};
 			bool getHeterogenousReactions() const  { return het_;};
 			bool getGridType()              const  { return grow_;};
 			bool getConstraints()           const  { return constraints_;};
+			bool getDiffusion()             const  { return gasDiffusion_;};
 
 			std::vector<double> getFraction()                const { return inletValue_;};
 			std::vector<double> getRestartBulk()             const { return restartBulk_;};
@@ -117,7 +120,8 @@ namespace ASALI
 			double absTemperatureTol_;
 			double relTemperatureTol_;
 			double tMax_;
-			double error_;
+			double errorOnGrid_;
+			double errorOnEnergy_;
 			double Lcat_;
 			double Linert_;
 			double Dchannel_;
@@ -144,12 +148,14 @@ namespace ASALI
 			std::string odeSolver_;
 			std::string daeSolver_;
 			std::string kineticsPath_;
+			std::string discretizationScheme_;
 
 			bool energy_;
 			bool constraints_;
 			bool homo_;
 			bool het_;
 			bool grow_;
+			bool gasDiffusion_;
 
 			const std::string& file_;
 			const std::string& options_;
@@ -217,7 +223,8 @@ namespace ASALI
 		absTemperatureTol_ = 0;
 		relTemperatureTol_ = 0;
 		tMax_              = 0;
-		error_             = 0;
+		errorOnGrid_       = 0;
+		errorOnEnergy_     = 0;
 		Lcat_              = 0;
 		Linert_            = 0;
 		Dchannel_          = 0;
@@ -238,6 +245,7 @@ namespace ASALI
 		homo_              = false;
 		het_               = false;
 		grow_              = false;
+		gasDiffusion_      = false;
 
 		reactorIndex_      = 0;
 		solverIndex_       = 0;
@@ -423,8 +431,8 @@ namespace ASALI
 				}
 			}
 
-			std::vector<bool>        checkWord(8);
-			std::vector<std::string> words(8);
+			std::vector<bool>        checkWord(10);
+			std::vector<std::string> words(10);
 
 			double absIndex;
 			double relIndex;
@@ -433,6 +441,8 @@ namespace ASALI
 			double resultsIndex;
 			double reactionIndex;
 			double constraintIndex;
+			double errorIndex;
+			double diffIndex;
 
 			for (unsigned int i=0;i<checkWord.size();i++)
 				checkWord[i] = false;
@@ -445,21 +455,28 @@ namespace ASALI
 			words[5] = "Integration time";
 			words[6] = "Results";
 			words[7] = "Constraints";
+			words[8] = "Accepted errors";
+			words[9] = "Diffusion in gas";
 
 			for (unsigned int i=0;i<dummyVector.size();i++)
 			{
 				if 		(dummyVector[i] == "Absolute" &&
-						 dummyVector[i+1] == "tollerance") 		{checkWord[0] = true; absIndex      = i;}
+						 dummyVector[i+1] == "tollerance") 		{checkWord[0] = true; absIndex         = i;}
 				else if (dummyVector[i] == "Relative" &&
-						 dummyVector[i+1] == "tollerance") 		{checkWord[1] = true; relIndex      = i;}
+						 dummyVector[i+1] == "tollerance") 		{checkWord[1] = true; relIndex         = i;}
 				else if (dummyVector[i] == "Energy" &&
-						 dummyVector[i+1] == "equation")		{checkWord[2] = true; energyIndex   = i;}
-				else if (dummyVector[i] == "Reactions")			{checkWord[3] = true; reactionIndex = i;}
+						 dummyVector[i+1] == "equation")		{checkWord[2] = true; energyIndex      = i;}
+				else if (dummyVector[i] == "Reactions")			{checkWord[3] = true; reactionIndex    = i;}
 				else if (dummyVector[i] == "Grid")				{checkWord[4] = true;}
 				else if (dummyVector[i] == "Integration" &&
-						 dummyVector[i+1] == "time")			{checkWord[5] = true; tIndex        = i;}
-				else if (dummyVector[i] == "Results")			{checkWord[6] = true; resultsIndex  = i;}
+						 dummyVector[i+1] == "time")			{checkWord[5] = true; tIndex           = i;}
+				else if (dummyVector[i] == "Results")			{checkWord[6] = true; resultsIndex     = i;}
 				else if (dummyVector[i] == "Constraints")		{checkWord[7] = true; constraintIndex  = i;}
+				else if (dummyVector[i] == "Accepted" &&
+						 dummyVector[i+1] == "errors")			{checkWord[8] = true; errorIndex        = i;}
+				else if (dummyVector[i] == "Diffusion" &&
+						 dummyVector[i+1] == "in" &&
+						 dummyVector[i+2] == "gas")				{checkWord[9] = true; diffIndex         = i;}
 			}
 
 			for (unsigned int i=0;i<checkWord.size();i++)
@@ -471,6 +488,17 @@ namespace ASALI
 					exit (EXIT_FAILURE);
 				}
 			}
+
+			if ( dummyVector[diffIndex+3] == "on" )
+				gasDiffusion_ = true;
+			else if ( dummyVector[diffIndex+3] == "true" )
+				gasDiffusion_ = true;
+			else if ( dummyVector[diffIndex+3] == "yes" )
+				gasDiffusion_ = true;
+			else if ( dummyVector[diffIndex+3] == "1" )
+				gasDiffusion_ = true;
+			else
+				gasDiffusion_ = false;
 
 			if ( dummyVector[energyIndex+2] == "on" )
 				energy_ = true;
@@ -701,6 +729,65 @@ namespace ASALI
 				}
 			}
 
+			if ( dummyVector[errorIndex+1+1] != "(" )
+			{
+				error();
+				std::cout << "The Solver options/Accepted errors sub-dictionary must start with (\n" << std::endl;
+				exit (EXIT_FAILURE);
+			}
+			else
+			{
+				unsigned int finalCount = 1e05;
+				for (unsigned int i=errorIndex;i<dummyVector.size();i++)
+				{
+					if (dummyVector[i] == ")")
+					{
+						finalCount = i;
+						break;
+					}
+				}
+				
+				if ( finalCount == 1e05 )
+				{
+					error();
+					std::cout << "The Solver options/Accepted errors sub-dictionary must finish with )\n" << std::endl;
+					exit (EXIT_FAILURE);
+				}
+				else
+				{
+					unsigned int k=0;
+					for (unsigned int i=errorIndex+1+1+1;i<finalCount;i++)
+					{
+						if (dummyVector[i] == "(")
+						{
+							error();
+							std::cout << "The Solver options/Accepted errors sub-dictionary must finish with )\n" << std::endl;
+							exit (EXIT_FAILURE);
+						}
+						else
+						{
+							if ( dummyVector[i] == "grid" )
+							{
+								errorOnGrid_ = boost::lexical_cast<double>(dummyVector[i+1]);
+								i++;
+							}
+							else if ( dummyVector[i] == "energy" )
+							{
+								errorOnEnergy_ = boost::lexical_cast<double>(dummyVector[i+1]);
+								i++;
+							}
+							else
+							{
+								error();
+								std::cout << "key word || grid || energy || is MISSING in Solver options/Accepted errors sub-dictionary!\n" << std::endl;
+								exit (EXIT_FAILURE);
+							}
+						}
+					}
+				}
+			}
+
+
 
 		}
 	}
@@ -783,7 +870,7 @@ namespace ASALI
 				double maxIndex;
 				double addIndex;
 				double startIndex;
-				double errorIndex;
+				double discreIndex;
 
 				for (unsigned int i=0;i<checkWord.size();i++)
 					checkWord[i] = false;
@@ -793,7 +880,7 @@ namespace ASALI
 				words[2] = "Maximum number of points";
 				words[3] = "Add number of points";
 				words[4] = "Resolution type";
-				words[5] = "Accepted error";
+				words[5] = "Discretization scheme";
 
 				for (unsigned int i=0;i<vectorDummy.size();i++)
 				{
@@ -812,8 +899,8 @@ namespace ASALI
 							 vectorDummy[i+3] == "points")			{checkWord[3] = true; addIndex      = i;}
 					else if (vectorDummy[i] == "Resolution" &&
 							 vectorDummy[i+1] == "type")			{checkWord[4] = true; startIndex    = i;}
-					else if (vectorDummy[i] == "Accepted" &&
-							 vectorDummy[i+1] == "error")			{checkWord[5] = true; errorIndex    = i;}
+					else if (vectorDummy[i] == "Discretization" &&
+							 vectorDummy[i+1] == "scheme")			{checkWord[5] = true; discreIndex    = i;}
 				}
 			
 				for (unsigned int i=0;i<checkWord.size();i++)
@@ -835,7 +922,6 @@ namespace ASALI
 				}
 				maxN_ = boost::lexical_cast<double>(vectorDummy[maxIndex+1+1+1+1]);
 				addN_ = boost::lexical_cast<double>(vectorDummy[addIndex+1+1+1+1]);
-				error_= boost::lexical_cast<double>(vectorDummy[errorIndex+1+1]);
 
 				if ( vectorDummy[growIndex+1] == "on" )
 					grow_ = true;
@@ -853,6 +939,14 @@ namespace ASALI
 				{
 					error();
 					std::cout << "key word || " << "Resolution type" << " || MUST be || new || latest || converter || sampling ||\n" << std::endl;
+					exit (EXIT_FAILURE);
+				}
+
+				discretizationScheme_ = vectorDummy[discreIndex+1+1];
+				if ( discretizationScheme_ != "BDS" && discretizationScheme_ != "CDS")
+				{
+					error();
+					std::cout << "key word || " << "Discretization scheme" << " || MUST be || CDS || BDS ||\n" << std::endl;
 					exit (EXIT_FAILURE);
 				}
 			}

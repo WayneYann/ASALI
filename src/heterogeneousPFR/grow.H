@@ -90,4 +90,6 @@
 	growGrid->recapOnScreen();
 
 	N = Nnew;
+	
+	ASALI::discretizationSchemeOnScreen(discretizationScheme);
 }
