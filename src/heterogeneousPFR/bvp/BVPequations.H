@@ -60,7 +60,17 @@
 	{
 		//- Temperature
 		cbulk_ = FirstOrderDerivate(Tbulk_);
-		jbulk_ = SecondOrderDerivate(Tbulk_);
+		if ( gasDiffusion_ == true )
+		{
+			jbulk_ = SecondOrderDerivate(Tbulk_);
+		}
+		else
+		{
+			for (unsigned int i=0;i<NP_;i++)
+			{
+				jbulk_[i+1]   = 0.;
+			}
+		}
 		jwall_ = SecondOrderDerivate(Twall_);
 
 		//- Species
