@@ -39,12 +39,12 @@
 ##############################################################################################*/
 
 {
-	iteration++;
-	std::cout.precision(6);
-	std::cout.setf(std::ios::scientific);
+    iteration++;
+    std::cout.precision(6);
+    std::cout.setf(std::ios::scientific);
 
-	if (iteration%500 == 0)
-	{
-		std::cout << "Integration time: " << t_ << "\tResidual: " << dyOS_.Norm2()/dyOS_.Size() << "\n" << std::endl;
-	}
+    if (iteration%500 == 0)
+    {
+        std::cout << "Integration time: " << t_ << "\tResidual: " << dyOS_.Norm2()/dyOS_.Size() << "\n" << std::endl;
+    }
 }

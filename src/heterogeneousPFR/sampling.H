@@ -39,110 +39,110 @@
 ##############################################################################################*/
 
 {
-	ASALI::POSTprocessing  post(NC, SURF_NC);
-	post.resize(N,input.getSamplingGridDimension());
-	post.setGrid(z);
-	post.setVariables(yF);
-	post.setSampledGrid(input.getSamplingGrid());
-	
-	if ( input.getSamplingGridDimension() > N )
-	{
-		growGrid = new ASALI::GROWgrid(NC, SURF_NC);
+    ASALI::POSTprocessing  post(NC, SURF_NC);
+    post.resize(N,input.getSamplingGridDimension());
+    post.setGrid(z);
+    post.setVariables(yF);
+    post.setSampledGrid(input.getSamplingGrid());
+    
+    if ( input.getSamplingGridDimension() > N )
+    {
+        growGrid = new ASALI::GROWgrid(NC, SURF_NC);
 
-		growGrid->setAddPoints(input.getAddPointsNumber());
-		growGrid->setMaxPoints(input.getMaxPointsNumber());
-		growGrid->setTol(input.getGridError());
-		growGrid->resize(N);
-		growGrid->setGrid(z);
-		growGrid->setVariables(yF);
+        growGrid->setAddPoints(input.getAddPointsNumber());
+        growGrid->setMaxPoints(input.getMaxPointsNumber());
+        growGrid->setTol(input.getGridError());
+        growGrid->resize(N);
+        growGrid->setGrid(z);
+        growGrid->setVariables(yF);
 
-		growGrid->calculateErrors();
-		growGrid->addition();
-		growGrid->interpolation();
+        growGrid->calculateErrors();
+        growGrid->addition();
+        growGrid->interpolation();
 
-		unsigned int Nnew    = growGrid->getInterpolatedPoints();
-					 NC      = thermodynamicsMapXML->NumberOfSpecies();
-					 SURF_NC = thermodynamicsSurfaceMapXML->number_of_site_species();
-					 NE      = (NC + NC + SURF_NC + 1 + 1)*Nnew;
+        unsigned int Nnew    = growGrid->getInterpolatedPoints();
+                     NC      = thermodynamicsMapXML->NumberOfSpecies();
+                     SURF_NC = thermodynamicsSurfaceMapXML->number_of_site_species();
+                     NE      = (NC + NC + SURF_NC + 1 + 1)*Nnew;
 
-		ChangeDimensions(Nnew,    &z,      true);
-		for (unsigned int k=1;k<=Nnew;k++)
-			z[k] = growGrid->getInterpolatedGrid()[k];
+        ChangeDimensions(Nnew,    &z,      true);
+        for (unsigned int k=1;k<=Nnew;k++)
+            z[k] = growGrid->getInterpolatedGrid()[k];
 
-		ChangeDimensions(NE, &x0, true);
-		unsigned int counter = 1;
-		for (unsigned int i=1;i<=Nnew;i++)
-		{
-			for (unsigned int j=1;j<=NC;j++)
-			{
-				yF[counter] = growGrid->getInterpolatedVariables()[counter];
-				counter++;
-			}
-			for (unsigned int j=1;j<=NC;j++)
-			{
-				yF[counter] = growGrid->getInterpolatedVariables()[counter];
-				counter++;
-			}
-			for (unsigned int j=1;j<=SURF_NC;j++)
-			{
-				yF[counter] = growGrid->getInterpolatedVariables()[counter];
-				counter++;
-			}
-			{
-				yF[counter] = growGrid->getInterpolatedVariables()[counter];
-				counter++;
-			}
-			{
-				yF[counter] = growGrid->getInterpolatedVariables()[counter];
-				counter++;
-			}
-		}
+        ChangeDimensions(NE, &x0, true);
+        unsigned int counter = 1;
+        for (unsigned int i=1;i<=Nnew;i++)
+        {
+            for (unsigned int j=1;j<=NC;j++)
+            {
+                yF[counter] = growGrid->getInterpolatedVariables()[counter];
+                counter++;
+            }
+            for (unsigned int j=1;j<=NC;j++)
+            {
+                yF[counter] = growGrid->getInterpolatedVariables()[counter];
+                counter++;
+            }
+            for (unsigned int j=1;j<=SURF_NC;j++)
+            {
+                yF[counter] = growGrid->getInterpolatedVariables()[counter];
+                counter++;
+            }
+            {
+                yF[counter] = growGrid->getInterpolatedVariables()[counter];
+                counter++;
+            }
+            {
+                yF[counter] = growGrid->getInterpolatedVariables()[counter];
+                counter++;
+            }
+        }
 
-		growGrid->recapOnScreen();
+        growGrid->recapOnScreen();
 
-		N = Nnew;
-	}
-	else if ( input.getSamplingGridDimension() < N )
-	{
-		post.sampling();
-		unsigned int Nnew    = input.getSamplingGridDimension();
-					 NC      = thermodynamicsMapXML->NumberOfSpecies();
-					 SURF_NC = thermodynamicsSurfaceMapXML->number_of_site_species();
-					 NE      = (NC + NC + SURF_NC + 1 + 1)*Nnew;
+        N = Nnew;
+    }
+    else if ( input.getSamplingGridDimension() < N )
+    {
+        post.sampling();
+        unsigned int Nnew    = input.getSamplingGridDimension();
+                     NC      = thermodynamicsMapXML->NumberOfSpecies();
+                     SURF_NC = thermodynamicsSurfaceMapXML->number_of_site_species();
+                     NE      = (NC + NC + SURF_NC + 1 + 1)*Nnew;
 
-		ChangeDimensions(Nnew,    &z,      true);
-		for (unsigned int k=1;k<=Nnew;k++)
-			z[k] = input.getSamplingGrid()[k-1];
+        ChangeDimensions(Nnew,    &z,      true);
+        for (unsigned int k=1;k<=Nnew;k++)
+            z[k] = input.getSamplingGrid()[k-1];
 
-		ChangeDimensions(NE, &yF, true);
-		unsigned int counter = 1;
-		for (unsigned int i=1;i<=Nnew;i++)
-		{
-			for (unsigned int j=1;j<=NC;j++)
-			{
-				yF[counter] = post.getSampledVariables()[counter];
-				counter++;
-			}
-			for (unsigned int j=1;j<=NC;j++)
-			{
-				yF[counter] = post.getSampledVariables()[counter];
-				counter++;
-			}
-			for (unsigned int j=1;j<=SURF_NC;j++)
-			{
-				yF[counter] = post.getSampledVariables()[counter];
-				counter++;
-			}
-			{
-				yF[counter] = post.getSampledVariables()[counter];
-				counter++;
-			}
-			{
-				yF[counter] = post.getSampledVariables()[counter];
-				counter++;
-			}
-		}
+        ChangeDimensions(NE, &yF, true);
+        unsigned int counter = 1;
+        for (unsigned int i=1;i<=Nnew;i++)
+        {
+            for (unsigned int j=1;j<=NC;j++)
+            {
+                yF[counter] = post.getSampledVariables()[counter];
+                counter++;
+            }
+            for (unsigned int j=1;j<=NC;j++)
+            {
+                yF[counter] = post.getSampledVariables()[counter];
+                counter++;
+            }
+            for (unsigned int j=1;j<=SURF_NC;j++)
+            {
+                yF[counter] = post.getSampledVariables()[counter];
+                counter++;
+            }
+            {
+                yF[counter] = post.getSampledVariables()[counter];
+                counter++;
+            }
+            {
+                yF[counter] = post.getSampledVariables()[counter];
+                counter++;
+            }
+        }
 
-		N = Nnew;
-	}
+        N = Nnew;
+    }
 }

@@ -103,62 +103,62 @@
 
 int main( int argc, char** argv )
 {
-	double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
+    double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
 
-	#include "input.H"
+    #include "input.H"
 
-	if ( input.getStart() == "new")
-	{
-		#include "ODEresolution.H"
-		#include "BVPresolution.H"
-		#include "write.H"
+    if ( input.getStart() == "new")
+    {
+        #include "ODEresolution.H"
+        #include "BVPresolution.H"
+        #include "write.H"
 
-		if ( grow == true)
-		{
-			while ( ended == false)
-			{
-				#include "grow.H"
-				#include "ODEresolution.H"
-				#include "BVPresolution.H"
-				#include "write.H"
-			}
-		}
-	}
-	else if ( input.getStart() == "latest")
-	{
-		#include "grow.H"
-		#include "ODEresolution.H"
-		#include "BVPresolution.H"
-		#include "write.H"
+        if ( grow == true)
+        {
+            while ( ended == false)
+            {
+                #include "grow.H"
+                #include "ODEresolution.H"
+                #include "BVPresolution.H"
+                #include "write.H"
+            }
+        }
+    }
+    else if ( input.getStart() == "latest")
+    {
+        #include "grow.H"
+        #include "ODEresolution.H"
+        #include "BVPresolution.H"
+        #include "write.H"
 
-		if ( grow == true)
-		{
-			while ( ended == false)
-			{
-				#include "grow.H"
-				#include "ODEresolution.H"
-				#include "BVPresolution.H"
-				#include "write.H"
-			}
-		}
-	}
-	else if ( input.getStart() == "converter") 
-	{
-		#include "write.H"
-	}
-	else if ( input.getStart() == "sampling" )
-	{
-		#include "sampling.H"
-		#include "write.H"
-	}
+        if ( grow == true)
+        {
+            while ( ended == false)
+            {
+                #include "grow.H"
+                #include "ODEresolution.H"
+                #include "BVPresolution.H"
+                #include "write.H"
+            }
+        }
+    }
+    else if ( input.getStart() == "converter") 
+    {
+        #include "write.H"
+    }
+    else if ( input.getStart() == "sampling" )
+    {
+        #include "sampling.H"
+        #include "write.H"
+    }
 
-	remove("BzzFile.txt");
+    remove("BzzFile.txt");
 
-	if ( input.getStart() == "new" || input.getStart() == "latest" )
-	{
-		double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
-		ASALI::CPUtime(tStart,tEnd);
-	}
+    if ( input.getStart() == "new" || input.getStart() == "latest" )
+    {
+        double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
+        ASALI::CPUtime(tStart,tEnd);
+    }
 
-	return 0;
+    return 0;
 }

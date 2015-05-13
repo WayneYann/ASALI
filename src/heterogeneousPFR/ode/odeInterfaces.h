@@ -52,47 +52,47 @@
 
 namespace OpenSMOKE
 {
-	#if ASALI_USE_SUNDIALS == 1
+    #if ASALI_USE_SUNDIALS == 1
 
-		class ODESystem_CVODE_Template : public OpenSMOKE::OpenSMOKE_OdeSystemObject
-		{
-			DEFINE_ODESOLVERINTERFACE_CVODE_Sundials(ODESystem_CVODE_Template)
+        class ODESystem_CVODE_Template : public OpenSMOKE::OpenSMOKE_OdeSystemObject
+        {
+            DEFINE_ODESOLVERINTERFACE_CVODE_Sundials(ODESystem_CVODE_Template)
 
-			ASALI::ODESystem* ode_;
-			OpenSMOKE::OpenSMOKEVectorDouble y_;
-			OpenSMOKE::OpenSMOKEVectorDouble dy_;
+            ASALI::ODESystem* ode_;
+            OpenSMOKE::OpenSMOKEVectorDouble y_;
+            OpenSMOKE::OpenSMOKEVectorDouble dy_;
 
-		public:
+        public:
 
-			void SetOdeSystem(ASALI::ODESystem* ode)
-			{
-				ode_ = ode;
-				ChangeDimensions(ode_->NumberOfEquations(), &y_, true);
-				ChangeDimensions(ode_->NumberOfEquations(), &dy_, false);
-			}
+            void SetOdeSystem(ASALI::ODESystem* ode)
+            {
+                ode_ = ode;
+                ChangeDimensions(ode_->NumberOfEquations(), &y_, true);
+                ChangeDimensions(ode_->NumberOfEquations(), &dy_, false);
+            }
 
-			int GetSystemFunctions(const double t, double* y, double* dy)
-			{
-				y_.CopyFrom(y);
-				int flag = ode_->Equations(t, y_, dy_);
-				dy_.CopyTo(dy);
-				return(flag);
-			}
+            int GetSystemFunctions(const double t, double* y, double* dy)
+            {
+                y_.CopyFrom(y);
+                int flag = ode_->Equations(t, y_, dy_);
+                dy_.CopyTo(dy);
+                return(flag);
+            }
 
-			int GetAnalyticalJacobian(const double t, double* y, double* J)
-			{
-				return(0);
-			}
+            int GetAnalyticalJacobian(const double t, double* y, double* J)
+            {
+                return(0);
+            }
 
-			int GetWriteFunction(const double t, double *y)
-			{
-				y_.CopyFrom(y);
-				int flag = ode_->Print(t, y_);
-				return 0;
-			}
-		};
-		COMPLETE_ODESOLVERINTERFACE_CVODE_Sundials(ODESystem_CVODE_Template)
+            int GetWriteFunction(const double t, double *y)
+            {
+                y_.CopyFrom(y);
+                int flag = ode_->Print(t, y_);
+                return 0;
+            }
+        };
+        COMPLETE_ODESOLVERINTERFACE_CVODE_Sundials(ODESystem_CVODE_Template)
 
-	#endif
+    #endif
 }
-#endif	// OpenSMOKE_OdeInterfaces_H
+#endif    // OpenSMOKE_OdeInterfaces_H

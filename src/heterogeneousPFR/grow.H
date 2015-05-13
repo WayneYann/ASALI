@@ -39,57 +39,57 @@
 ##############################################################################################*/
 
 {
-	growGrid->resize(N);
-	growGrid->setGrid(z);
-	growGrid->setVariables(yF);
+    growGrid->resize(N);
+    growGrid->setGrid(z);
+    growGrid->setVariables(yF);
 
-	growGrid->calculateErrors();
-	growGrid->addition();
-	growGrid->interpolation();
+    growGrid->calculateErrors();
+    growGrid->addition();
+    growGrid->interpolation();
 
-	unsigned int Nnew    = growGrid->getInterpolatedPoints();
-				 NC      = thermodynamicsMapXML->NumberOfSpecies();
-				 SURF_NC = thermodynamicsSurfaceMapXML->number_of_site_species();
-				 NE      = (NC + NC + SURF_NC + 1 + 1)*Nnew;
+    unsigned int Nnew    = growGrid->getInterpolatedPoints();
+                 NC      = thermodynamicsMapXML->NumberOfSpecies();
+                 SURF_NC = thermodynamicsSurfaceMapXML->number_of_site_species();
+                 NE      = (NC + NC + SURF_NC + 1 + 1)*Nnew;
 
-	ChangeDimensions(Nnew,    &z,      true);
-	for (unsigned int k=1;k<=Nnew;k++)
-		z[k] = growGrid->getInterpolatedGrid()[k];
+    ChangeDimensions(Nnew,    &z,      true);
+    for (unsigned int k=1;k<=Nnew;k++)
+        z[k] = growGrid->getInterpolatedGrid()[k];
 
-	ChangeDimensions(NE, &x0, true);
-	unsigned int counter = 1;
-	for (unsigned int i=1;i<=Nnew;i++)
-	{
-		for (unsigned int j=1;j<=NC;j++)
-		{
-			x0[counter] = growGrid->getInterpolatedVariables()[counter];
-			counter++;
-		}
-		for (unsigned int j=1;j<=NC;j++)
-		{
-			x0[counter] = growGrid->getInterpolatedVariables()[counter];
-			counter++;
-		}
-		for (unsigned int j=1;j<=SURF_NC;j++)
-		{
-			x0[counter] = growGrid->getInterpolatedVariables()[counter];
-			counter++;
-		}
-		{
-			x0[counter] = growGrid->getInterpolatedVariables()[counter];
-			counter++;
-		}
-		{
-			x0[counter] = growGrid->getInterpolatedVariables()[counter];
-			counter++;
-		}
-	}
+    ChangeDimensions(NE, &x0, true);
+    unsigned int counter = 1;
+    for (unsigned int i=1;i<=Nnew;i++)
+    {
+        for (unsigned int j=1;j<=NC;j++)
+        {
+            x0[counter] = growGrid->getInterpolatedVariables()[counter];
+            counter++;
+        }
+        for (unsigned int j=1;j<=NC;j++)
+        {
+            x0[counter] = growGrid->getInterpolatedVariables()[counter];
+            counter++;
+        }
+        for (unsigned int j=1;j<=SURF_NC;j++)
+        {
+            x0[counter] = growGrid->getInterpolatedVariables()[counter];
+            counter++;
+        }
+        {
+            x0[counter] = growGrid->getInterpolatedVariables()[counter];
+            counter++;
+        }
+        {
+            x0[counter] = growGrid->getInterpolatedVariables()[counter];
+            counter++;
+        }
+    }
 
-	ended = growGrid->getExitCondition();
+    ended = growGrid->getExitCondition();
 
-	growGrid->recapOnScreen();
+    growGrid->recapOnScreen();
 
-	N = Nnew;
-	
-	ASALI::discretizationSchemeOnScreen(discretizationScheme);
+    N = Nnew;
+    
+    ASALI::discretizationSchemeOnScreen(discretizationScheme);
 }
