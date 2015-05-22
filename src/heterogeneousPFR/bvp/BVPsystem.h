@@ -407,7 +407,23 @@ void BVPSystem::AlgebraicEquations(BzzVectorInt& algebraic)
         else if ( i == (NP_ - 1) )
         {
             for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = 0;
+            {
+                if ( gasDiffusion_ == true )
+                {
+                    algebraic[counter++] = 0;
+                }
+                else
+                {
+                    if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
+                    {
+                        algebraic[counter++] = 1;
+                    }
+                    else
+                    {
+                        algebraic[counter++] = 0;
+                    }
+                }
+            }
             for (unsigned int j=1;j<=NC_;j++)
                 algebraic[counter++] = 0;
             for (unsigned int j=1;j<=SURF_NC_;j++)
@@ -421,7 +437,14 @@ void BVPSystem::AlgebraicEquations(BzzVectorInt& algebraic)
                     algebraic[counter++] = 0;
                 }
             }
-            algebraic[counter++] = 0;
+            if ( gasDiffusion_ == true)
+            {
+                algebraic[counter++] = 0;
+            }
+            else
+            {
+                algebraic[counter++] = 1.;
+            }
             algebraic[counter++] = 0;
         }
         else
@@ -503,12 +526,35 @@ void BVPSystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
         else if ( i == (NP_ - 1) )
         {
             for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = true;
+            {
+                if ( gasDiffusion_ == true )
+                {
+                    algebraic[counter++] = true;
+                }
+                else
+                {
+                    if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
+                    {
+                        algebraic[counter++] = false;
+                    }
+                    else
+                    {
+                        algebraic[counter++] = true;
+                    }
+                }
+            }
             for (unsigned int j=1;j<=NC_;j++)
                 algebraic[counter++] = true;
             for (unsigned int j=1;j<=SURF_NC_;j++)
                 algebraic[counter++] = false;
-            algebraic[counter++] = true;
+            if ( gasDiffusion_ == true )
+            {
+                algebraic[counter++] = true;
+            }
+            else
+            {
+                algebraic[counter++] = false;
+            }
             algebraic[counter++] = true;
         }
         else

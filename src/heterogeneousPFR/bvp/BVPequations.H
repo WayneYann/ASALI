@@ -60,6 +60,7 @@
     {
         //- Temperature
         cbulk_ = FirstOrderDerivate(Tbulk_);
+
         if ( gasDiffusion_ == true )
         {
             jbulk_ = SecondOrderDerivate(Tbulk_);
@@ -71,6 +72,7 @@
                 jbulk_[i+1]   = 0.;
             }
         }
+
         jwall_ = SecondOrderDerivate(Twall_);
 
         //- Species
@@ -238,6 +240,7 @@
         if(i==0)
         {
             //-INLET conditions
+            
             for (unsigned int j=1;j<=NC_;j++)
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
@@ -278,7 +281,16 @@
                     dyOS_[counter++] = 1. - teta_[i].SumElements();
                 }
             }
-            dyOS_[counter++] = T0_ - Tbulk_[i+1] + (condBulk_/(G_*cp_))*(Tbulk_[i+1+1]-Tbulk_[i+1])/(z[i+1+1] - z[i+1]); // ALGEBRAIC
+            
+            if ( gasDiffusion_ == true )
+            {
+                dyOS_[counter++] = T0_ - Tbulk_[i+1] + (condBulk_/(G_*cp_))*(Tbulk_[i+1+1]-Tbulk_[i+1])/(z[i+1+1] - z[i+1]); // ALGEBRAIC
+            }
+            else
+            {
+                dyOS_[counter++] = T0_ - Tbulk_[i+1];
+            }
+
             dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
         }
         else if (i==(NP_-1))
@@ -288,11 +300,20 @@
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
-                    dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*(omegaBulk_[i][j]-omegaBulk_[i-1][j])/(z_[i+1] - z[i]); // ALGEBRAIC
+                    if ( gasDiffusion_ == true )
+                    {
+                        dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*(omegaBulk_[i][j]-omegaBulk_[i-1][j])/(z_[i+1] - z[i]); // ALGEBRAIC
+                    }
+                    else
+                    {
+                        dyOS_[counter++] = (-G_/(rhoBulk_*epsi_))*cGas_[i][j]
+                                            - av_*rhoBulk_*jSolid_[i][j]/(epsi_*rhoBulk_)
+                                            + RfromGas_[j]/rhoBulk_; //DIFFERENTIAL
+                    }
                 }
                 else
                 {
-                    dyOS_[counter++] = 1. - omegaBulk_[i].SumElements();
+                        dyOS_[counter++] = 1. - omegaBulk_[i].SumElements();
                 }
             }
             for (unsigned int j=1;j<=NC_;j++)
@@ -317,7 +338,16 @@
                     dyOS_[counter++] = 1. - teta_[i].SumElements();
                 }
             }
-            dyOS_[counter++] = Tbulk_[i+1] - Tbulk_[i-1+1]; // ALGEBRAIC
+            if ( gasDiffusion_ == true )
+            {
+                dyOS_[counter++] = Tbulk_[i+1] - Tbulk_[i-1+1]; // ALGEBRAIC
+            }
+            else
+            {
+                dyOS_[counter++] =(- G_/(rhoBulk_*epsi_))*cbulk_[i+1]
+                                   - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_*cp_) 
+                                   + QfromGas_/(rhoBulk_*cp_*epsi_);//DIFFERENTIAL
+            }
             dyOS_[counter++] = Twall_[i+1] - Twall_[i-1+1]; // ALGEBRAIC
         }
         else
@@ -326,10 +356,19 @@
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
-                    dyOS_[counter++] = (-G_/(rhoBulk_*epsi_))*cGas_[i][j]
-                                     + diffG_[j]*jGas_[i][j]/epsi_
-                                     - av_*rhoBulk_*jSolid_[i][j]/(epsi_*rhoBulk_)
-                                     + RfromGas_[j]/rhoBulk_; //DIFFERENTIAL
+                    if ( gasDiffusion_ == true )
+                    {
+                        dyOS_[counter++] = (-G_/(rhoBulk_*epsi_))*cGas_[i][j]
+                                           + diffG_[j]*jGas_[i][j]/epsi_
+                                           - av_*rhoBulk_*jSolid_[i][j]/(epsi_*rhoBulk_)
+                                           + RfromGas_[j]/rhoBulk_; //DIFFERENTIAL
+                    }
+                    else
+                    {
+                        dyOS_[counter++] = (-G_/(rhoBulk_*epsi_))*cGas_[i][j]
+                                         - av_*rhoBulk_*jSolid_[i][j]/(epsi_*rhoBulk_)
+                                         + RfromGas_[j]/rhoBulk_; //DIFFERENTIAL
+                    }
                 }
                 else
                 {
@@ -360,10 +399,20 @@
             }
             if (energy_ == true)
             {
-                dyOS_[counter++] =(- G_/(rhoBulk_*epsi_))*cbulk_[i+1]
-                                   + (condBulk_/(rhoBulk_*cp_))*jbulk_[i+1]/epsi_
-                                   - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_*cp_) 
-                                   + QfromGas_/(rhoBulk_*cp_*epsi_);//DIFFERENTIAL
+                if ( gasDiffusion_ == true )
+                {
+                    dyOS_[counter++] =(- G_/(rhoBulk_*epsi_))*cbulk_[i+1]
+                                       + (condBulk_/(rhoBulk_*cp_))*jbulk_[i+1]/epsi_
+                                       - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_*cp_) 
+                                       + QfromGas_/(rhoBulk_*cp_*epsi_);//DIFFERENTIAL
+                }
+                else
+                {
+                    dyOS_[counter++] =(- G_/(rhoBulk_*epsi_))*cbulk_[i+1]
+                                       - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_*cp_) 
+                                       + QfromGas_/(rhoBulk_*cp_*epsi_);//DIFFERENTIAL
+                }
+
                 dyOS_[counter++] = + newCondSolid_*jwall_[i+1]/(rhoSolid_*cpSolid_)
                                    + h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))
                                    + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1-epsi_));//DIFFERENTIAL 
