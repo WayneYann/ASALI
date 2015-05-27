@@ -621,6 +621,10 @@ namespace ASALI
 			{
 				hCorr_ = dummyVector[hIndex + 2];
 			}
+			else if ( dummyVector[hIndex + 2] == "Gamson")
+			{
+				hCorr_ = dummyVector[hIndex + 2];
+			}
 			else if ( dummyVector[hIndex + 2] == "Yoshida")
 			{
 				hCorr_ = dummyVector[hIndex + 2];
