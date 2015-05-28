@@ -114,9 +114,15 @@
 
 		//- Heat transfer coefficient [W/m2/K]
 		h();
-		
 	}
 	
-	dyOS_[1] = -rho_*v_*v_*fm_/Dp_;
+	if ( type_ == "Monolith" )
+	{
+		dyOS_[1] = -rho_*v_*v_*fm_/Dt_;
+	}
+	else if ( type_ == "PackedBed" )
+	{
+		dyOS_[1] = -rho_*v_*v_*fm_/Dp_;
+	}
 	dyOS_[2] = -h_*av_*(T_ - Tw_)/(rho_*v_*cp_);
 }

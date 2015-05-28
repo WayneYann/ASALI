@@ -99,5 +99,14 @@
 	{
 		dyOS_[i] = -kMat_[i]*av_*(omega_[i] - omegaW_[i])/v_;
 	}
-	dyOS_[NE_] = -rho_*v_*v_*fm_/Dp_;
+	
+	if ( type_ == "Monolith" )
+	{
+		dyOS_[NE_] = -rho_*v_*v_*fm_/Dt_;
+	}
+	else if ( type_ == "PackedBed" )
+	{
+		dyOS_[NE_] = -rho_*v_*v_*fm_/Dp_;
+	}
+	
 }
