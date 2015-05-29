@@ -86,27 +86,38 @@
 #include "readInput.h"
 #include "functions.h"
 #include "vector.h"
+#include "chemistry/reactionRates.H"
 
 // Equations
 #include "memoryAllocation.H"
 #include "ODEsystem.h"
+#include "DAEsystem.h"
 #if ASALI_USE_SUNDIALS == 1
 #include "odeInterfaces.h"
+#include "daeInterfaces.h"
 #endif
 
 
 int main( int argc, char** argv )
 {
-	double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
+    double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
 
-	#include "input.H"
-	#include "ODEresolution.H"
-	#include "write.H"
+    #include "input.H"
+    std::cout << "\n#####################" << std::endl;
+    std::cout << "Solving ODE --> ";
+    #include "ODEresolution.H"
+    std::cout << "done!" << std::endl;
+    std::cout << "#####################" << std::endl;
+    std::cout << "Solving DAE --> ";
+    #include "DAEresolution.H"
+    std::cout << "done!" << std::endl;
+    std::cout << "#####################" << std::endl;
+    #include "write.H"
 
-	remove("BzzFile.txt");
+    remove("BzzFile.txt");
 
-	double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
-	ASALI::CPUtime(tStart,tEnd);
+    double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
+    ASALI::CPUtime(tStart,tEnd);
 
-	return 0;
+    return 0;
 }

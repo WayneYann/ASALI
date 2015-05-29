@@ -40,14 +40,14 @@
 
 namespace ASALI
 {
-class ODESystem
+class DAESystem
 #if ASALI_USE_BZZ == 1
- : public BzzOdeSystemObject
+ : public BzzDaeSystemObject
 #endif
 {
 public:
 
-    ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+    DAESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
               OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
               OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
               OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
@@ -55,26 +55,33 @@ public:
 
     #include "vector.h"
 
-    unsigned int NumberOfEquations() const { return NE_; }
+    void SetReactor(const double G, const double Dp, const double Dt, const double epsi);
+
+    void SetReactorType(const std::string type);
+    
+    void SetTemperature(const double T);
+    
+    void SetInertSpecie(const std::string inert);
+
+    void SetCorrelation(const std::string fmName, const std::string NuName);
+
+    void GetProfile(std::vector<double> &z, std::vector<double> &p, std::vector<double> &comp);
+
+    unsigned int BlockDimension()        const {return NB_;};
+
+    unsigned int NumberOfEquations()     const {return NE_;};
 
     unsigned int Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
 
     unsigned int Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
 
-    void SetReactor(const double G, const double Dp, const double Dt, const double epsi);
-
-    void SetInertSpecie(const std::string inert);
-
-    void SetReactorType(const std::string type);
-
-    void SetTemperature(const double T);
-
-    void SetCorrelation(const std::string fmName, const std::string NuName);
+    void AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic);
 
     #if ASALI_USE_BZZ == 1
+    void AlgebraicEquations(BzzVectorInt& algebraic);
     virtual void GetSystemFunctions(BzzVector &y, double t, BzzVector &dy);
     virtual void ObjectBzzPrint(void);
-    virtual ~ODESystem(){};
+    virtual ~DAESystem(){};
     #endif
 
 private:
@@ -100,6 +107,7 @@ private:
     double cTot_;
 
     unsigned int NE_;
+    unsigned int NB_;
     unsigned int NC_;
     unsigned int SURF_NC_;
     unsigned int SURF_NP_;
@@ -127,6 +135,10 @@ private:
     OpenSMOKE::KineticsMap_Surface_CHEMKIN<double>&            kineticsSurfaceMap_;            //!< kinetic map
     OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&         transportMap_;                  //!< transport map
 
+    std::vector<double> pprofile_;
+    std::vector<double> Compprofile_;
+    std::vector<double> z_;
+
     std::string inert_;
 
     void FrictionFactor();
@@ -138,7 +150,7 @@ private:
     void error();
 };
 
-ODESystem::ODESystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+DAESystem::DAESystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
                         OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
                         OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
                         OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
@@ -166,12 +178,12 @@ ODESystem::ODESystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          t
         cTot_ = 0.;
 
         NE_        = 0.;
+        NB_        = 0.;
         NC_        = 0.;
         SURF_NC_   = 0.;
         SURF_NP_   = 0.;
         iterator_  = 0.; 
-        
-        
+
         NC_      = thermodynamicsMap_.NumberOfSpecies();
         SURF_NC_ = thermodynamicsSurfaceMap_.number_of_site_species();
         SURF_NP_ = thermodynamicsSurfaceMap_.number_of_site_phases(0);
@@ -192,67 +204,129 @@ ODESystem::ODESystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          t
 
         ChangeDimensions(NE_, &yOS_,  true);
         ChangeDimensions(NE_, &dyOS_, true);
+        
+        Compprofile_.resize(NC_);
     }
 
-void ODESystem::SetReactor(const double G, const double Dp, const double Dt, const double epsi)
+void DAESystem::SetReactor(const double G, const double Dp, const double Dt, const double epsi)
 {
-    G_        = G;
+    G_         = G;
     Dp_        = Dp;
-    epsi_    = epsi;
+    epsi_      = epsi;
     Dt_        = Dt;
 }
 
-void ODESystem::SetCorrelation(const std::string fmName, const std::string NuName)
+void DAESystem::SetCorrelation(const std::string fmName, const std::string NuName)
 {
-    fmName_ = fmName;
+    fmName_    = fmName;
     NuName_    = NuName;
 }
 
-void ODESystem::SetReactorType(const std::string type)
+void DAESystem::SetReactorType(const std::string type)
 {
     type_ = type;
 }
 
-void ODESystem::SetInertSpecie(const std::string inert)
+
+void DAESystem::SetInertSpecie(const std::string inert)
 {
     inert_ = inert;
 }
 
-void ODESystem::SetTemperature(const double T)
+void DAESystem::SetTemperature(const double T)
 {
     T_ = T;
 }
 
 #if ASALI_USE_BZZ == 1
-void ODESystem::GetSystemFunctions(BzzVector &y, double t, BzzVector &dy)
+void DAESystem::GetSystemFunctions(BzzVector &y, double t, BzzVector &dy)
 {
     FromBzzToOS(y,yOS_);
-    #include "ODEequations.H"
+    #include "DAEequations.H"
+    #include "DAEprint.H"
     FromOSToBzz(dyOS_,dy);
 }
 
-void ODESystem::ObjectBzzPrint(void)
+void DAESystem::ObjectBzzPrint(void)
 {
+}
+
+void DAESystem::AlgebraicEquations(BzzVectorInt& algebraic)
+{
+    ChangeDimensions(NE_, &algebraic, true);
+    for (unsigned int j=1;j<=NC_;j++)
+    {
+        if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
+        {
+            algebraic[j]     = 1;
+        }
+        else
+        {
+            algebraic[j]     = 0;
+        }
+    }
+    for (unsigned int j=1;j<=NC_;j++)
+    {
+        algebraic[j+NC_] = 0;
+    }
+    algebraic[NE_]       = 1;
 }
 #endif
 
-unsigned int ODESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+unsigned int DAESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
     ChangeDimensions(NE_, &dy,    true);
     for (unsigned int i=1;i<=NE_;i++)
         yOS_[i] = y[i];
-    #include "ODEequations.H"
+    #include "DAEequations.H"
+    #include "DAEprint.H"
     for (unsigned int i=1;i<=NE_;i++)
         dy[i] = dyOS_[i];
     return 0;
 }
 
-unsigned int ODESystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+unsigned int DAESystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
 {
     return 0;
 }
 
-void ODESystem::FrictionFactor()
+void DAESystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
+{
+    ChangeDimensions(NE_, &algebraic, true);
+    for (unsigned int j=1;j<=NC_;j++)
+    {
+        if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
+        {
+            algebraic[j]     = false;
+        }
+        else
+        {
+            algebraic[j]     = true;
+        }
+    }
+    for (unsigned int j=1;j<=NC_;j++)
+    {
+        algebraic[j+NC_] = true;
+    }
+    algebraic[NE_]       = false;
+}
+
+void DAESystem::GetProfile(std::vector<double> &z, std::vector<double> &p, std::vector<double> &comp)
+{
+    p.resize(pprofile_.size());
+    for (unsigned int k=0;k<p.size();k++)
+        p[k] = pprofile_[k];
+
+    comp.resize(Compprofile_.size());
+    for (unsigned int k=0;k<Compprofile_.size();k++)
+         comp[k] = Compprofile_[k];
+
+    z.resize(z_.size());
+    for (unsigned int k=0;k<z.size();k++)
+         z[k] = z_[k];
+}
+
+void DAESystem::FrictionFactor()
 {
     if ( type_ == "PackedBed" )
     {
@@ -348,7 +422,7 @@ void ODESystem::FrictionFactor()
     }
 }
 
-void ODESystem::Sherwood()
+void DAESystem::Sherwood()
 {
     if ( type_ == "PackedBed" )
     {
@@ -436,7 +510,7 @@ void ODESystem::Sherwood()
     {
         for (unsigned int i=1;i<=NC_;i++)
         {
-            double zNew  = std::max( 0., 1e-06);
+            double zNew  = std::max( t_, 1e-06);
             double zStar = zNew/(Dt_*Re_*Sc_[i]);
                    zStar = fabs(zStar);
                    Sh_[i] = 3.659 + 6.874*pow((1000.*zStar),-0.488)*exp(-57.2*zStar);
@@ -444,7 +518,7 @@ void ODESystem::Sherwood()
     }
 }
 
-void ODESystem::av()
+void DAESystem::av()
 {
     if ( type_ == "Monolith" )
     {
@@ -456,7 +530,7 @@ void ODESystem::av()
     }
 }
 
-void ODESystem::Re()
+void DAESystem::Re()
 {
     if ( type_ == "Monolith" )
     {
@@ -468,7 +542,7 @@ void ODESystem::Re()
     }
 }
 
-void ODESystem::Sc()
+void DAESystem::Sc()
 {
     for(unsigned int i=1;i<=NC_;i++)
     {
@@ -476,7 +550,7 @@ void ODESystem::Sc()
     }
 }
 
-void ODESystem::kMat()
+void DAESystem::kMat()
 {
     if ( type_ == "Monolith" )
     {
@@ -494,9 +568,8 @@ void ODESystem::kMat()
     }
 }
 
-void  ODESystem::error()
+void  DAESystem::error()
 {
     std::cout << "\nASALI::HEATtransfer::ERROR\n" << std::endl;
 }
-
 }

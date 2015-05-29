@@ -39,17 +39,17 @@
 ##############################################################################################*/
 
 {
-	iterator_++;
-	pprofile_.resize(iterator_);
-	Compprofile_.resize(NC_*iterator_);
-	z_.resize(iterator_);
+    iterator_++;
+    pprofile_.resize(iterator_);
+    Compprofile_.resize(NC_*iterator_);
+    z_.resize(iterator_);
 
-	unsigned int contator = 1;
-	for (unsigned int i=(iterator_-1)*NC_;i<(NC_*iterator_);i++)
-	{
-		Compprofile_[i]= yOS_[contator++];
-	}
+    unsigned int contator = 1;
+    for (unsigned int i=(iterator_-1)*NC_;i<(NC_*iterator_);i++)
+    {
+        Compprofile_[i]= yOS_[contator++];
+    }
 
-	pprofile_[iterator_-1] = yOS_[NE_];
-	z_[iterator_-1]        = t_;
+    pprofile_[iterator_-1] = yOS_[NE_];
+    z_[iterator_-1]        = t_;
 }

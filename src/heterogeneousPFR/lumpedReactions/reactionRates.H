@@ -8,7 +8,6 @@ namespace OpenSMOKE
         KineticsMap_Surface_CHEMKIN_Lumped(ThermodynamicsMap_Surface_CHEMKIN<map>& thermo, rapidxml::xml_document<>& doc)
         : KineticsMap_Surface_CHEMKIN<map>(thermo, doc)
         {
-
         }
 
 
@@ -17,6 +16,7 @@ namespace OpenSMOKE
                                                 const OpenSMOKEVectorDouble& a, 
                                                 const OpenSMOKEVectorDouble& gamma)
         {
+
 
         }
 

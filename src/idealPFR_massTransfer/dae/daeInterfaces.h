@@ -38,136 +38,62 @@
 #                                                                                              #
 ##############################################################################################*/
 
+#ifndef OpenSMOKE_DaeInterfaces_H
+#define OpenSMOKE_DaeInterfaces_H
+
+#include "math/OpenSMOKEVector.h"
+#include "dae/OpenSMOKE_DaeSystemObject.h"
+
+
+#if ASALI_USE_SUNDIALS == 1
+#include "dae/OpenSMOKE_IDA_Sundials_Interface.h"
+#include "dae/OpenSMOKE_IDA_Sundials.h"
+#endif
+
+namespace OpenSMOKE
 {
-    //- Assigned variable
-    {
-        for (unsigned int i=1;i<=NC_;i++)
+    #if ASALI_USE_SUNDIALS == 1
+
+        class DAESystem_IDA_Template : public OpenSMOKE::OpenSMOKE_DaeSystemObject
         {
-            omega_[i] = yOS_[i];
-        }
+            DEFINE_DAESOLVERINTERFACE_IDA_Sundials(DAESystem_IDA_Template)
 
-        for (unsigned int i=1;i<=NC_;i++)
-        {
-            omegaW_[i] = yOS_[i+NC_];
-        }
+            ASALI::DAESystem* dae_;
+            OpenSMOKE::OpenSMOKEVectorDouble y_;
+            OpenSMOKE::OpenSMOKEVectorDouble dy_;
 
-        p_ = yOS_[NE_];
-        t_ = t;
-    }
+        public:
 
-    //-Setting conditions for GAS phase
-    {
-        thermodynamicsMap_.SetTemperature(T_);
-        thermodynamicsMap_.SetPressure(p_);
-        kineticsMap_.SetTemperature(T_);
-        kineticsMap_.SetPressure(p_);
-        thermodynamicsSurfaceMap_.SetPressure(p_);
-        thermodynamicsSurfaceMap_.SetTemperature(T_);
-        kineticsSurfaceMap_.SetPressure(p_);
-        kineticsSurfaceMap_.SetTemperature(T_);
-        transportMap_.SetPressure(p_);
-        transportMap_.SetTemperature(T_);
-    }
-
-    //- Evaluting properties
-    {
-        thermodynamicsMap_.MoleFractions_From_MassFractions(x_,MW_,omega_);
-
-        //- Density [Kg/m3]
-        rho_ = p_*MW_/(PhysicalConstants::R_J_kmol*T_);
-
-        //- Velocity [m/s]
-        v_   = G_/rho_;
-
-        {
-            thermodynamicsMap_.MoleFractions_From_MassFractions(xW_,MW_,omegaW_);
-            cTot_    = p_/(PhysicalConstants::R_J_kmol*T_);
-            Product(cTot_, xW_, &c_); 
-
-            OpenSMOKE::OpenSMOKEVectorDouble fakephase(SURF_NP_);
-            OpenSMOKE::OpenSMOKEVectorDouble fakebulk(NC_);
-            OpenSMOKE::OpenSMOKEVectorDouble faketeta(SURF_NC_);
-            OpenSMOKE::OpenSMOKEVectorDouble dummy;
-
-            for(unsigned int j=1;j<=SURF_NP_;j++)
-                fakephase[j] = thermodynamicsSurfaceMap_.matrix_densities_site_phases()[0][j-1];
-
-            for(unsigned int j=1;j<=SURF_NC_;j++)
+            void SetDaeSystem(ASALI::DAESystem* dae)
             {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
-                { 
-                    faketeta[j] = 0.;
-                }
-                else
-                {
-                    faketeta[j] = 1.;
-                }
+                dae_ = dae;
+                ChangeDimensions(dae_->NumberOfEquations(), &y_, true);
+                ChangeDimensions(dae_->NumberOfEquations(), &dy_, false);
             }
 
-            kineticsSurfaceMap_.ReactionEnthalpiesAndEntropies();
-            kineticsSurfaceMap_.ArrheniusKineticConstants();
-            kineticsSurfaceMap_.ReactionRates(c_, faketeta, fakebulk, fakephase);
-            kineticsSurfaceMap_.FormationRates(&R_, &Rsurface_, &fakebulk, &RsurfacePhases_);
-        }
+            int GetSystemFunctions(const double t, double* y, double* dy)
+            {
+                y_.CopyFrom(y);
+                int flag = dae_->Equations(t, y_, dy_);
+                dy_.CopyTo(dy);
+                return(flag);
+            }
 
+            int GetAnalyticalJacobian(const double t, double* y, double* J)
+            {
+                return(0);
+            }
 
-        // Diffusity [m2/s]
-        transportMap_.MassDiffusionCoefficients(diffG_, x_);
+            int GetWriteFunction(const double t, double *y)
+            {
+                y_.CopyFrom(y);
+                int flag = dae_->Print(t, y_);
+                return 0;
+            }
+        };
+        COMPLETE_DAESOLVERINTERFACE_IDA_Sundials(DAESystem_IDA_Template)
 
-        // Viscosity [kg/m/s]
-        transportMap_.DynamicViscosity(mu_, x_);
-
-        //- Specific area [1/m]
-        av();
-
-        //- Reynolds number
-        Re();
-        
-        //- Schimdt number
-        Sc();
-        
-        //- Fanning friction factor
-        FrictionFactor();
-        
-        //- Nusselt number
-        Sherwood();
-
-        //- Mass transfer coefficient [W/m2/K]
-        kMat();
-
-    }
-
-    for (unsigned int i=1;i<=NC_;i++)
-    {
-        if ( thermodynamicsMapXML->NamesOfSpecies()[i-1] != inert_ )
-        {
-            dyOS_[i] = 0.;
-        }
-        else
-        {
-            dyOS_[i] = 1e06*(1. - omega_.SumElements());
-        }
-    }
-
-    for (unsigned int i=1;i<=NC_;i++)
-    {
-        if ( thermodynamicsMapXML->NamesOfSpecies()[i-1] != inert_ )
-        {
-            dyOS_[i+NC_] = kMat_[i]*av_*(omega_[i] - omegaW_[i])+ R_[i]*thermodynamicsMap_.MW()[i]/rho_;
-        }
-        else
-        {
-            dyOS_[i+NC_] = 1.e06*(1. - omegaW_.SumElements());
-        }
-    }
-
-    if ( type_ == "Monolith" )
-    {
-        dyOS_[NE_] = 0.;
-    }
-    else if ( type_ == "PackedBed" )
-    {
-        dyOS_[NE_] = 0.;
-    }
-
+    #endif
 }
+
+#endif    // OpenSMOKE_DaeInterfaces_H

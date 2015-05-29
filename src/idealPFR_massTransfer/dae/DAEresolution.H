@@ -44,31 +44,27 @@ if ( input.getOdeSolver() == "BzzMath")
 
     BzzVector yFbzz;
     BzzVector x0bzz;
-    ChangeDimensions( ode->NumberOfEquations(), &yFbzz, true);
-    ChangeDimensions( ode->NumberOfEquations(), &x0bzz, true);
-    ChangeDimensions( ode->NumberOfEquations(), &yFode, true);
+    ChangeDimensions( dae->NumberOfEquations(), &yFbzz, true);
+    ChangeDimensions( dae->NumberOfEquations(), &x0bzz, true);
+    ChangeDimensions( dae->NumberOfEquations(), &yF, true);
 
-    for (unsigned int i=1;i<=NC;i++)
+    for (unsigned int i=1;i<=dae->NumberOfEquations();i++)
     {
-        x0bzz[i] = x0[i];
+        x0bzz[i] = yFode[i];
     }
 
-    for (unsigned int i=1;i<=NC;i++)
-    {
-        x0bzz[i] = x0[i];
-    }
-    
-    x0bzz[ode->NumberOfEquations()] = input.getFeedPressure();
+    BzzVectorInt iAO;
+    dae->AlgebraicEquations(iAO);
 
-    BzzOdeStiffObject o;
-    o(x0bzz,0.,ode);
+    BzzDaeObject o;
+    o(x0bzz,0.,iAO,dae);
 
     o.SetTolAbs(1.e-12);
     o.SetTolRel(1.e-08);
 
-    yFbzz = o(1e07);
+    yFbzz = o(input.getReactorLength());
 
-    FromBzzToOS(yFbzz,yFode);
+    FromBzzToOS(yFbzz,yF);
 
     #endif
 }
@@ -76,8 +72,8 @@ else if ( input.getOdeSolver() == "Sundials" )
 {
     #if ASALI_USE_SUNDIALS == 1
 
-    OpenSMOKE::OpenSMOKEVectorDouble y0(ode->NumberOfEquations());
-    ChangeDimensions(ode->NumberOfEquations(), &yFode, true);
+    OpenSMOKE::OpenSMOKEVectorDouble y0(dae->NumberOfEquations());
+    ChangeDimensions(dae->NumberOfEquations(), &yF, true);
 
     for (unsigned int i=1;i<=NC;i++)
     {
@@ -89,22 +85,26 @@ else if ( input.getOdeSolver() == "Sundials" )
         y0[i+NC] = x0[i];
     }
  
-    y0[ode->NumberOfEquations()] = input.getFeedPressure();
+    y0[dae->NumberOfEquations()] = input.getFeedPressure();
 
-    OpenSMOKE::ODESystem_CVODE_Template *odeSystemObject;
-    odeSystemObject = OpenSMOKE::ODESystem_CVODE_Template::GetInstance();
-    odeSystemObject->SetOdeSystem(ode);
+    OpenSMOKE::OpenSMOKEVectorBool   algebraic(dae->NumberOfEquations());
+    dae->AlgebraicEquations(algebraic);
 
-    OpenSMOKE::OpenSMOKE_CVODE_Sundials<OpenSMOKE::ODESystem_CVODE_Template>   o(odeSystemObject);
-    o.SetDimensions(ode->NumberOfEquations());
-    o.SetAbsoluteTolerance(1e-12);
-    o.SetRelativeTolerance(1e-08);
-    o.SetMaximumNumberOfSteps(20000);
+    OpenSMOKE::DAESystem_IDA_Template *daeSystemObject;
+    daeSystemObject = OpenSMOKE::DAESystem_IDA_Template::GetInstance(dae->NumberOfEquations(),algebraic.GetHandle());
+    daeSystemObject->SetDaeSystem(dae);
+
+    OpenSMOKE::OpenSMOKE_IDA_Sundials<OpenSMOKE::DAESystem_IDA_Template>   o(daeSystemObject);
+    o.SetDimensions(dae->NumberOfEquations());
+    o.SetAbsoluteTolerance(input.getSpecieAbsTol());
+    o.SetRelativeTolerance(input.getSpecieRelTol());
+    o.SetMaximumNumberOfSteps(100000);
     o.SetAnalyticalJacobian(false);
-    o.SetInitialValues(0, y0.GetHandle());
+    o.SetAlgebraicEquations(algebraic.GetHandle());
+    o.SetInitialValues(0., x0.GetHandle(), residuals.GetHandle());
 
     // Solution
-    o.Solve(1e07);
-    o.Solution(yFode.GetHandle());
+    o.Solve(input.getReactorLength());
+    o.Solution(yF.GetHandle());
     #endif
 }

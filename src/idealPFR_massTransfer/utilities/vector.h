@@ -40,28 +40,28 @@
 
 void FromCppToOS(const std::vector<double> &v, OpenSMOKE::OpenSMOKEVectorDouble &b)
 {
-	ChangeDimensions(v.size(), &b,true);
-	double* ptb = b.GetHandle();
-	for(int i=0;i<v.size();i++)
-		*ptb++ = v[i];
+    ChangeDimensions(v.size(), &b,true);
+    double* ptb = b.GetHandle();
+    for(int i=0;i<v.size();i++)
+        *ptb++ = v[i];
 }
 
 void FromOSToCpp(const OpenSMOKE::OpenSMOKEVectorDouble &b, std::vector<double> &v)
 {
-	v.resize(b.Size());
-	const double* ptb = b.GetHandle();
-	for(int i=0;i<v.size();i++)
-		v[i] = *ptb++;
+    v.resize(b.Size());
+    const double* ptb = b.GetHandle();
+    for(int i=0;i<v.size();i++)
+        v[i] = *ptb++;
 }
 
 #if ASALI_USE_BZZ == 1
 void FromBzzToOS(const BzzVector &bzz, OpenSMOKE::OpenSMOKEVectorDouble &os)
 {
-	memcpy(os.GetHandle(), bzz.GetHandle(), bzz.Size()*sizeof(double));
+    memcpy(os.GetHandle(), bzz.GetHandle(), bzz.Size()*sizeof(double));
 }
 
 void FromOSToBzz(const OpenSMOKE::OpenSMOKEVectorDouble&os, BzzVector &bzz)
 {
-	memcpy(bzz.GetHandle(), os.GetHandle(), bzz.Size()*sizeof(double));
+    memcpy(bzz.GetHandle(), os.GetHandle(), bzz.Size()*sizeof(double));
 }
 #endif

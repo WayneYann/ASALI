@@ -45,7 +45,6 @@
         {
             omega_[i] = yOS_[i];
         }
-
         for (unsigned int i=1;i<=NC_;i++)
         {
             omegaW_[i] = yOS_[i+NC_];
@@ -59,12 +58,6 @@
     {
         thermodynamicsMap_.SetTemperature(T_);
         thermodynamicsMap_.SetPressure(p_);
-        kineticsMap_.SetTemperature(T_);
-        kineticsMap_.SetPressure(p_);
-        thermodynamicsSurfaceMap_.SetPressure(p_);
-        thermodynamicsSurfaceMap_.SetTemperature(T_);
-        kineticsSurfaceMap_.SetPressure(p_);
-        kineticsSurfaceMap_.SetTemperature(T_);
         transportMap_.SetPressure(p_);
         transportMap_.SetTemperature(T_);
     }
@@ -110,7 +103,6 @@
             kineticsSurfaceMap_.FormationRates(&R_, &Rsurface_, &fakebulk, &RsurfacePhases_);
         }
 
-
         // Diffusity [m2/s]
         transportMap_.MassDiffusionCoefficients(diffG_, x_);
 
@@ -129,45 +121,43 @@
         //- Fanning friction factor
         FrictionFactor();
         
-        //- Nusselt number
+        //- Sherwood number
         Sherwood();
 
-        //- Mass transfer coefficient [W/m2/K]
+        //- Heat transfer coefficient [W/m2/K]
         kMat();
-
     }
-
+    
     for (unsigned int i=1;i<=NC_;i++)
     {
         if ( thermodynamicsMapXML->NamesOfSpecies()[i-1] != inert_ )
         {
-            dyOS_[i] = 0.;
+            dyOS_[i] = -kMat_[i]*av_*(omega_[i] - omegaW_[i])*rho_/(G_*epsi_);
         }
         else
         {
-            dyOS_[i] = 1e06*(1. - omega_.SumElements());
+            dyOS_[i] = 1. - omega_.SumElements();
         }
     }
-
+    
     for (unsigned int i=1;i<=NC_;i++)
     {
         if ( thermodynamicsMapXML->NamesOfSpecies()[i-1] != inert_ )
         {
-            dyOS_[i+NC_] = kMat_[i]*av_*(omega_[i] - omegaW_[i])+ R_[i]*thermodynamicsMap_.MW()[i]/rho_;
+            dyOS_[i+NC_] = kMat_[i]*av_*(omega_[i] - omegaW_[i]) + R_[i]*thermodynamicsMap_.MW()[i]/rho_;
         }
         else
         {
-            dyOS_[i+NC_] = 1.e06*(1. - omegaW_.SumElements());
+            dyOS_[i+NC_] = 1. - omegaW_.SumElements();
         }
     }
 
     if ( type_ == "Monolith" )
     {
-        dyOS_[NE_] = 0.;
+        dyOS_[NE_] = -rho_*v_*v_*fm_/Dt_;
     }
     else if ( type_ == "PackedBed" )
     {
-        dyOS_[NE_] = 0.;
+        dyOS_[NE_] = -rho_*v_*v_*fm_/Dp_;
     }
-
 }

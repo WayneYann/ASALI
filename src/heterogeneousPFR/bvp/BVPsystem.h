@@ -156,11 +156,11 @@ private:
     bool energy_;
     bool gasDiffusion_;
 
-    OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&            thermodynamicsMap_;                //!< thermodynamic map
-    OpenSMOKE::KineticsMap_CHEMKIN<double>&                    kineticsMap_;                    //!< kinetic map
-    OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&    thermodynamicsSurfaceMap_;        //!< thermodynamic map
+    OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&              thermodynamicsMap_;             //!< thermodynamic map
+    OpenSMOKE::KineticsMap_CHEMKIN<double>&                    kineticsMap_;                   //!< kinetic map
+    OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&      thermodynamicsSurfaceMap_;      //!< thermodynamic map
     OpenSMOKE::KineticsMap_Surface_CHEMKIN<double>&            kineticsSurfaceMap_;            //!< kinetic map
-    OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&         transportMap_;                    //!< transport map
+    OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&         transportMap_;                  //!< transport map
 
     OpenSMOKE::OpenSMOKEVectorDouble *omegaBulk_;
     OpenSMOKE::OpenSMOKEVectorDouble *omegaWall_;
@@ -206,7 +206,7 @@ private:
 };
 
 
-BVPSystem::BVPSystem(    OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+BVPSystem::BVPSystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
                         OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
                         OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
                         OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,

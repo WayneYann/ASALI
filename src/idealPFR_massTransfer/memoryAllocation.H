@@ -37,11 +37,15 @@
 #   along with ASALI. If not, see <http://www.gnu.org/licenses/>.                              #
 #                                                                                              #
 ##############################################################################################*/
-OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>*				thermodynamicsMapXML;
-OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>*			transportMapXML;
-
+OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>*        thermodynamicsSurfaceMapXML;
+OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>*                thermodynamicsMapXML;
+OpenSMOKE::KineticsMap_CHEMKIN<double>*                      kineticsMapXML;
+OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>*       kineticsSurfaceMapXML;
+OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>*           transportMapXML;
+OpenSMOKE::StoichiometricMap*                                stoichiometricMapXML;
 
 OpenSMOKE::OpenSMOKEVectorDouble yF;
+OpenSMOKE::OpenSMOKEVectorDouble yFode;
 OpenSMOKE::OpenSMOKEVectorDouble x0;
 
 double G;
