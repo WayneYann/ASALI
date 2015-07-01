@@ -77,6 +77,12 @@ namespace ASALI
             std::cout << "#           sampling           # " << std::endl;
             std::cout << "################################\n " << std::endl;
         }
+        else if ( type == "kinetic" )
+        {
+            std::cout << "\n################################" << std::endl;
+            std::cout << "#       KINETIC analysis       # " << std::endl;
+            std::cout << "################################\n " << std::endl;
+        }
     }
 
     void check( const int argc )

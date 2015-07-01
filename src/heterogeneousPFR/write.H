@@ -72,7 +72,21 @@
     }
     else if ( input.getStart() == "sampling")
     {
-        folderName = "results/" + ASALI::to_string(N) + ".sampled";
+        folderName = "results/" + ASALI::to_string(N) + ".sampling";
+        boost::filesystem::create_directory(folderName);
+        
+        if ( input.getRestartResults() == "mass")
+        {
+            results = "mass";
+        }
+        else if ( input.getRestartResults() == "mole")
+        {
+            results = "mole";
+        }
+    }
+    else if ( input.getStart() == "kinetic")
+    {
+        folderName = "results/" + ASALI::to_string(N) + ".kinetic";
         boost::filesystem::create_directory(folderName);
         
         if ( input.getRestartResults() == "mass")
@@ -396,6 +410,10 @@
         extra.close();
         vel.close();
         remove(pathVel);
+    }
+    else if ( input.getStart() == "kinetic" )
+    {
+        #include "kinetic.H"
     }
 
     delete [] omegaBulk;

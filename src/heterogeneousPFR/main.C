@@ -151,6 +151,10 @@ int main( int argc, char** argv )
         #include "sampling.H"
         #include "write.H"
     }
+    else if ( input.getStart() == "kinetic" )
+    {
+        #include "write.H"
+    }
 
     remove("BzzFile.txt");
 

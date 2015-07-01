@@ -301,7 +301,10 @@ namespace ASALI
         velocity();
         solid();
         numerical();
-        if ( start_ == "latest" || start_ == "converter")
+        if ( start_ == "latest"    || 
+             start_ == "converter" ||
+             start_ == "kinetic"   ||
+             start_ == "equilibrium" )
         {
             restarting();
         }
@@ -935,10 +938,28 @@ namespace ASALI
                     grow_ = false;
 
                 start_ = vectorDummy[startIndex+1+1];
-                if ( start_ != "new" && start_ != "latest" && start_ != "converter" && start_ != "sampling")
+                if ( start_ != "new"       && 
+                     start_ != "latest"    && 
+                     start_ != "converter" && 
+                     start_ != "sampling"  && 
+                     start_ != "help"      &&
+                     start_ != "kinetic"   &&
+                     start_ != "equilibrium")
                 {
                     error();
-                    std::cout << "key word || " << "Resolution type" << " || MUST be || new || latest || converter || sampling ||\n" << std::endl;
+                    std::cout << "key word || " << "Resolution type" << " || MUST be || new || latest || converter || sampling || help || kinetic || equilibrium ||\n" << std::endl;
+                    exit (EXIT_FAILURE);
+                }
+                else if ( start_ == "help" )
+                {
+                    error();
+                    std::cout << "'Resolution type' options:" << std::endl;
+                    std::cout << "1/ 'new'         : starting from a new uniform grid" << std::endl;
+                    std::cout << "2/ 'latest'      : starting from the latest solution in the results folder" << std::endl;
+                    std::cout << "3/ 'converter'   : last results are converted from mass to mole fraction and viceversa" << std::endl;
+                    std::cout << "4/ 'sampling'    : last results are sampled on a grid provided by the user in the additional file" << std::endl;
+                    std::cout << "5/ 'kinetic'     : kinetic analysis of the results" << std::endl;
+                    std::cout << "6/ 'equilibrium' : equilibrium analysis of the results\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
 

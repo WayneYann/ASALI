@@ -197,7 +197,10 @@ ASALI::GROWgrid  *growGrid;
             x0[counter++] = input.getSolidTemperature();
         }
     }
-    else if ( input.getStart() == "latest" || input.getStart() == "converter" || input.getStart() == "sampling")
+    else if ( input.getStart() == "latest"    || 
+              input.getStart() == "converter" || 
+              input.getStart() == "sampling"  ||
+              input.getStart() == "kinetic")
     {
         N       = input.getRestartPoints();
         NC      = thermodynamicsMapXML->NumberOfSpecies();
