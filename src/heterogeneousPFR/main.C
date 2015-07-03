@@ -142,17 +142,15 @@ int main( int argc, char** argv )
             }
         }
     }
-    else if ( input.getStart() == "converter") 
+    else if ( input.getStart() == "converter"  ||
+              input.getStart() == "kinetic"    ||
+              input.getStart() == "RPA") 
     {
         #include "write.H"
     }
     else if ( input.getStart() == "sampling" )
     {
         #include "sampling.H"
-        #include "write.H"
-    }
-    else if ( input.getStart() == "kinetic" )
-    {
         #include "write.H"
     }
 

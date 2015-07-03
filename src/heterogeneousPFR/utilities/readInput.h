@@ -278,10 +278,11 @@ namespace ASALI
                         exit(EXIT_FAILURE);
                     }
                 }
-                else
+                else if ( boost::filesystem::exists(options_) && boost::filesystem::is_directory(options_))
                 {
                     error();
-                    std::cout << options_ << " MUST BE a file named || samplingGrid.txt || " << std::endl;
+                    std::cout << "1/ 'sampling':     " << options_ << " MUST BE a file named || samplingGrid.txt || " << std::endl;
+                    std::cout << "2/ 'RPA':          " << options_ << " MUST BE a specie in the database " << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }
@@ -304,7 +305,7 @@ namespace ASALI
         if ( start_ == "latest"    || 
              start_ == "converter" ||
              start_ == "kinetic"   ||
-             start_ == "equilibrium" )
+             start_ == "RPA" )
         {
             restarting();
         }
@@ -944,10 +945,10 @@ namespace ASALI
                      start_ != "sampling"  && 
                      start_ != "help"      &&
                      start_ != "kinetic"   &&
-                     start_ != "equilibrium")
+                     start_ != "RPA")
                 {
                     error();
-                    std::cout << "key word || " << "Resolution type" << " || MUST be || new || latest || converter || sampling || help || kinetic || equilibrium ||\n" << std::endl;
+                    std::cout << "key word || " << "Resolution type" << " || MUST be || new || latest || converter || sampling || help || kinetic || RPA ||\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
                 else if ( start_ == "help" )
@@ -959,7 +960,7 @@ namespace ASALI
                     std::cout << "3/ 'converter'   : last results are converted from mass to mole fraction and viceversa" << std::endl;
                     std::cout << "4/ 'sampling'    : last results are sampled on a grid provided by the user in the additional file" << std::endl;
                     std::cout << "5/ 'kinetic'     : kinetic analysis of the results" << std::endl;
-                    std::cout << "6/ 'equilibrium' : equilibrium analysis of the results\n" << std::endl;
+                    std::cout << "6/ 'RPA'         : reaction path analysis of the results\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
 

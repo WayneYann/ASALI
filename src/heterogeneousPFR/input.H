@@ -197,10 +197,11 @@ ASALI::GROWgrid  *growGrid;
             x0[counter++] = input.getSolidTemperature();
         }
     }
-    else if ( input.getStart() == "latest"    || 
-              input.getStart() == "converter" || 
-              input.getStart() == "sampling"  ||
-              input.getStart() == "kinetic")
+    else if ( input.getStart() == "latest"      || 
+              input.getStart() == "converter"   || 
+              input.getStart() == "sampling"    ||
+              input.getStart() == "kinetic"     ||
+              input.getStart() == "RPA")
     {
         N       = input.getRestartPoints();
         NC      = thermodynamicsMapXML->NumberOfSpecies();
@@ -397,6 +398,18 @@ if ( *options == "none" && input.getStart() == "sampling" )
     std::cout << "\n " << std::endl;
     std::cout << " 1/ input file " << std::endl;
     std::cout << " 2/ samplingGrid.txt " << std::endl;
+    std::cout << "\n " << std::endl;
+    exit(EXIT_FAILURE);
+}
+else if ( *options == "none" && input.getStart() == "RPA" )
+{
+    ASALI::error();
+    std::cout << " || RPA || options required the specie name" << std::endl;
+    std::cout << "\n " << std::endl;
+    std::cout << "INPUT ORDER SHOULD BE:  " << std::endl;
+    std::cout << "\n " << std::endl;
+    std::cout << " 1/ input file " << std::endl;
+    std::cout << " 2/ name of the specie" << std::endl;
     std::cout << "\n " << std::endl;
     exit(EXIT_FAILURE);
 }

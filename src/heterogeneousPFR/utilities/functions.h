@@ -67,20 +67,37 @@ namespace ASALI
         if ( type == "converter" )
         {
             std::cout << "\n############################### " << std::endl;
+            std::cout << "#          CONVERTER          # " << std::endl;
             std::cout << "#       mole <---> mass       # " << std::endl;
-            std::cout << "#          converter          # " << std::endl;
             std::cout << "###############################\n " << std::endl;
         }
         else if ( type == "sampling" )
         {
             std::cout << "\n################################" << std::endl;
-            std::cout << "#           sampling           # " << std::endl;
+            std::cout << "#           SAMPLING           # " << std::endl;
             std::cout << "################################\n " << std::endl;
         }
         else if ( type == "kinetic" )
         {
             std::cout << "\n################################" << std::endl;
             std::cout << "#       KINETIC analysis       # " << std::endl;
+            std::cout << "################################\n " << std::endl;
+        }
+        else if ( type == "RPA" )
+        {
+            std::cout << "\n################################" << std::endl;
+            std::cout << "#    REACTION PATH ANALYSIS    # " << std::endl;
+            std::cout << "#                              # " << std::endl;
+            std::cout << "#                              # " << std::endl;
+            std::cout << "#            WARNING           # " << std::endl;
+            std::cout << "#     This utility has been    #" << std::endl;
+            std::cout << "#   created only for kinetic   #" << std::endl;
+            std::cout << "# schemes where every reaction #" << std::endl;
+            std::cout << "#  is followed by its inverse  #" << std::endl;
+            std::cout << "#                              # " << std::endl;
+            std::cout << "#           A ---> B           #" << std::endl;
+            std::cout << "#           B ---> A           #" << std::endl;
+            std::cout << "#                              # " << std::endl;
             std::cout << "################################\n " << std::endl;
         }
     }
