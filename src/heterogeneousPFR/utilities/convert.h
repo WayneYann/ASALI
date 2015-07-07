@@ -79,6 +79,7 @@ void ConvertsToOneOnMeter(double &L, std::string &m)
         exit(-1);
     }
 }
+
 void ConvertsToKg(double &mass, std::string &m)
 {
     if (m == "Kg")

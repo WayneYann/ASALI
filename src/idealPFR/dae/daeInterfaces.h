@@ -52,48 +52,48 @@
 
 namespace OpenSMOKE
 {
-	#if ASALI_USE_SUNDIALS == 1
+    #if ASALI_USE_SUNDIALS == 1
 
-		class DAESystem_IDA_Template : public OpenSMOKE::OpenSMOKE_DaeSystemObject
-		{
-			DEFINE_DAESOLVERINTERFACE_IDA_Sundials(DAESystem_IDA_Template)
+        class DAESystem_IDA_Template : public OpenSMOKE::OpenSMOKE_DaeSystemObject
+        {
+            DEFINE_DAESOLVERINTERFACE_IDA_Sundials(DAESystem_IDA_Template)
 
-			ASALI::DAESystem* dae_;
-			OpenSMOKE::OpenSMOKEVectorDouble y_;
-			OpenSMOKE::OpenSMOKEVectorDouble dy_;
+            ASALI::DAESystem* dae_;
+            OpenSMOKE::OpenSMOKEVectorDouble y_;
+            OpenSMOKE::OpenSMOKEVectorDouble dy_;
 
-		public:
+        public:
 
-			void SetDaeSystem(ASALI::DAESystem* dae)
-			{
-				dae_ = dae;
-				ChangeDimensions(dae_->NumberOfEquations(), &y_, true);
-				ChangeDimensions(dae_->NumberOfEquations(), &dy_, false);
-			}
+            void SetDaeSystem(ASALI::DAESystem* dae)
+            {
+                dae_ = dae;
+                ChangeDimensions(dae_->NumberOfEquations(), &y_, true);
+                ChangeDimensions(dae_->NumberOfEquations(), &dy_, false);
+            }
 
-			int GetSystemFunctions(const double t, double* y, double* dy)
-			{
-				y_.CopyFrom(y);
-				int flag = dae_->Equations(t, y_, dy_);
-				dy_.CopyTo(dy);
-				return(flag);
-			}
+            int GetSystemFunctions(const double t, double* y, double* dy)
+            {
+                y_.CopyFrom(y);
+                int flag = dae_->Equations(t, y_, dy_);
+                dy_.CopyTo(dy);
+                return(flag);
+            }
 
-			int GetAnalyticalJacobian(const double t, double* y, double* J)
-			{
-				return(0);
-			}
+            int GetAnalyticalJacobian(const double t, double* y, double* J)
+            {
+                return(0);
+            }
 
-			int GetWriteFunction(const double t, double *y)
-			{
-				y_.CopyFrom(y);
-				int flag = dae_->Print(t, y_);
-				return 0;
-			}
-		};
-		COMPLETE_DAESOLVERINTERFACE_IDA_Sundials(DAESystem_IDA_Template)
+            int GetWriteFunction(const double t, double *y)
+            {
+                y_.CopyFrom(y);
+                int flag = dae_->Print(t, y_);
+                return 0;
+            }
+        };
+        COMPLETE_DAESOLVERINTERFACE_IDA_Sundials(DAESystem_IDA_Template)
 
-	#endif
+    #endif
 }
 
-#endif	// OpenSMOKE_DaeInterfaces_H
+#endif    // OpenSMOKE_DaeInterfaces_H

@@ -40,122 +40,122 @@
 
 if ( input.getOdeSolver() == "BzzMath")
 {
-	#if ASALI_USE_BZZ == 1
+    #if ASALI_USE_BZZ == 1
 
-	BzzVector yFbzz;
-	BzzVector x0bzz;
-	ChangeDimensions( ode->NumberOfEquations(), &yFbzz, true);
-	ChangeDimensions( ode->NumberOfEquations(), &x0bzz, true);
-	ChangeDimensions( ode->NumberOfEquations(), &yF, true);
+    BzzVector yFbzz;
+    BzzVector x0bzz;
+    ChangeDimensions( ode->NumberOfEquations(), &yFbzz, true);
+    ChangeDimensions( ode->NumberOfEquations(), &x0bzz, true);
+    ChangeDimensions( ode->NumberOfEquations(), &yF, true);
 
-	FromOSToBzz(x0,x0bzz);
+    FromOSToBzz(x0,x0bzz);
 
-	BzzOdeStiffObject o;
-	o(x0bzz,0.,ode);
+    BzzOdeStiffObject o;
+    o(x0bzz,0.,ode);
 
-	if ( input.getConstraints() == true)
-	{
-		BzzVector yMax(ode->NumberOfEquations());
-		{
-			unsigned counter = 1;
-			{
-				for (unsigned int j=1;j<=NC;j++)
-					yMax[counter++] = 1.;
-				for (unsigned int j=1;j<=NC;j++)
-					yMax[counter++] = 1.;
-				for (unsigned int j=1;j<=SURF_NC;j++)
-					yMax[counter++] = 1.;
-			}
-		}
-		BzzVector yMin(ode->NumberOfEquations());
-		{
-			unsigned counter = 1;
-			{
-				for (unsigned int j=1;j<=NC;j++)
-					yMin[counter++] = 0.;
-				for (unsigned int j=1;j<=NC;j++)
-					yMin[counter++] = 0.;
-				for (unsigned int j=1;j<=SURF_NC;j++)
-					yMin[counter++] = 0.;
-			}
-		}
-		o.SetMinimumConstraints(&yMin);
-		o.SetMaximumConstraints(&yMax);
-	}
+    if ( input.getConstraints() == true)
+    {
+        BzzVector yMax(ode->NumberOfEquations());
+        {
+            unsigned counter = 1;
+            {
+                for (unsigned int j=1;j<=NC;j++)
+                    yMax[counter++] = 1.;
+                for (unsigned int j=1;j<=NC;j++)
+                    yMax[counter++] = 1.;
+                for (unsigned int j=1;j<=SURF_NC;j++)
+                    yMax[counter++] = 1.;
+            }
+        }
+        BzzVector yMin(ode->NumberOfEquations());
+        {
+            unsigned counter = 1;
+            {
+                for (unsigned int j=1;j<=NC;j++)
+                    yMin[counter++] = 0.;
+                for (unsigned int j=1;j<=NC;j++)
+                    yMin[counter++] = 0.;
+                for (unsigned int j=1;j<=SURF_NC;j++)
+                    yMin[counter++] = 0.;
+            }
+        }
+        o.SetMinimumConstraints(&yMin);
+        o.SetMaximumConstraints(&yMax);
+    }
 
-	{
-		BzzVector tolAbs(ode->NumberOfEquations());
-		{
-			unsigned counter = 1;
-			{
-				for (unsigned int j=1;j<=NC;j++)
-					tolAbs[counter++] = input.getSpecieAbsTol();
-				for (unsigned int j=1;j<=NC;j++)
-					tolAbs[counter++] = input.getSpecieAbsTol();
-				for (unsigned int j=1;j<=SURF_NC;j++)
-					tolAbs[counter++] = input.getSpecieAbsTol();
+    {
+        BzzVector tolAbs(ode->NumberOfEquations());
+        {
+            unsigned counter = 1;
+            {
+                for (unsigned int j=1;j<=NC;j++)
+                    tolAbs[counter++] = input.getSpecieAbsTol();
+                for (unsigned int j=1;j<=NC;j++)
+                    tolAbs[counter++] = input.getSpecieAbsTol();
+                for (unsigned int j=1;j<=SURF_NC;j++)
+                    tolAbs[counter++] = input.getSpecieAbsTol();
 
-			}
-		}
-		BzzVector tolRel(ode->NumberOfEquations());
-		{
-			unsigned counter = 1;
-			{
-				for (unsigned int j=1;j<=NC;j++)
-					tolRel[counter++] = input.getSpecieRelTol();
-				for (unsigned int j=1;j<=NC;j++)
-					tolRel[counter++] = input.getSpecieRelTol();
-				for (unsigned int j=1;j<=SURF_NC;j++)
-					tolRel[counter++] = input.getSpecieRelTol();
-			}
-		}
+            }
+        }
+        BzzVector tolRel(ode->NumberOfEquations());
+        {
+            unsigned counter = 1;
+            {
+                for (unsigned int j=1;j<=NC;j++)
+                    tolRel[counter++] = input.getSpecieRelTol();
+                for (unsigned int j=1;j<=NC;j++)
+                    tolRel[counter++] = input.getSpecieRelTol();
+                for (unsigned int j=1;j<=SURF_NC;j++)
+                    tolRel[counter++] = input.getSpecieRelTol();
+            }
+        }
 
-		o.SetTolAbs(tolAbs);
-		o.SetTolRel(tolRel);
-	}
+        o.SetTolAbs(tolAbs);
+        o.SetTolRel(tolRel);
+    }
 
-	ode->start();
-	yFbzz = o(1e10);
+    ode->start();
+    yFbzz = o(1e10);
 
-	FromBzzToOS(yFbzz,yF);
+    FromBzzToOS(yFbzz,yF);
 
-	for (unsigned int i=1;i<=ode->NumberOfEquations();i++)
-	{
-		x0[i] = yF[i];
-		yF[i] = 0.;
-	}
-	
-	ode->end();
-	#endif
+    for (unsigned int i=1;i<=ode->NumberOfEquations();i++)
+    {
+        x0[i] = yF[i];
+        yF[i] = 0.;
+    }
+    
+    ode->end();
+    #endif
 }
 else if ( input.getOdeSolver() == "Sundials" )
 {
-	#if ASALI_USE_SUNDIALS == 1
-	ChangeDimensions( ode->NumberOfEquations(), &yF, true);
+    #if ASALI_USE_SUNDIALS == 1
+    ChangeDimensions( ode->NumberOfEquations(), &yF, true);
 
-	OpenSMOKE::ODESystem_CVODE_Template *odeSystemObject;
-	odeSystemObject = OpenSMOKE::ODESystem_CVODE_Template::GetInstance();
-	odeSystemObject->SetOdeSystem(ode);
+    OpenSMOKE::ODESystem_CVODE_Template *odeSystemObject;
+    odeSystemObject = OpenSMOKE::ODESystem_CVODE_Template::GetInstance();
+    odeSystemObject->SetOdeSystem(ode);
 
-	OpenSMOKE::OpenSMOKE_CVODE_Sundials<OpenSMOKE::ODESystem_CVODE_Template>   o(odeSystemObject);
-	o.SetDimensions(ode->NumberOfEquations());
-	o.SetAbsoluteTolerance(input.getSpecieAbsTol());
-	o.SetRelativeTolerance(input.getSpecieRelTol());
-	o.SetMaximumNumberOfSteps(10000);
-	o.SetAnalyticalJacobian(false);
-	o.SetInitialValues(0., x0.GetHandle());
+    OpenSMOKE::OpenSMOKE_CVODE_Sundials<OpenSMOKE::ODESystem_CVODE_Template>   o(odeSystemObject);
+    o.SetDimensions(ode->NumberOfEquations());
+    o.SetAbsoluteTolerance(input.getSpecieAbsTol());
+    o.SetRelativeTolerance(input.getSpecieRelTol());
+    o.SetMaximumNumberOfSteps(10000);
+    o.SetAnalyticalJacobian(false);
+    o.SetInitialValues(0., x0.GetHandle());
 
-	ode->start();
-	double tf = 1e10;
-	o.Solve(tf);
-	o.Solution(yF.GetHandle());
-	
-	for (unsigned int i=1;i<=ode->NumberOfEquations();i++)
-	{
-		x0[i] = yF[i];
-		yF[i] = 0.;
-	}
-	
-	ode->end();
-	#endif
+    ode->start();
+    double tf = 1e10;
+    o.Solve(tf);
+    o.Solution(yF.GetHandle());
+    
+    for (unsigned int i=1;i<=ode->NumberOfEquations();i++)
+    {
+        x0[i] = yF[i];
+        yF[i] = 0.;
+    }
+    
+    ode->end();
+    #endif
 }
