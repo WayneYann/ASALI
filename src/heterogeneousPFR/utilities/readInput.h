@@ -1233,7 +1233,7 @@ namespace ASALI
                     double ActiveArea = RhMassFraction*RhDispersion*Wcat/(RhPM*SiteD);
                     
                     double Ain = 0.25*3.14*Dmatrix_*Dmatrix_;
-                    double ReactorVolume = epsi_*Ain*Lcat_;
+                    double ReactorVolume = Ain*Lcat_;
                     
                     alfa_ = dectivationFactor*ActiveArea/ReactorVolume;
                 }
