@@ -43,7 +43,7 @@
 
 #include "math/OpenSMOKEVector.h"
 #include "ode/OpenSMOKE_OdeSystemObject.h"
-
+#include "ODESystemVirtualClassWithOpenSMOKEVectors.H"
 
 #if ASALI_USE_SUNDIALS == 1
 #include "ode/OpenSMOKE_CVODE_Sundials_Interface.h"
@@ -94,5 +94,31 @@ namespace OpenSMOKE
         COMPLETE_ODESOLVERINTERFACE_CVODE_Sundials(ODESystem_CVODE_Template)
 
     #endif
+
+        class ODESystem_ODE_OpenSMOKE : public ODESystemVirtualClassWithOpenSMOKEVectors
+        {
+
+        private:
+
+              ASALI::ODESystem *ode_;
+
+        public:
+
+            ODESystem_ODE_OpenSMOKE() {};
+
+            void SetOdeSystem(ASALI::ODESystem* ode)
+            {
+                ode_ = ode;
+            }
+
+			virtual void GetEquations(const OpenSMOKE::OpenSMOKEVectorDouble& y, const double t, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+			{
+				ode_->Equations(t, y, dy);
+			}
+			virtual void PrintResults(const OpenSMOKE::OpenSMOKEVectorDouble& y, const double t)
+			{
+				ode_->Print(t, y);
+			}
+        };  
 }
 #endif    // OpenSMOKE_OdeInterfaces_H

@@ -63,15 +63,6 @@
 #define OPENSMOKE_USE_SUNDIALS 0
 #endif
 
-// OpenSMOKE++ Definitions
-#include "OpenSMOKEpp"
-
-// CHEMKIN maps
-#include "maps/Maps_CHEMKIN"
-
-// Reactor utilities
-#include "reactors/utilities/Utilities"
-
 // Eigen
 #include <Eigen/Dense>
 
@@ -81,6 +72,19 @@
 
 // RapidXML
 #include "rapidxml.hpp"
+
+// OpenSMOKE++ Definitions
+#include "OpenSMOKEpp"
+
+// CHEMKIN maps
+#include "maps/Maps_CHEMKIN"
+
+// Reactor utilities
+#include "reactors/utilities/Utilities"
+
+// Ode
+#include "math/multivalue-ode-solvers/MultiValueSolver"
+#include "ode/ODE_Parameters.h"
 
 // Utilities
 #include "readInput.h"
@@ -94,18 +98,13 @@
 #include "memoryAllocation.H"
 
 #include "ODEsystem.h"
-#include "ICsystem.h"
-#if ASALI_USE_SUNDIALS == 1
 #include "odeInterfaces.h"
-#include "icInterfaces.h"
-#endif
 
 int main( int argc, char** argv )
 {
     double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
 
     #include "input.H"
-    #include "ICresolution.H"
     #include "ODEresolution.H"
     #include "write.H"
 

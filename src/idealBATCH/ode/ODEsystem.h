@@ -81,6 +81,12 @@ public:
     std::vector<double> getSite()        const {return Site_;};
     std::vector<double> getPhase()       const {return Phase_;};
 
+    std::vector<double> derivateMass()        const {return dMass_;};
+    std::vector<double> derivateTemperature() const {return dTemperature_;};
+    std::vector<double> derivateSpecie()      const {return dSpecie_;};
+    std::vector<double> derivateSite()        const {return dSite_;};
+    std::vector<double> derivatePhase()       const {return dPhase_;};
+
     unsigned int NumberOfEquations()     const {return NE_;};
 
     void start();
@@ -154,6 +160,11 @@ private:
     std::vector<double> Site_;
     std::vector<double> Phase_;
 
+    std::vector<double> dMass_;
+    std::vector<double> dTemperature_;
+    std::vector<double> dSpecie_;
+    std::vector<double> dSite_;
+    std::vector<double> dPhase_;
 };
 
 

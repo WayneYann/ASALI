@@ -132,11 +132,11 @@ if ( resolution_ == "volume" )
 					 (-omega_[i]*dm_over_dt + A_*alfa_*RfromSurface_[i]*thermodynamicsMap_.MW()[i])/mass_;
 		
 		// Total mass
-		dyOS_[k++] = 0.; //dm_over_dt;
+		dyOS_[k++] = dm_over_dt;
 
 		// Phases
 		for (unsigned int i=1;i<=SURF_NP_;++i)	
-			dyOS_[k++] = 0.; //RsurfacePhases_[i];
+			dyOS_[k++] = RsurfacePhases_[i];
 
 		// Surface site species
 		for (unsigned int i=1;i<=SURF_NC_;++i)	
@@ -279,8 +279,8 @@ else if ( resolution_ == "pressure" )
 		for (unsigned int i=1;i<=SURF_NC_;++i)	
 		{
 			const unsigned int index_phase = thermodynamicsSurfaceMap_.vector_site_phases_belonging()[i-1]+1;
-			dyOS_[k++] = (thermodynamicsSurfaceMap_.vector_occupancies_site_species()[i-1]*Rsurface_[i] - 
-									Z_[i]*dy[NC_+1+index_phase])/Gamma_[index_phase];
+			dyOS_[k++] = (thermodynamicsSurfaceMap_.vector_occupancies_site_species()[i-1]*Rsurface_[i] -
+						   Z_[i]*dyOS_[NC_+1+index_phase])/Gamma_[index_phase];
 		}
 		
 		// Energy equation
@@ -309,7 +309,7 @@ else if ( resolution_ == "pressure" )
 				QRSurface_ = 0.;
 			}
 
-			dyOS_[k++] = (V_*QRGas_+ A_*alfa_*QRSurface_) / (mass_*CpMixMass_);
+			dyOS_[k++] = (V_*QRGas_+ A_*alfa_*QRSurface_)/(mass_*CpMixMass_);
 		}
 		else
 		{

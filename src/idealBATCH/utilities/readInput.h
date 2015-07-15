@@ -370,6 +370,8 @@ namespace ASALI
 			{}
 			else if ( resolution_ == "volume" )
 			{}
+			else if ( resolution_ == "rebu" )
+			{}
 			else
 			{
 				error();
@@ -942,10 +944,10 @@ namespace ASALI
 
             odeSolver_ = dummyVector[odeIndex + 1];
 
-            if ( odeSolver_ != "BzzMath" && odeSolver_ != "Sundials")
+            if ( odeSolver_ != "BzzMath" && odeSolver_ != "Sundials" && odeSolver_ != "OpenSMOKE")
             {
                 error();
-                std::cout << "key word || " << "ODE" << " || MUST be || BzzMath || Sundials || \n" << std::endl;
+                std::cout << "key word || " << "ODE" << " || MUST be || BzzMath || Sundials || OpenSMOKE || \n" << std::endl;
                 exit (EXIT_FAILURE);
             }
 		}

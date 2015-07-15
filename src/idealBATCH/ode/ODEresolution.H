@@ -74,13 +74,13 @@ if ( input.getOdeSolver() == "BzzMath")
             unsigned counter = 1;
             {
                 for (unsigned int j=1;j<=NC;j++)
-                    yMax[counter++] = 0.;
-                yMax[counter++] = 0.;
+                    yMin[counter++] = 0.;
+                yMin[counter++] = 0.;
                 for (unsigned int j=1;j<=SURF_NP;j++)
-                    yMax[counter++] = 0.;
+                    yMin[counter++] = 0.;
                 for (unsigned int j=1;j<=SURF_NC;j++)
-                    yMax[counter++] = 1.;
-                yMax[counter++] = 0.;
+                    yMin[counter++] = 0.;
+                yMin[counter++] = 0.;
             }
         }
 
@@ -153,4 +153,65 @@ else if ( input.getOdeSolver() == "Sundials" )
     
     ode->end();
     #endif
+}
+else if ( input.getOdeSolver() == "OpenSMOKE" )
+{
+	Eigen::VectorXd x0eigen(ode->NumberOfEquations());
+	Eigen::VectorXd yFeigen(ode->NumberOfEquations());
+
+	memcpy(x0eigen.data(), x0.GetHandle(), x0.Size()*sizeof(double));
+
+    ChangeDimensions( ode->NumberOfEquations(), &yF, true);
+
+	typedef OdeSMOKE::KernelDense<OpenSMOKE::ODESystem_ODE_OpenSMOKE> denseOde;
+	typedef OdeSMOKE::MethodGear<denseOde> methodGearOde;
+	OdeSMOKE::MultiValueSolver<methodGearOde> o;
+
+	o.SetOdeSystem(ode);
+	o.SetInitialConditions(0., x0eigen);
+    o.SetAbsoluteTolerances(input.getSpecieAbsTol());
+    o.SetRelativeTolerances(input.getSpecieRelTol());
+
+    if ( input.getConstraints() == true)
+    {
+        Eigen::VectorXd yMax(ode->NumberOfEquations());
+        {
+            unsigned counter = 0;
+            {
+                for (unsigned int j=0;j<NC;j++)
+                    yMax(counter++) = 1.;
+                yMax(counter++) = 5000.;
+                for (unsigned int j=0;j<SURF_NP;j++)
+                    yMax(counter++) = 5000.;
+                for (unsigned int j=0;j<SURF_NC;j++)
+                    yMax(counter++) = 1.;
+                yMax(counter++) = 5000.;
+            }
+        }
+        Eigen::VectorXd  yMin(ode->NumberOfEquations());
+        {
+            unsigned counter = 0;
+            {
+                for (unsigned int j=0;j<NC;j++)
+                    yMin(counter++) = 0.;
+                yMin(counter++) = 0.;
+                for (unsigned int j=0;j<SURF_NP;j++)
+                    yMin(counter++) = 0.;
+                for (unsigned int j=0;j<SURF_NC;j++)
+                    yMin(counter++) = 0.;
+                yMin(counter++) = 0.;
+            }
+        }
+
+        o.SetMinimumValues(yMin);
+        o.SetMaximumValues(yMax);
+    }
+
+    ode->start();
+    OdeSMOKE::OdeStatus status = o.Solve(input.getIntegrationTime());
+    o.Solution(yFeigen);
+    
+    memcpy(yF.GetHandle(), yFeigen.data(), yFeigen.size()*sizeof(double));
+    
+    ode->end();
 }

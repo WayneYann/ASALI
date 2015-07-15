@@ -44,7 +44,6 @@ file    = new std::string(argv[1]);
 
 ASALI::READinput  input(*file);
 ASALI::ODESystem *ode;
-ASALI::ICSystem  *ic;
 
 {
     std::string folderPath = input.getKineticsPath() + "/";
@@ -95,7 +94,21 @@ ASALI::ICSystem  *ic;
     thermodynamicsMapXML->SetTemperature(input.getTemperature());
     thermodynamicsMapXML->SetPressure(input.getPressure());
 
-    x0site[1] = 1.0;
+    x0site[1] = 4.841826e-01;
+    x0site[2] = 1.776639e-05;
+    x0site[3] =	3.171513e-01;
+    x0site[4] =	4.864556e-04;
+    x0site[5] =	1.438490e-01;
+    x0site[6] = 3.257694e-04;
+    x0site[7] =	6.163506e-07;
+    x0site[8] =	1.033116e-02;
+    x0site[9] =	4.364427e-02;
+    x0site[10] =	8.281340e-07;
+    x0site[11] =	9.240762e-08;
+    x0site[12] =	1.021104e-05;
+    x0site[13] = 0.000000e+00;   
+
+    //x0site[1] = 1.;
     for (unsigned int k=1;k<=SURF_NC;k++)
         x0site[k]=std::max(x0site[k],0.);
 
@@ -151,17 +164,6 @@ ASALI::ICSystem  *ic;
 }
 
 {
-    ic = new ASALI::ICSystem(*thermodynamicsMapXML,        *kineticsMapXML,
-                             *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
-                             *transportMapXML);
-
-    ic->setTemperature(input.getTemperature());
-    ic->setPressure(input.getPressure());
-    ic->setVolume(input.getVolume());
-    ic->setCatalystLoad(input.getAlfa());
-    ic->setHeterogeneusReactions(input.getHeterogenousReactions());
-    ic->setResolutionType(input.getResolutionType());
-
     ode = new ASALI::ODESystem(*thermodynamicsMapXML,        *kineticsMapXML,
                                *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
                                *transportMapXML);
