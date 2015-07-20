@@ -63,6 +63,8 @@ public:
     void setEnergy(const bool flag)                 {energyEquation_        = flag;}
 
     void setVolume(const double V);
+    
+    void setArea(const double A);
 
     void setPressure(const double P);
 
@@ -80,12 +82,6 @@ public:
     std::vector<double> getSpecie()      const {return Specie_;};
     std::vector<double> getSite()        const {return Site_;};
     std::vector<double> getPhase()       const {return Phase_;};
-
-    std::vector<double> derivateMass()        const {return dMass_;};
-    std::vector<double> derivateTemperature() const {return dTemperature_;};
-    std::vector<double> derivateSpecie()      const {return dSpecie_;};
-    std::vector<double> derivateSite()        const {return dSite_;};
-    std::vector<double> derivatePhase()       const {return dPhase_;};
 
     unsigned int NumberOfEquations()     const {return NE_;};
 
@@ -137,16 +133,16 @@ private:
     OpenSMOKE::KineticsMap_Surface_CHEMKIN<double>&          kineticsSurfaceMap_;            //!< kinetic map
     OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&       transportMap_;                  //!< transport map
 
-	OpenSMOKE::OpenSMOKEVectorDouble omega_;
-	OpenSMOKE::OpenSMOKEVectorDouble x_;
-	OpenSMOKE::OpenSMOKEVectorDouble c_;
-	OpenSMOKE::OpenSMOKEVectorDouble RfromGas_;
-	OpenSMOKE::OpenSMOKEVectorDouble RfromSurface_;
-	OpenSMOKE::OpenSMOKEVectorDouble Z_;
-	OpenSMOKE::OpenSMOKEVectorDouble Gamma_;
-	OpenSMOKE::OpenSMOKEVectorDouble Rsurface_;
-	OpenSMOKE::OpenSMOKEVectorDouble RsurfacePhases_;
-	OpenSMOKE::OpenSMOKEVectorDouble dummy;
+    OpenSMOKE::OpenSMOKEVectorDouble omega_;
+    OpenSMOKE::OpenSMOKEVectorDouble x_;
+    OpenSMOKE::OpenSMOKEVectorDouble c_;
+    OpenSMOKE::OpenSMOKEVectorDouble RfromGas_;
+    OpenSMOKE::OpenSMOKEVectorDouble RfromSurface_;
+    OpenSMOKE::OpenSMOKEVectorDouble Z_;
+    OpenSMOKE::OpenSMOKEVectorDouble Gamma_;
+    OpenSMOKE::OpenSMOKEVectorDouble Rsurface_;
+    OpenSMOKE::OpenSMOKEVectorDouble RsurfacePhases_;
+    OpenSMOKE::OpenSMOKEVectorDouble dummy;
 
     OpenSMOKE::OpenSMOKEVectorDouble dyOS_;
     OpenSMOKE::OpenSMOKEVectorDouble  yOS_;
@@ -160,11 +156,6 @@ private:
     std::vector<double> Site_;
     std::vector<double> Phase_;
 
-    std::vector<double> dMass_;
-    std::vector<double> dTemperature_;
-    std::vector<double> dSpecie_;
-    std::vector<double> dSite_;
-    std::vector<double> dPhase_;
 };
 
 
@@ -187,8 +178,8 @@ ODESystem::ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          ther
         V_         = 0.;
         alfa_      = 0.;
         A_         = 0.;
-		QRGas_     = 0.;
-		QRSurface_ = 0.;
+        QRGas_     = 0.;
+        QRSurface_ = 0.;
 
         iterator_  = 0;
         NC_        = 0;
@@ -201,16 +192,16 @@ ODESystem::ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          ther
         SURF_NP_ = thermodynamicsSurfaceMap_.number_of_site_phases(0);
         NE_      = NC_ + SURF_NC_ + SURF_NP_ + 1 + 1;
 
-		ChangeDimensions(NC_, &x_, true);
-		ChangeDimensions(NC_, &omega_, true);
-		ChangeDimensions(NC_, &c_, true);
-		ChangeDimensions(NC_, &RfromGas_, true);
-		ChangeDimensions(NC_, &RfromSurface_, true);
-		
-		ChangeDimensions(SURF_NC_, &Z_, true);
-		ChangeDimensions(SURF_NP_, &Gamma_, true);
-		ChangeDimensions(SURF_NC_, &Rsurface_, true);
-		ChangeDimensions(SURF_NP_, &RsurfacePhases_, true);
+        ChangeDimensions(NC_, &x_, true);
+        ChangeDimensions(NC_, &omega_, true);
+        ChangeDimensions(NC_, &c_, true);
+        ChangeDimensions(NC_, &RfromGas_, true);
+        ChangeDimensions(NC_, &RfromSurface_, true);
+        
+        ChangeDimensions(SURF_NC_, &Z_, true);
+        ChangeDimensions(SURF_NP_, &Gamma_, true);
+        ChangeDimensions(SURF_NC_, &Rsurface_, true);
+        ChangeDimensions(SURF_NP_, &RsurfacePhases_, true);
 
         ChangeDimensions(NE_, &dyOS_, true);
         ChangeDimensions(NE_, &yOS_,  true);
@@ -230,18 +221,21 @@ void ODESystem::setTemperature (const double T)
 void ODESystem::setVolume (const double V)
 {
     V_ = V;
-    A_ = std::pow(V_,(2./3.));
+}
 
+void ODESystem::setArea (const double A)
+{
+    A_ = A;
 }
 
 void ODESystem::setCatalystLoad(const double alfa)
 {
-	alfa_ = alfa;
+    alfa_ = alfa;
 }
 
 void ODESystem::setResolutionType(const std::string resolution)
 {
-	resolution_ = resolution;
+    resolution_ = resolution;
 }
 
 #if ASALI_USE_BZZ == 1

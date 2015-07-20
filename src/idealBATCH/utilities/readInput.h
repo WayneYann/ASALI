@@ -57,6 +57,7 @@ namespace ASALI
             inline double getPressure()            const  { return p_;};
             inline double getTemperature()         const  { return T_;};
             inline double getVolume()              const  { return V_;};
+            inline double getCatalyticArea()       const  { return A_;};
 
             inline std::string getFeed()           const  { return feed_;};
             inline std::string getOdeSolver()      const  { return odeSolver_;};
@@ -66,11 +67,13 @@ namespace ASALI
             inline bool getHomogeneousReactions()  const  { return homo_;};
             inline bool getHeterogenousReactions() const  { return het_;};
             inline bool getConstraints()           const  { return constraints_;};
-			inline bool getEnergy()                const  { return energy_;};
+            inline bool getEnergy()                const  { return energy_;};
 
             inline std::vector<double> getFraction()                const { return inletValue_;};
+            inline std::vector<double> getCoverage()                const { return coverageValue_;};
 
             inline std::vector<std::string> getFractionName()       const { return inletName_;};
+            inline std::vector<std::string> getCoverageName()       const { return coverageName_;};
 
             void recapOnScreen();
 
@@ -84,6 +87,7 @@ namespace ASALI
             double p_;
             double T_;
             double V_;
+            double A_;
             double tMax_;
 
             std::string feed_;
@@ -101,15 +105,18 @@ namespace ASALI
             const std::string& file_;
 
             std::vector<double>      inletValue_;
+            std::vector<double>      coverageValue_;
 
             std::vector<std::string> inputVector_;
             std::vector<std::string> inletName_;
+            std::vector<std::string> coverageName_;
 
             unsigned int solverIndex_;
             unsigned int catalystIndex_;
             unsigned int fractionIndex_;
             unsigned int numericalIndex_;
             unsigned int kineticsIndex_;
+            unsigned int coverageIndex_;
 
             void error() { std::cout << "\nASALI::READinput::ERROR\n" << std::endl;};
 
@@ -118,12 +125,12 @@ namespace ASALI
             void solver();
             void kinetics();
             void catalyst();
+            void coverage();
             void fractions();
             void pressure();
             void temperature();
             void volume();
             void numerical();
-
 
             std::string boolOnScreen(bool value);
 
@@ -145,6 +152,7 @@ namespace ASALI
         p_                 = 0;
         T_                 = 0;
         V_                 = 0;
+        A_                 = 0;
         tMax_              = 0;
 
         constraints_       = false;
@@ -169,7 +177,7 @@ namespace ASALI
                 exit(EXIT_FAILURE);
             }
         }
-        
+
         //- Save all 
         save();
         check();
@@ -178,6 +186,7 @@ namespace ASALI
         volume();
         catalyst();
         fractions();
+        coverage();
         pressure();
         temperature();
         numerical();
@@ -206,8 +215,8 @@ namespace ASALI
 
     void READinput::check()
     {
-        std::vector<bool>         checkWord(8);
-        std::vector<std::string>  words(8);
+        std::vector<bool>         checkWord(9);
+        std::vector<std::string>  words(9);
 
         for (unsigned int i=0;i<checkWord.size();i++)
             checkWord[i] = false;
@@ -220,6 +229,7 @@ namespace ASALI
         words[5] = "Solver options";
         words[6] = "Numerical solvers";
         words[7] = "Kinetics path";
+        words[8] = "Coverage";
 
         for (unsigned int i=0;i<inputVector_.size();i++)
         {
@@ -234,9 +244,10 @@ namespace ASALI
             else if (inputVector_[i]   == "Solver" &&
                      inputVector_[i+1] == "options" )           {checkWord[5]  = true; solverIndex_       = i;}
             else if (inputVector_[i]   == "Numerical" &&
-                     inputVector_[i+1] == "solvers" )           {checkWord[6]  = true; numericalIndex_       = i;}
+                     inputVector_[i+1] == "solvers" )           {checkWord[6]  = true; numericalIndex_    = i;}
             else if (inputVector_[i]   == "Kinetics" &&
-                     inputVector_[i+1] == "path" )              {checkWord[7]  = true; kineticsIndex_       = i;}
+                     inputVector_[i+1] == "path" )              {checkWord[7]  = true; kineticsIndex_     = i;}
+            else if (inputVector_[i]   == "Coverage")           {checkWord[8]  = true; coverageIndex_     = i;}
         }
         
         for (unsigned int i=0;i<checkWord.size();i++)
@@ -365,19 +376,17 @@ namespace ASALI
                 energy_ = false;
 
 
-			resolution_ = dummyVector[constantIndex+1];
-			if ( resolution_ == "pressure" )
-			{}
-			else if ( resolution_ == "volume" )
-			{}
-			else if ( resolution_ == "rebu" )
-			{}
-			else
-			{
-				error();
-				std::cout << "key word ||" << " Constant " << "|| MUST be || pressure || volume ||\n" << std::endl;
-				exit (EXIT_FAILURE);
-			}
+            resolution_ = dummyVector[constantIndex+1];
+            if ( resolution_ == "pressure" )
+            {}
+            else if ( resolution_ == "volume" )
+            {}
+            else
+            {
+                error();
+                std::cout << "key word ||" << " Constant " << "|| MUST be || pressure || volume ||\n" << std::endl;
+                exit (EXIT_FAILURE);
+            }
 
 
             tMax_ = boost::lexical_cast<double>(dummyVector[tIndex+2]);
@@ -626,51 +635,23 @@ namespace ASALI
                 }
             }
 
-            std::vector<bool>        checkWord(5);
-            std::vector<std::string> words(5);
+            std::vector<bool>        checkWord(2);
+            std::vector<std::string> words(2);
 
-            double massIndex;
-            double dispersionIndex;
-            double RhIndex;
-            double deactivationIndex;
             double alfaIndex;
+            double areaIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
 
-            words[0] = "mass";
-            words[1] = "dispersion";
-            words[2] = "Rh fraction";
-            words[3] = "deactivation factor";
-            words[4] = "alfa";
+            words[0] = "alfa";
+            words[1] = "area";
 
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "mass")                 {checkWord[0] = true; massIndex           = i;}
-                else if (dummyVector[i] == "dispersion")         {checkWord[1] = true; dispersionIndex     = i;}
-                else if (dummyVector[i] == "Rh" &&
-                         dummyVector[i+1] == "fraction")        {checkWord[2] = true; RhIndex             = i;}
-                else if (dummyVector[i] == "deactivation" &&
-                         dummyVector[i+1] == "factor")            {checkWord[3] = true; deactivationIndex    = i;}
-            }
-
-            for (unsigned int i=0;i<dummyVector.size();i++)
-            {
-                if(dummyVector[i] == "alfa")
-                {
-                    for (unsigned int k=0;k<checkWord.size();k++)
-                        checkWord[k] = true;
-
-                    alfaIndex = i;
-                    break;
-                }
-                else if (dummyVector[i] == "mass")                 {checkWord[4] = true; massIndex           = i;}
-                else if (dummyVector[i] == "dispersion")         {checkWord[4] = true; dispersionIndex     = i;}
-                else if (dummyVector[i] == "Rh" &&
-                         dummyVector[i+1] == "fraction")        {checkWord[4] = true; RhIndex             = i;}
-                else if (dummyVector[i] == "deactivation" &&
-                         dummyVector[i+1] == "factor")            {checkWord[4] = true; deactivationIndex    = i;}
+                if      (dummyVector[i] == "alfa")                 {checkWord[0] = true; alfaIndex     = i;}
+                else if (dummyVector[i] == "area")                 {checkWord[1] = true; areaIndex     = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -690,26 +671,18 @@ namespace ASALI
                     alfa_ = boost::lexical_cast<double>(dummyVector[alfaIndex+1]);
                     std::string dim = dummyVector[alfaIndex+2];
                     ConvertsToOneOnMeter(alfa_,dim);
-                    break;
+                    i++;
+                    i++;
                 }
-                else
+                else if(dummyVector[i] == "area")
                 {
-                    double Wcat = boost::lexical_cast<double>(dummyVector[massIndex+1]);
-                    std::string dim = dummyVector[massIndex+2];
-                    ConvertsToKg(Wcat, dim);
-            
-                    double RhDispersion      = boost::lexical_cast<double>(dummyVector[dispersionIndex+1]);
-                    double RhMassFraction    = boost::lexical_cast<double>(dummyVector[RhIndex+2]);
-                    double dectivationFactor = boost::lexical_cast<double>(dummyVector[deactivationIndex+2]);
-
-                    double RhPM = 102.9;
-                    double SiteD = 2.49e-08;
-                    double ActiveArea = RhMassFraction*RhDispersion*Wcat/(RhPM*SiteD);
-
-                    double ReactorVolume = V_;
-
-                    alfa_ = dectivationFactor*ActiveArea/ReactorVolume;
+                    A_ = boost::lexical_cast<double>(dummyVector[areaIndex+1]);
+                    std::string dim = dummyVector[areaIndex+2];
+                    ConvertsToMeterSquare(A_,dim);
+                    i++;
+                    i++;
                 }
+                std::cout << i << " sono qui " << std::endl;
             }
         }
     }
@@ -837,6 +810,8 @@ namespace ASALI
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                          GENERAL INPUT                                         \n" << std::endl;
         std::cout << "Volume                                   = " << V_ << "\t[m3]" << std::endl;
+        std::cout << "Catalytic area                           = " << A_ << "\t[m2]" << std::endl;
+        std::cout << "Catalytic load                           = " << alfa_ << "\t[1/m]" << std::endl;
         std::cout << "Pressure                                 = " << p_ << "\t[Pa]" << std::endl;
         std::cout << "Temperature                              = " << T_ << "\t[K]"  << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
@@ -850,10 +825,10 @@ namespace ASALI
         std::cout << "                                        NUMERICAL SOLVER                                        \n" << std::endl;
         std::cout << "Solver compiled with                        ";
         #if ASALI_USE_BZZ == 1
-        std::cout << "|| BzzMath ";
+        std::cout << "|| BzzMath || OpenSMOKE ";
         #endif
         #if ASALI_USE_SUNDIALS == 1
-        std::cout << "|| Sundials ";
+        std::cout << "|| Sundials || OpenSMOKE ";
         #endif
         std::cout << "||" << std::endl;
         std::cout << "ODE:                                        " << odeSolver_ << std::endl;
@@ -944,12 +919,61 @@ namespace ASALI
 
             odeSolver_ = dummyVector[odeIndex + 1];
 
-            if ( odeSolver_ != "BzzMath" && odeSolver_ != "Sundials" && odeSolver_ != "OpenSMOKE")
+            if ( odeSolver_ != "BzzMath" && odeSolver_ != "Sundials" && odeSolver_ != "OpenSMOKE" )
             {
                 error();
-                std::cout << "key word || " << "ODE" << " || MUST be || BzzMath || Sundials || OpenSMOKE || \n" << std::endl;
+                std::cout << "key word || " << "ODE" << " || MUST be || BzzMath || Sundials || OpenSMOKE ||\n" << std::endl;
                 exit (EXIT_FAILURE);
             }
-		}
-	}
+        }
+    }
+
+    void READinput::coverage()
+    {
+        if ( inputVector_[coverageIndex_+1] != "{" )
+        {
+            error();
+            std::cout << "The Mole/Mass fractions sub-dictionary must start with {\n" << std::endl;
+            exit (EXIT_FAILURE);
+        }
+        else
+        {
+            unsigned int finalCount = 1e05;
+            for (unsigned int i=coverageIndex_;i<inputVector_.size();i++)
+            {
+                if (inputVector_[i] == "}")
+                {
+                    finalCount = i;
+                    break;
+                }
+            }
+
+            if ( finalCount == 1e05 )
+            {
+                error();
+                std::cout << "The Coverage sub-dictionary must finish with }\n" << std::endl;
+                exit (EXIT_FAILURE);
+            }
+
+            unsigned int k=0;
+            for (unsigned int i=coverageIndex_+1+1;i<finalCount;i++)
+            {
+                if (inputVector_[i] == "{")
+                {
+                    error();
+                    std::cout << "The Coverage sub-dictionary must finish with }\n" << std::endl;
+                    exit (EXIT_FAILURE);
+                }
+                else
+                {
+                    coverageValue_.resize(k+1);
+                    coverageName_.resize(k+1);
+                    coverageValue_[k] = boost::lexical_cast<double>(inputVector_[i+1]);
+                    coverageName_[k]  = inputVector_[i];
+                    k++;
+                    i++;
+                }
+            }
+        }
+    }
 }

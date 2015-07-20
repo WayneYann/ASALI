@@ -53,48 +53,34 @@
 
     Phase_.resize(iterator_*SURF_NP_);
 
-    dMass_.resize(iterator_);
-    dTemperature_.resize(iterator_);
-
-    dSpecie_.resize(iterator_*NC_);
-
-    dSite_.resize(iterator_*SURF_NC_);
-
-    dPhase_.resize(iterator_*SURF_NP_);
-
 	{
 		unsigned int k=1;
 
 		for (unsigned int i=(iterator_-1)*NC_;i<(NC_*iterator_);i++)
 		{
 			Specie_[i]  = yOS_[k];
-			dSpecie_[i] = dyOS_[k];
 			k++;
 		}
 
 		{
 			Mass_[iterator_-1]  = yOS_[k];
-			dMass_[iterator_-1] = dyOS_[k];
 			k++;
 		}
 
 		for (unsigned int i=(iterator_-1)*SURF_NP_;i<(SURF_NP_*iterator_);i++)
 		{
 			Phase_[i]  = yOS_[k];
-			dPhase_[i] = dyOS_[k];
 			k++;
 		}
 
 		for (unsigned int i=(iterator_-1)*SURF_NC_;i<(SURF_NC_*iterator_);i++)
 		{
 			Site_[i]  = yOS_[k];
-			dSite_[i] = dyOS_[k];
 			k++;
 		}
 
 		{
 			Temperature_[iterator_-1]  = yOS_[k];
-			dTemperature_[iterator_-1] = dyOS_[k];
 			k++;
 		}
 	}
