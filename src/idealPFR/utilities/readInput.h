@@ -938,7 +938,7 @@ namespace ASALI
         std::cout << "Outer   diameter                         = " << Dext_ << "\t[m]" << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                       REACTOR PROPERTIES                                       \n" << std::endl;
-        std::cout << "Specific area (av)                       = " << 4./Dh_ << "\t[1/m]" << std::endl;
+        std::cout << "Specific area (av)                       = " << av_ << "\t[1/m]" << std::endl;
         std::cout << "Specific catalytic area (alfa)           = " << alfa_ << "\t[1/m]" << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                      OPERATING CONDITIONS                                      \n" << std::endl;
