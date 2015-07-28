@@ -113,7 +113,7 @@ ASALI::ODESystem *ode;
         else if ( input.getReactorType() == "PackedBed" )
         {
             epsi = ASALI::voidFraction(input.getParticleDiameter(),input.getShellDiameter());
-            G = (input.getFeedVelocity()*MW*input.getFeedPressure()/(PhysicalConstants::R_J_kmol*input.getFeedTemperature()))/epsi;
+            G = (input.getFeedVelocity()*MW*input.getFeedPressure()/(PhysicalConstants::R_J_kmol*input.getFeedTemperature()));
         }
     }
 

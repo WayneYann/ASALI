@@ -176,7 +176,7 @@
     recap << " 1/ pressure correlation:      " << input.getPressureCorrelation() << std::endl;
     recap << " 2/ mass transfer correlation: " << input.getMassTransferCorrelation() << std::endl;
     recap << " 3/ feed temperature:          " << input.getFeedTemperature() << " [K]" << std::endl;
-    recap << " 4/ feed pressure:             " << input.getPressureCorrelation() << " [Pa]" << std::endl;
+    recap << " 4/ feed pressure:             " << input.getFeedPressure() << " [Pa]" << std::endl;
     recap << " 5/ feed velocity:             " << input.getFeedVelocity() << " [m/s]" << std::endl;
 
     if ( input.getReactorType() == "Monolith" )
@@ -221,7 +221,5 @@
         flux << std::endl;
     }
     flux.close();
-
-
 }
 

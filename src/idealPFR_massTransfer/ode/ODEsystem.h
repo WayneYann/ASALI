@@ -129,13 +129,15 @@ private:
 
     std::string inert_;
 
-    void FrictionFactor();
-    void Sherwood();
+    void FrictionFactor(const double Reynolds);
+    void Sherwood(const double Reynolds);
     void av();
-    void Re();
     void Sc();
     void kMat();
     void error();
+
+    double ReynoldsForFrictionFactor();
+    double ReynoldsForHeatTransfer();
 };
 
 ODESystem::ODESystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
@@ -252,14 +254,14 @@ unsigned int ODESystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDo
     return 0;
 }
 
-void ODESystem::FrictionFactor()
+void ODESystem::FrictionFactor(const double Reynolds)
 {
     if ( type_ == "PackedBed" )
     {
         if ( fmName_ == "Foumeny" )
         {
-            double newRe_ = Re_/(1.- epsi_);
-            if ( newRe_ > 85000. || newRe_ < 5.)
+            double newReynolds = Reynolds/(1.- epsi_);
+            if ( newReynolds > 85000. || newReynolds < 5.)
             {
                 error();
                 std::cout << fmName_ << " correlation out of range!\n" << std::endl;
@@ -267,12 +269,12 @@ void ODESystem::FrictionFactor()
             }
             else
             {
-                fm_ = ((1.-epsi_)/std::pow(epsi_,3.))*(((Dt_/Dp_)/(0.335*Dt_/Dp_ + 2.28)) + 130/newRe_);
+                fm_ = ((1.-epsi_)/std::pow(epsi_,3.))*(((Dt_/Dp_)/(0.335*Dt_/Dp_ + 2.28)) + 130/newReynolds);
             }
         }
         else if ( fmName_ == "Ergun" )
         {
-            if ( Re_ > 1000 || Re_ < 0.1)
+            if ( Reynolds > 1000 || Reynolds < 0.1)
             {
                 error();
                 std::cout << fmName_ << " correlation out of range!\n" << std::endl;
@@ -280,12 +282,12 @@ void ODESystem::FrictionFactor()
             }
             else
             {
-                fm_ = (1.-epsi_)*(1.75 + 150*(1.-epsi_)/Re_)/std::pow(epsi_,3.);
+                fm_ = (1.-epsi_)*(1.75 + 150*(1.-epsi_)/Reynolds)/std::pow(epsi_,3.);
             }
         }
         else if ( fmName_ == "Lee" )
         {
-            if ( Re_ > 1e05)
+            if ( Reynolds > 1e05)
             {
                 error();
                 std::cout << fmName_ << " correlation out of range!\n" << std::endl;
@@ -294,12 +296,12 @@ void ODESystem::FrictionFactor()
             else
             {
                 double n=0.352 + 0.1*epsi_ + 0.275*epsi_*epsi_;
-                fm_ = 6.25*(1.-epsi_)*(1.-epsi_)*(29.32/Re_ + 1.56/std::pow(Re_,n) + 0.1)/std::pow(epsi_,3.);
+                fm_ = 6.25*(1.-epsi_)*(1.-epsi_)*(29.32/Reynolds + 1.56/std::pow(Reynolds,n) + 0.1)/std::pow(epsi_,3.);
             }
         }
         else if ( fmName_ == "Hicks" )
         {
-            if ( Re_/(1.-epsi_) > 60000 || Re_/(1.-epsi_) < 300)
+            if ( Reynolds/(1.-epsi_) > 60000 || Reynolds/(1.-epsi_) < 300)
             {
                 error();
                 std::cout << fmName_ << " correlation out of range!\n" << std::endl;
@@ -307,12 +309,12 @@ void ODESystem::FrictionFactor()
             }
             else
             {
-                fm_ = 6.8*std::pow((1.-epsi_),1.2)*std::pow(Re_,-0.2)/std::pow(epsi_,3.);
+                fm_ = 6.8*std::pow((1.-epsi_),1.2)*std::pow(Reynolds,-0.2)/std::pow(epsi_,3.);
             }
         }
         else if ( fmName_ == "Eisfeld" )
         {
-            if ( Re_ > 17635 || Re_ < 0.01)
+            if ( Reynolds > 17635 || Reynolds < 0.01)
             {
                 error();
                 std::cout << fmName_ << " correlation out of range!\n" << std::endl;
@@ -325,12 +327,12 @@ void ODESystem::FrictionFactor()
                 double k2 = 0.87;
                 double Aw = 1. + 2./(3.*Dt_*(1.-epsi_)/Dp_);
                 double Bw = std::pow((k1*std::pow((Dp_/Dt_),2.) + k2),2.);
-                fm_ = K1*std::pow(Aw,2.)*std::pow((1.-epsi_),2.)/(Re_*std::pow(epsi_,3.)) + (Aw/Bw)*(1.-epsi_)/std::pow(epsi_,3.);
+                fm_ = K1*std::pow(Aw,2.)*std::pow((1.-epsi_),2.)/(Reynolds*std::pow(epsi_,3.)) + (Aw/Bw)*(1.-epsi_)/std::pow(epsi_,3.);
             }
         }
         else if ( fmName_ == "Achenbach" )
         {
-            if ( Re_/(1.-epsi_) > 5.*1.e04)
+            if ( Reynolds/(1.-epsi_) > 5.*1.e04)
             {
                 error();
                 std::cout << fmName_ << " correlation out of range!\n" << std::endl;
@@ -338,23 +340,23 @@ void ODESystem::FrictionFactor()
             }
             else
             {
-                fm_ = (1.-epsi_)*(160./(Re_/(1.-epsi_)) + 3./std::pow((Re_/(1.-epsi_)),0.1))/std::pow(epsi_,3.);
+                fm_ = (1.-epsi_)*(160./(Reynolds/(1.-epsi_)) + 3./std::pow((Reynolds/(1.-epsi_)),0.1))/std::pow(epsi_,3.);
             }
         }
     }
     else if ( type_ == "Monolith" )
     {
-        fm_ = 16./Re_;
+        fm_ = 16./Reynolds;
     }
 }
 
-void ODESystem::Sherwood()
+void ODESystem::Sherwood(const double Reynolds)
 {
     if ( type_ == "PackedBed" )
     {
         if ( NuName_ == "Wakao" )
         {
-            if ( Re_ > 10000 || Re_ < 3)
+            if ( Reynolds > 10000 || Reynolds < 3)
             {
                 error();
                 std::cout << NuName_ << " correlation out of range!\n" << std::endl;
@@ -364,13 +366,13 @@ void ODESystem::Sherwood()
             {
                 for (unsigned int i=1;i<=NC_;i++)
                 {
-                    Sh_[i] = 2. + 1.1*std::pow(Sc_[i],(1./3.))*std::pow(Re_,0.6);
+                    Sh_[i] = 2. + 1.1*std::pow(Sc_[i],(1./3.))*std::pow(Reynolds,0.6);
                 }
             }
         }
         else if ( NuName_ == "Gupta" )
         {
-            if ( Re_ > 2140 || Re_ < 1)
+            if ( Reynolds > 2140 || Reynolds < 1)
             {
                 error();
                 std::cout << NuName_ << " correlation out of range!\n" << std::endl;
@@ -378,22 +380,22 @@ void ODESystem::Sherwood()
             }
             else
             {
-                double jM = (0.01 + 0.863/(std::pow(Re_,0.58) - 0.483))/epsi_;
+                double jM = (0.01 + 0.863/(std::pow(Reynolds,0.58) - 0.483))/epsi_;
                 for (unsigned int i=1;i<=NC_;i++)
                 {
-                    Sh_[i]  = jM*Re_*std::pow(Sc_[i],(1./3.));
+                    Sh_[i]  = jM*Reynolds*std::pow(Sc_[i],(1./3.));
                 }
             }
         }
         else if ( NuName_ == "Gamson" )
         {
-            double newRe = Re_/((1-epsi_));
+            double newRe = Reynolds/((1-epsi_));
             if ( newRe <= 100)
             {
                 double jM = 17.*std::pow((1.-epsi_),0.2)/newRe;
                 for (unsigned int i=1;i<=NC_;i++)
                 {
-                    Sh_[i] = jM*Re_*std::pow(Sc_[i],(1./3.));
+                    Sh_[i] = jM*Reynolds*std::pow(Sc_[i],(1./3.));
                 }
             }
             else
@@ -401,19 +403,19 @@ void ODESystem::Sherwood()
                 double jM = 1.46*std::pow((1.-epsi_),0.2)/std::pow(newRe,0.41);
                 for (unsigned int i=1;i<=NC_;i++)
                 {
-                    Sh_[i] = jM*Re_*std::pow(Sc_[i],(1./3.));
+                    Sh_[i] = jM*Reynolds*std::pow(Sc_[i],(1./3.));
                 }
             }
         }
         else if ( NuName_ == "Yoshida" )
         {
-            double newRe = Re_/(6.*(1.-epsi_));
+            double newRe = Reynolds/(6.*(1.-epsi_));
             if ( newRe <= 50)
             {
                 double jM = 0.91/(std::pow(newRe,0.51));
                 for (unsigned int i=1;i<=NC_;i++)
                 {
-                    Sh_[i] = jM*Re_*std::pow(Sc_[i],(1./3.));
+                    Sh_[i] = jM*Reynolds*std::pow(Sc_[i],(1./3.));
                 }
             }
             else if ( newRe > 50 && newRe <= 1000)
@@ -421,7 +423,7 @@ void ODESystem::Sherwood()
                 double jM = 0.61/(std::pow(newRe,0.41));
                 for (unsigned int i=1;i<=NC_;i++)
                 {
-                    Sh_[i] = jM*Re_*std::pow(Sc_[i],(1./3.));
+                    Sh_[i] = jM*Reynolds*std::pow(Sc_[i],(1./3.));
                 }
             }
             else
@@ -437,7 +439,7 @@ void ODESystem::Sherwood()
         for (unsigned int i=1;i<=NC_;i++)
         {
             double zNew  = std::max( 0., 1e-06);
-            double zStar = zNew/(Dt_*Re_*Sc_[i]);
+            double zStar = zNew/(Dt_*Reynolds*Sc_[i]);
                    zStar = fabs(zStar);
                    Sh_[i] = 3.659 + 6.874*pow((1000.*zStar),-0.488)*exp(-57.2*zStar);
         }
@@ -455,17 +457,34 @@ void ODESystem::av()
         av_ = 6.*(1-epsi_)/Dp_;
     }
 }
-
-void ODESystem::Re()
+double ODESystem::ReynoldsForHeatTransfer()
 {
+    double Reynolds = 0.;
     if ( type_ == "Monolith" )
     {
-        Re_ = G_*Dt_/mu_;
+        Reynolds = G_*Dt_/mu_;
     }
     else if ( type_ == "PackedBed" )
     {
-        Re_ = G_*Dp_/mu_;
+        Reynolds = G_*Dp_/(epsi_*mu_);
     }
+    
+    return Reynolds;
+}
+
+double ODESystem::ReynoldsForFrictionFactor()
+{
+    double Reynolds = 0.;
+    if ( type_ == "Monolith" )
+    {
+        Reynolds = G_*Dt_/mu_;
+    }
+    else if ( type_ == "PackedBed" )
+    {
+        Reynolds = G_*Dp_/mu_;
+    }
+    
+    return Reynolds;
 }
 
 void ODESystem::Sc()

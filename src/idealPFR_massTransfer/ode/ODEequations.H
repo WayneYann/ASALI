@@ -120,17 +120,14 @@
         //- Specific area [1/m]
         av();
 
-        //- Reynolds number
-        Re();
-        
         //- Schimdt number
         Sc();
         
         //- Fanning friction factor
-        FrictionFactor();
-        
-        //- Nusselt number
-        Sherwood();
+        FrictionFactor(ReynoldsForFrictionFactor());
+
+        //- Sherwood number
+        Sherwood(ReynoldsForHeatTransfer());
 
         //- Mass transfer coefficient [W/m2/K]
         kMat();

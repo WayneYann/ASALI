@@ -61,6 +61,7 @@ namespace ASALI
             std::string getPressureCorrelation()       const  { return pCorr_;};
             std::string getMassTransferCorrelation()   const  { return hCorr_;};
             std::string getOdeSolver()                 const  { return odeSolver_;};
+            std::string getDaeSolver()                 const  { return daeSolver_;};
             std::string getInletType()                 const  { return inlet_;};
             std::string getResultsType()               const  { return results_;};
             std::string getInertSpecie()               const  { return inert_;};
@@ -86,6 +87,7 @@ namespace ASALI
             std::string hCorr_;
             std::string pCorr_;
             std::string odeSolver_;
+            std::string daeSolver_;
             std::string inert_;
             std::string results_;
             std::string inlet_;
@@ -101,8 +103,8 @@ namespace ASALI
             const std::string& file_;
 
             std::vector<std::string> inletName_;
-             std::vector<std::string> inputVector_;
-            
+            std::vector<std::string> inputVector_;
+
             std::vector<double>      inletValue_;
 
             void error() { std::cout << "\nASALI::READinput::ERROR\n" << std::endl;};
@@ -671,6 +673,7 @@ namespace ASALI
         #endif
         std::cout << "||" << std::endl;
         std::cout << "ODE:                                        " << odeSolver_ << std::endl;
+        std::cout << "DAE:                                        " << daeSolver_ << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
     }
 
@@ -719,8 +722,8 @@ namespace ASALI
                 }
             }
 
-            std::vector<bool>        checkWord(1);
-            std::vector<std::string> words(1);
+            std::vector<bool>        checkWord(2);
+            std::vector<std::string> words(2);
 
             double odeIndex;
             double daeIndex;
@@ -729,10 +732,12 @@ namespace ASALI
                 checkWord[i] = false;
 
             words[0] = "ODE";
+            words[1] = "DAE";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
                 if         (dummyVector[i] == "ODE")                 {checkWord[0] = true; odeIndex      = i;}
+                else if    (dummyVector[i] == "DAE")                 {checkWord[1] = true; daeIndex      = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -751,6 +756,15 @@ namespace ASALI
             {
                 error();
                 std::cout << "key word || " << "ODE" << " || MUST be || BzzMath || Sundials || \n" << std::endl;
+                exit (EXIT_FAILURE);
+            }
+
+            daeSolver_ = dummyVector[daeIndex + 1];
+
+            if ( daeSolver_ != "BzzMath" && daeSolver_ != "Sundials")
+            {
+                error();
+                std::cout << "key word || " << "DAE" << " || MUST be || BzzMath || Sundials || \n" << std::endl;
                 exit (EXIT_FAILURE);
             }
 

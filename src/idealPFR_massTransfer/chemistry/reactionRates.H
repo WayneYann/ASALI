@@ -33,7 +33,7 @@ namespace OpenSMOKE
         {
 
 
-            this->netReactionRates_[iDiretta]  = 1e03*c[iCO];
+            this->netReactionRates_[iDiretta]  = 1e06*c[iCO];
 
             this->netReactionRates_[iInversa]  = 0.;
 

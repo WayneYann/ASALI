@@ -112,17 +112,14 @@
         //- Specific area [1/m]
         av();
 
-        //- Reynolds number
-        Re();
-        
         //- Schimdt number
         Sc();
         
         //- Fanning friction factor
-        FrictionFactor();
-        
+        FrictionFactor(ReynoldsForFrictionFactor());
+
         //- Sherwood number
-        Sherwood();
+        Sherwood(ReynoldsForMassTransfer());
 
         //- Heat transfer coefficient [W/m2/K]
         kMat();
@@ -132,7 +129,7 @@
     {
         if ( thermodynamicsMapXML->NamesOfSpecies()[i-1] != inert_ )
         {
-            dyOS_[i] = -kMat_[i]*av_*(omega_[i] - omegaW_[i])*rho_/(G_*epsi_);
+            dyOS_[i] = -kMat_[i]*av_*(omega_[i] - omegaW_[i])/(v_/epsi_);
         }
         else
         {

@@ -68,7 +68,7 @@ if ( input.getOdeSolver() == "BzzMath")
 
     #endif
 }
-else if ( input.getOdeSolver() == "Sundials" )
+else if ( input.getDaeSolver() == "Sundials" )
 {
     #if ASALI_USE_SUNDIALS == 1
 
