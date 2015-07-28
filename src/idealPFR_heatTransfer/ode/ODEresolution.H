@@ -40,52 +40,52 @@
 
 if ( input.getOdeSolver() == "BzzMath")
 {
-	#if ASALI_USE_BZZ == 1
+    #if ASALI_USE_BZZ == 1
 
-	BzzVector yFbzz;
-	BzzVector x0bzz;
-	ChangeDimensions( ode->NumberOfEquations(), &yFbzz, true);
-	ChangeDimensions( ode->NumberOfEquations(), &x0bzz, true);
-	ChangeDimensions( ode->NumberOfEquations(), &yF, true);
+    BzzVector yFbzz;
+    BzzVector x0bzz;
+    ChangeDimensions( ode->NumberOfEquations(), &yFbzz, true);
+    ChangeDimensions( ode->NumberOfEquations(), &x0bzz, true);
+    ChangeDimensions( ode->NumberOfEquations(), &yF, true);
 
-	x0bzz[1] = input.getFeedPressure();
-	x0bzz[2] = input.getFeedTemperature();
+    x0bzz[1] = input.getFeedPressure();
+    x0bzz[2] = input.getFeedTemperature();
 
-	BzzOdeStiffObject o;
-	o(x0bzz,0.,ode);
+    BzzOdeStiffObject o;
+    o(x0bzz,0.,ode);
 
-	o.SetTolAbs(1.e-12);
-	o.SetTolRel(1.e-08);
+    o.SetTolAbs(1.e-12);
+    o.SetTolRel(1.e-08);
 
-	yFbzz = o(input.getReactorLength());
+    yFbzz = o(input.getReactorLength());
 
-	FromBzzToOS(yFbzz,yF);
+    FromBzzToOS(yFbzz,yF);
 
-	#endif
+    #endif
 }
 else if ( input.getOdeSolver() == "Sundials" )
 {
-	#if ASALI_USE_SUNDIALS == 1
+    #if ASALI_USE_SUNDIALS == 1
 
-	OpenSMOKE::OpenSMOKEVectorDouble y0(ode->NumberOfEquations());
-	ChangeDimensions(ode->NumberOfEquations(), &yF, true);
-	y0[1] = input.getFeedPressure();
-	y0[2] = input.getFeedTemperature();
+    OpenSMOKE::OpenSMOKEVectorDouble y0(ode->NumberOfEquations());
+    ChangeDimensions(ode->NumberOfEquations(), &yF, true);
+    y0[1] = input.getFeedPressure();
+    y0[2] = input.getFeedTemperature();
 
-	OpenSMOKE::ODESystem_CVODE_Template *odeSystemObject;
-	odeSystemObject = OpenSMOKE::ODESystem_CVODE_Template::GetInstance();
-	odeSystemObject->SetOdeSystem(ode);
+    OpenSMOKE::ODESystem_CVODE_Template *odeSystemObject;
+    odeSystemObject = OpenSMOKE::ODESystem_CVODE_Template::GetInstance();
+    odeSystemObject->SetOdeSystem(ode);
 
-	OpenSMOKE::OpenSMOKE_CVODE_Sundials<OpenSMOKE::ODESystem_CVODE_Template>   o(odeSystemObject);
-	o.SetDimensions(ode->NumberOfEquations());
-	o.SetAbsoluteTolerance(1e-12);
-	o.SetRelativeTolerance(1e-08);
-	o.SetMaximumNumberOfSteps(20000);
-	o.SetAnalyticalJacobian(false);
-	o.SetInitialValues(0, y0.GetHandle());
+    OpenSMOKE::OpenSMOKE_CVODE_Sundials<OpenSMOKE::ODESystem_CVODE_Template>   o(odeSystemObject);
+    o.SetDimensions(ode->NumberOfEquations());
+    o.SetAbsoluteTolerance(1e-12);
+    o.SetRelativeTolerance(1e-08);
+    o.SetMaximumNumberOfSteps(20000);
+    o.SetAnalyticalJacobian(false);
+    o.SetInitialValues(0, y0.GetHandle());
 
-	// Solution
-	o.Solve(input.getReactorLength());
-	o.Solution(yF.GetHandle());
-	#endif
+    // Solution
+    o.Solve(input.getReactorLength());
+    o.Solution(yF.GetHandle());
+    #endif
 }

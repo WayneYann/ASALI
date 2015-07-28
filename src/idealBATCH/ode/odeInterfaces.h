@@ -111,14 +111,14 @@ namespace OpenSMOKE
                 ode_ = ode;
             }
 
-			virtual void GetEquations(const OpenSMOKE::OpenSMOKEVectorDouble& y, const double t, OpenSMOKE::OpenSMOKEVectorDouble& dy)
-			{
-				ode_->Equations(t, y, dy);
-			}
-			virtual void PrintResults(const OpenSMOKE::OpenSMOKEVectorDouble& y, const double t)
-			{
-				ode_->Print(t, y);
-			}
+            virtual void GetEquations(const OpenSMOKE::OpenSMOKEVectorDouble& y, const double t, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+            {
+                ode_->Equations(t, y, dy);
+            }
+            virtual void PrintResults(const OpenSMOKE::OpenSMOKEVectorDouble& y, const double t)
+            {
+                ode_->Print(t, y);
+            }
         };  
 }
 #endif    // OpenSMOKE_OdeInterfaces_H

@@ -96,16 +96,16 @@
 
 int main( int argc, char** argv )
 {
-	double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
+    double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
 
-	#include "input.H"
-	#include "ODEresolution.H"
-	#include "write.H"
+    #include "input.H"
+    #include "ODEresolution.H"
+    #include "write.H"
 
-	remove("BzzFile.txt");
+    remove("BzzFile.txt");
 
-	double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
-	ASALI::CPUtime(tStart,tEnd);
+    double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
+    ASALI::CPUtime(tStart,tEnd);
 
-	return 0;
+    return 0;
 }

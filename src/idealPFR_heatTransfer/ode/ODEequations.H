@@ -39,90 +39,88 @@
 ##############################################################################################*/
 
 {
-	//- Assigned variable
-	{
-		p_ = yOS_[1];
-		T_ = yOS_[2];
-		t_ = t;
-	}
+    //- Assigned variable
+    {
+        p_ = yOS_[1];
+        T_ = yOS_[2];
+        t_ = t;
+    }
 
-	//-Setting conditions for GAS phase
-	{
-		thermodynamicsMap_.SetTemperature(T_);
-		thermodynamicsMap_.SetPressure(p_);
-		transportMap_.SetPressure(p_);
-		transportMap_.SetTemperature(T_);
-	}
+    //-Setting conditions for GAS phase
+    {
+        thermodynamicsMap_.SetTemperature(T_);
+        thermodynamicsMap_.SetPressure(p_);
+        transportMap_.SetPressure(p_);
+        transportMap_.SetTemperature(T_);
+    }
 
-	//- Evaluting properties
-	{
-		for (unsigned int k=0;k<=NC_;k++)
-			x_[k] = 0;
+    //- Evaluting properties
+    {
+        for (unsigned int k=0;k<=NC_;k++)
+            x_[k] = 0;
 
-		x_[thermodynamicsMap_.IndexOfSpecies(name_)] = 1.;
+        x_[thermodynamicsMap_.IndexOfSpecies(name_)] = 1.;
 
-		thermodynamicsMap_.MolecularWeight_From_MoleFractions(MW_,x_);
+        thermodynamicsMap_.MolecularWeight_From_MoleFractions(MW_,x_);
 
-		//- Density [Kg/m3]
-		rho_ = p_*MW_/(PhysicalConstants::R_J_kmol*T_);
+        //- Density [Kg/m3]
+        rho_ = p_*MW_/(PhysicalConstants::R_J_kmol*T_);
 
-		//- Velocity [m/s]
-		v_   = G_/rho_;
+        //- Velocity [m/s]
+        v_   = G_/rho_;
 
 
-		if ( law_ == "OpenSMOKE")
-		{
-			//- Specific heat [J/Kg/K]
-			thermodynamicsMap_.cpMolar_Mixture_From_MoleFractions(cp_, x_);
-			cp_ = cp_/MW_;
+        if ( law_ == "OpenSMOKE")
+        {
+            //- Specific heat [J/Kg/K]
+            thermodynamicsMap_.cpMolar_Mixture_From_MoleFractions(cp_, x_);
+            cp_ = cp_/MW_;
 
-			//- Thermal conductivity [W/m/K]
-			transportMap_.ThermalConductivity(k_,x_);
+            //- Thermal conductivity [W/m/K]
+            transportMap_.ThermalConductivity(k_,x_);
 
-			//- Viscosity [kg/m/s]
-			transportMap_.DynamicViscosity(mu_, x_);
-		}
-		else if ( law_ == "sutherland")
-		{
-			//- Specific heat [J/Kg/K]
-			cp_ = specificHeatConstantPressure(T_);
-			cv_ = specificHeatConstantVolume(T_);
-			cp_ = cp_/MW_;
-			cv_ = cv_/MW_;
+            //- Viscosity [kg/m/s]
+            transportMap_.DynamicViscosity(mu_, x_);
+        }
+        else if ( law_ == "sutherland")
+        {
+            //- Specific heat [J/Kg/K]
+            cp_ = specificHeatConstantPressure(T_);
+            cv_ = specificHeatConstantVolume(T_);
+            cp_ = cp_/MW_;
+            cv_ = cv_/MW_;
 
-			//- Viscosity [kg/m/s]
-			mu_ = viscosity(T_);
+            //- Viscosity [kg/m/s]
+            mu_ = viscosity(T_);
 
-			//- Thermal conductivity [W/m/K]
-			k_ = termalConducitivity(mu_,cv_,MW_);
-		}
-		
-		//- Specific area [1/m]
-		av();
-		
-		//- Reynolds number
-		Re();
-		
-		//- Prandt number
-		Pr_ = mu_*cp_/k_;
-		
-		//- Fanning friction factor
-		FrictionFactor();
-		
-		//- Nusselt number
-		Nusselt();
+            //- Thermal conductivity [W/m/K]
+            k_ = termalConducitivity(mu_,cv_,MW_);
+        }
 
-		//- Heat transfer coefficient [W/m2/K]
-		h();
-	}
-	
-	if ( type_ == "Monolith" )
-	{
-		dyOS_[1] = -rho_*v_*v_*fm_/Dt_;
-	}
-	else if ( type_ == "PackedBed" )
-	{
-		dyOS_[1] = -rho_*v_*v_*fm_/Dp_;
-	}
-	dyOS_[2] = -h_*av_*(T_ - Tw_)/(rho_*v_*cp_);
+        //- Specific area [1/m]
+        av();
+
+        //- Prandt number
+        Pr_ = mu_*cp_/k_;
+
+        //- Fanning friction factor
+        FrictionFactor(ReynoldsForFrictionFactor());
+
+        //- Nusselt number
+        Nusselt(ReynoldsForHeatTransfer());
+
+        //- Heat transfer coefficient [W/m2/K]
+        h();
+    }
+
+    if ( type_ == "Monolith" )
+    {
+        dyOS_[1] = -rho_*v_*v_*fm_/Dt_;
+    }
+    else if ( type_ == "PackedBed" )
+    {
+        dyOS_[1] = -rho_*v_*v_*fm_/Dp_;
+    }
+
+    dyOS_[2] = -h_*av_*(T_ - Tw_)/(rho_*v_*cp_/epsi_);
 }

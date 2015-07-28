@@ -1204,7 +1204,7 @@ namespace ASALI
                 if ( checkWord[i] == false)
                 {
                     error();
-                    std::cout << "key word || " << words[i] << " || alfa || is MISSING in Reactor sub-dictionary!\n" << std::endl;
+                    std::cout << "key word || " << words[i] << " || alfa || is MISSING in Catalyst sub-dictionary!\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
             }

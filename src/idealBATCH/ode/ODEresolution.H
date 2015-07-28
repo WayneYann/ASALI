@@ -156,19 +156,19 @@ else if ( input.getOdeSolver() == "Sundials" )
 }
 else if ( input.getOdeSolver() == "OpenSMOKE" )
 {
-	Eigen::VectorXd x0eigen(ode->NumberOfEquations());
-	Eigen::VectorXd yFeigen(ode->NumberOfEquations());
+    Eigen::VectorXd x0eigen(ode->NumberOfEquations());
+    Eigen::VectorXd yFeigen(ode->NumberOfEquations());
 
-	memcpy(x0eigen.data(), x0.GetHandle(), x0.Size()*sizeof(double));
+    memcpy(x0eigen.data(), x0.GetHandle(), x0.Size()*sizeof(double));
 
     ChangeDimensions( ode->NumberOfEquations(), &yF, true);
 
-	typedef OdeSMOKE::KernelDense<OpenSMOKE::ODESystem_ODE_OpenSMOKE> denseOde;
-	typedef OdeSMOKE::MethodGear<denseOde> methodGearOde;
-	OdeSMOKE::MultiValueSolver<methodGearOde> o;
+    typedef OdeSMOKE::KernelDense<OpenSMOKE::ODESystem_ODE_OpenSMOKE> denseOde;
+    typedef OdeSMOKE::MethodGear<denseOde> methodGearOde;
+    OdeSMOKE::MultiValueSolver<methodGearOde> o;
 
-	o.SetOdeSystem(ode);
-	o.SetInitialConditions(0., x0eigen);
+    o.SetOdeSystem(ode);
+    o.SetInitialConditions(0., x0eigen);
     o.SetAbsoluteTolerances(input.getSpecieAbsTol());
     o.SetRelativeTolerances(input.getSpecieRelTol());
 
