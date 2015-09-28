@@ -647,42 +647,22 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE
 {
     OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
 
-    if ( discretizationScheme_ == "CDS" )
+    for (unsigned int k=1;k<=NP_;k++)
     {
-        for (unsigned int k=1;k<=NP_;k++)
+        if ( k == 1 )
         {
-            if ( k == 1 )
-            {
-                dvalue_[k] = 0.;
-            }
-            else if ( k == NP_ )
-            {
-                dvalue_[k] = 0.;
-            }
-            else
-            {
-                dvalue_[k] = ((value[k+1]*(z_[k]-z_[k-1]) + value[k-1]*(z_[k+1]-z_[k]) - value[k]*(z_[k+1]-z_[k-1]))/(0.5*(z_[k+1]-z_[k-1])*(z_[k+1]-z_[k])*(z_[k]-z_[k-1])))/(L_*L_);
-            }
+            dvalue_[k] = 0.;
+        }
+        else if ( k == NP_ )
+        {
+            dvalue_[k] = 0.;
+        }
+        else
+        {
+            dvalue_[k] = ((value[k+1]-value[k])/(z[k+1]-z[k])/L_ - (value[k]-value[k-1])/(z[k]-z[k-1])/L_)/(0.5*(z[k+1]-z[k-1])/L_);
         }
     }
-    else if ( discretizationScheme_ == "BDS" )
-    {
-        for (unsigned int k=1;k<=NP_;k++)
-        {
-            if ( k == 1 )
-            {
-                dvalue_[k] = 0.;
-            }
-            else if ( k == NP_ )
-            {
-                dvalue_[k] = 0.;
-            }
-            else
-            {
-                dvalue_[k] = ((value[k+1]*(z_[k]-z_[k-1]) + value[k-1]*(z_[k+1]-z_[k]) - value[k]*(z_[k+1]-z_[k-1]))/((z_[k+1]-z_[k])*(z_[k+1]-z_[k])*(z_[k]-z_[k-1])))/(L_*L_);
-            }
-        }
-    }
+
     return dvalue_;
 }
 
