@@ -362,15 +362,15 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
     ode->setReactorType(input.getReactorType());
     if ( input.getReactorType() == "honeyComb" )
     {
-		ode->setHoneyCombProperties(input.getSherwood(),input.getChannelDiameter());
-	}
-	else if ( input.getReactorType() == "packedBed" )
-	{
-		ode->setPackedBedProperties(input.getParticleDiameter(),input.getTubeDiameter());
-		ode->setCorrelation(input.getCorrelation());
-	}
-	ode->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
-	                        input.getInertLength(), input.getSpecificArea(), G);
+        ode->setHoneyCombProperties(input.getSherwood(),input.getChannelDiameter());
+    }
+    else if ( input.getReactorType() == "packedBed" )
+    {
+        ode->setPackedBedProperties(input.getParticleDiameter(),input.getTubeDiameter());
+        ode->setCorrelation(input.getCorrelation());
+    }
+    ode->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
+                            input.getInertLength(), input.getSpecificArea(), G);
     ode->setFeedValue(input.getPressure(),T0,x0bulk);
     ode->setInert(input.getInert());
     ode->setDiffusion(input.getDiffusion());
@@ -386,15 +386,15 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
     bvp->setReactorType(input.getReactorType());
     if ( input.getReactorType() == "honeyComb" )
     {
-		bvp->setHoneyCombProperties(input.getSherwood(),input.getChannelDiameter());
-	}
-	else if ( input.getReactorType() == "packedBed" )
-	{
-		bvp->setPackedBedProperties(input.getParticleDiameter(),input.getTubeDiameter());
-		bvp->setCorrelation(input.getCorrelation());
-	}
-	bvp->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
-	                        input.getInertLength(), input.getSpecificArea(), G);
+        bvp->setHoneyCombProperties(input.getSherwood(),input.getChannelDiameter());
+    }
+    else if ( input.getReactorType() == "packedBed" )
+    {
+        bvp->setPackedBedProperties(input.getParticleDiameter(),input.getTubeDiameter());
+        bvp->setCorrelation(input.getCorrelation());
+    }
+    bvp->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
+                            input.getInertLength(), input.getSpecificArea(), G);
     bvp->setFeedValue(input.getPressure(),T0,x0bulk);
     bvp->setInert(input.getInert());
     bvp->setDiffusion(input.getDiffusion());

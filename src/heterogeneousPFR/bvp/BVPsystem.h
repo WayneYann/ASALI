@@ -72,13 +72,13 @@ public:
 
     void setDiscretizationScheme(const std::string discretizationScheme);
 
-	void setReactorGeometry( const double alfa, const double epsi, 
-							 const double Lcat, const double Linert,
-							 const double av,   const double G);
+    void setReactorGeometry( const double alfa, const double epsi, 
+                             const double Lcat, const double Linert,
+                             const double av,   const double G);
 
-	void setPackedBedProperties(const double Dh, const double Dt);
+    void setPackedBedProperties(const double Dh, const double Dt);
 
-	void setHoneyCombProperties(const double AsymptoticSh, const double Dh);
+    void setHoneyCombProperties(const double AsymptoticSh, const double Dh);
 
     void setFeedValue(const double p, const double T0,
                       const OpenSMOKE::OpenSMOKEVectorDouble x0bulk);
@@ -297,12 +297,12 @@ void BVPSystem::setDiscretizationScheme(const std::string discretizationScheme)
 
 void BVPSystem::setReactorType(const std::string reactorType)
 {
-	reactorType_ = reactorType;
+    reactorType_ = reactorType;
 }
 
 void BVPSystem::setCorrelation(const std::string correlation)
 {
-	correlation_ = correlation;
+    correlation_ = correlation;
 }
 
 void BVPSystem::setReactorGeometry( const double alfa, const double epsi, 
@@ -353,145 +353,145 @@ void BVPSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 
 void BVPSystem::HeatTransferCoefficient(const double z)
 {
-	if ( reactorType_ == "honeyComb" )
-	{
-		double Re = G_*Dh_/(etaMix_*epsi_);
-		double Pr = cp_*etaMix_/condBulk_;
-		double Nu;
-		double zNew;
-		double zStar;
-		if ( z > Linert_)
-		{
-			zNew  = std::max( z - Linert_, 1e-06);
-			zStar = zNew/(Dh_*Re*Pr);
-			zStar = fabs(zStar);
-			Nu    = AsymptoticSh_ + 8.827*pow((1000.*zStar),-0.545)*exp(-48.2*zStar);
-		}
-		else
-		{
-			Nu = AsymptoticSh_;
-		}
-		h_ = Nu*condBulk_/Dh_;
-	}
-	else if ( reactorType_ == "packedBed" )
-	{
-		if ( correlation_ == "Yoshida" )
-		{
-			double Re     = G_*Dh_/(epsi_*etaMix_*(1. - epsi_)*6.);
-			double ReReal = G_*Dh_/(etaMix_*epsi_);
-			double Pr     = cp_*etaMix_/condBulk_;
-			double Nu;
-			double jH;
-			if ( Re < 50. )
-			{
-				jH = 0.91/(std::pow(Re,0.51));
-				Nu = jH*std::pow(Pr,(1./3.))*ReReal;
-				h_ = Nu*condBulk_/Dh_;
-			}
-			else
-			{
-				jH = 0.61/(std::pow(Re,0.41));
-				Nu = jH*std::pow(Pr,(1./3.))*ReReal;
-				h_ = Nu*condBulk_/Dh_;
-			}
-		}
-		else if ( correlation_ == "Petrovic" )
-		{
-			double Re = G_*Dh_/(etaMix_*epsi_);
-			double Pr = cp_*etaMix_/condBulk_;
-			double jH = 0.357/(epsi_*std::pow(Re,0.359));
-			double Nu = jH*std::pow(Pr,(1./3.))*Re;
-			       h_ = Nu*condBulk_/Dh_;
-		}
-		else if ( correlation_ == "Wakao" )
-		{
-			double Re = G_*Dh_/(etaMix_*epsi_);
-			double Pr = cp_*etaMix_/condBulk_;
-			double Nu = 2. + 1.1*std::pow(Re,0.6)*std::pow(Pr,(1./3.));
-			       h_ = Nu*condBulk_/Dh_;
-		}
-	}
+    if ( reactorType_ == "honeyComb" )
+    {
+        double Re = G_*Dh_/(etaMix_*epsi_);
+        double Pr = cp_*etaMix_/condBulk_;
+        double Nu;
+        double zNew;
+        double zStar;
+        if ( z > Linert_)
+        {
+            zNew  = std::max( z - Linert_, 1e-06);
+            zStar = zNew/(Dh_*Re*Pr);
+            zStar = fabs(zStar);
+            Nu    = AsymptoticSh_ + 8.827*pow((1000.*zStar),-0.545)*exp(-48.2*zStar);
+        }
+        else
+        {
+            Nu = AsymptoticSh_;
+        }
+        h_ = Nu*condBulk_/Dh_;
+    }
+    else if ( reactorType_ == "packedBed" )
+    {
+        if ( correlation_ == "Yoshida" )
+        {
+            double Re     = G_*Dh_/(epsi_*etaMix_*(1. - epsi_)*6.);
+            double ReReal = G_*Dh_/(etaMix_*epsi_);
+            double Pr     = cp_*etaMix_/condBulk_;
+            double Nu;
+            double jH;
+            if ( Re < 50. )
+            {
+                jH = 0.91/(std::pow(Re,0.51));
+                Nu = jH*std::pow(Pr,(1./3.))*ReReal;
+                h_ = Nu*condBulk_/Dh_;
+            }
+            else
+            {
+                jH = 0.61/(std::pow(Re,0.41));
+                Nu = jH*std::pow(Pr,(1./3.))*ReReal;
+                h_ = Nu*condBulk_/Dh_;
+            }
+        }
+        else if ( correlation_ == "Petrovic" )
+        {
+            double Re = G_*Dh_/(etaMix_*epsi_);
+            double Pr = cp_*etaMix_/condBulk_;
+            double jH = 0.357/(epsi_*std::pow(Re,0.359));
+            double Nu = jH*std::pow(Pr,(1./3.))*Re;
+                   h_ = Nu*condBulk_/Dh_;
+        }
+        else if ( correlation_ == "Wakao" )
+        {
+            double Re = G_*Dh_/(etaMix_*epsi_);
+            double Pr = cp_*etaMix_/condBulk_;
+            double Nu = 2. + 1.1*std::pow(Re,0.6)*std::pow(Pr,(1./3.));
+                   h_ = Nu*condBulk_/Dh_;
+        }
+    }
 }
 
 void BVPSystem::MassTransferCoefficient(const double z)
 {
-	if ( reactorType_ == "honeyComb" )
-	{
-		double Re = G_*Dh_/(etaMix_*epsi_);
-		OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
-		OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
-		double zNew;
-		double zStar;
-		for (unsigned int i=1;i<=NC_;i++)
-		{
-			Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
-			if ( z > Linert_)
-			{
-				zNew  = std::max( z - Linert_, 1e-06);
-				zStar = zNew/(Dh_*Re*Sc[i]);
-				zStar = fabs(zStar);
-				Sh[i] = AsymptoticSh_ + 6.874*pow((1000.*zStar),-0.488)*exp(-57.2*zStar);
-			}
-			else
-			{
-				Sh[i] = AsymptoticSh_;
-			}
-			Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
-		}
-	}
-	else if ( reactorType_ == "packedBed" )
-	{
-		if ( correlation_ == "Yoshida" )
-		{
-			double Re     = G_*Dh_/(epsi_*etaMix_*(1. - epsi_)*6.);
-			double ReReal = G_*Dh_/(etaMix_*epsi_);
-			OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
-			OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
-			OpenSMOKE::OpenSMOKEVectorDouble jM(NC_);
-			for (unsigned int i=1;i<=NC_;i++)
-			{
-				Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
-				if ( Re < 50. )
-				{
-					jM[i]    = 0.91/(std::pow(Re,0.51));
-					Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*ReReal;
-					Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
-				}
-				else
-				{
-					jM[i]    = 0.61/(std::pow(Re,0.41));
-					Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*ReReal;
-					Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
-				}
-			}
-		}
-		else if ( correlation_ == "Petrovic" )
-		{
-			double Re = G_*Dh_/(etaMix_*epsi_);
-			OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
-			OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
-			OpenSMOKE::OpenSMOKEVectorDouble jM(NC_);
-			for (unsigned int i=1;i<=NC_;i++)
-			{
-				Sc[i]    = etaMix_/(rhoBulk_*diffG_[i]);
-				jM[i]    = 0.357/(epsi_*std::pow(Re,0.359));
-				Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*Re;
-				Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
-			}
-		}
-		else if ( correlation_ == "Wakao" )
-		{
-			double Re = G_*Dh_/(etaMix_*epsi_);
-			OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
-			OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
-			for (unsigned int i=1;i<=NC_;i++)
-			{
-				Sc[i]     = etaMix_/(rhoBulk_*diffG_[i]);
-				Sh[i]    = 2. + 1.1*std::pow(Re,0.6)*std::pow(Sc[i],(1./3.));
-				Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
-			}
-		}
-	}
+    if ( reactorType_ == "honeyComb" )
+    {
+        double Re = G_*Dh_/(etaMix_*epsi_);
+        OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+        OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+        double zNew;
+        double zStar;
+        for (unsigned int i=1;i<=NC_;i++)
+        {
+            Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
+            if ( z > Linert_)
+            {
+                zNew  = std::max( z - Linert_, 1e-06);
+                zStar = zNew/(Dh_*Re*Sc[i]);
+                zStar = fabs(zStar);
+                Sh[i] = AsymptoticSh_ + 6.874*pow((1000.*zStar),-0.488)*exp(-57.2*zStar);
+            }
+            else
+            {
+                Sh[i] = AsymptoticSh_;
+            }
+            Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+        }
+    }
+    else if ( reactorType_ == "packedBed" )
+    {
+        if ( correlation_ == "Yoshida" )
+        {
+            double Re     = G_*Dh_/(epsi_*etaMix_*(1. - epsi_)*6.);
+            double ReReal = G_*Dh_/(etaMix_*epsi_);
+            OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+            OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+            OpenSMOKE::OpenSMOKEVectorDouble jM(NC_);
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
+                if ( Re < 50. )
+                {
+                    jM[i]    = 0.91/(std::pow(Re,0.51));
+                    Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*ReReal;
+                    Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+                }
+                else
+                {
+                    jM[i]    = 0.61/(std::pow(Re,0.41));
+                    Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*ReReal;
+                    Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+                }
+            }
+        }
+        else if ( correlation_ == "Petrovic" )
+        {
+            double Re = G_*Dh_/(etaMix_*epsi_);
+            OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+            OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+            OpenSMOKE::OpenSMOKEVectorDouble jM(NC_);
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                Sc[i]    = etaMix_/(rhoBulk_*diffG_[i]);
+                jM[i]    = 0.357/(epsi_*std::pow(Re,0.359));
+                Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*Re;
+                Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+            }
+        }
+        else if ( correlation_ == "Wakao" )
+        {
+            double Re = G_*Dh_/(etaMix_*epsi_);
+            OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+            OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                Sc[i]     = etaMix_/(rhoBulk_*diffG_[i]);
+                Sh[i]    = 2. + 1.1*std::pow(Re,0.6)*std::pow(Sc[i],(1./3.));
+                Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+            }
+        }
+    }
 }
 
 #if ASALI_USE_BZZ == 1

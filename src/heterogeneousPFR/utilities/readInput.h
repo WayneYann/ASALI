@@ -1075,25 +1075,25 @@ namespace ASALI
             }
 
             {
-				reactorType_ = dummyVector[typeIndex + 1];
+                reactorType_ = dummyVector[typeIndex + 1];
 
-				if ( reactorType_ == "honeyComb" )
-				{
-					checkWord[8] = true;
-				}
-				else if ( reactorType_ == "packedBed" )
-				{
-					checkWord[3] = true;
-					checkWord[4] = true;
-					checkWord[5] = true;
-				}
-				else
-				{
-					error();
-					std::cout << "key word ||" << " type " << "|| MUST be || honeyComb || packedBed ||\n" << std::endl;
-					exit (EXIT_FAILURE);
-				}
-			}
+                if ( reactorType_ == "honeyComb" )
+                {
+                    checkWord[8] = true;
+                }
+                else if ( reactorType_ == "packedBed" )
+                {
+                    checkWord[3] = true;
+                    checkWord[4] = true;
+                    checkWord[5] = true;
+                }
+                else
+                {
+                    error();
+                    std::cout << "key word ||" << " type " << "|| MUST be || honeyComb || packedBed ||\n" << std::endl;
+                    exit (EXIT_FAILURE);
+                }
+            }
 
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -1114,55 +1114,55 @@ namespace ASALI
             std::string dimInert = dummyVector[inertIndex+3];
             ConvertsToMeter(Linert_, dimInert);
 
-			Dmatrix_ = boost::lexical_cast<double>(dummyVector[hydraulicIndex+2]);
-			std::string dimMatrix = dummyVector[hydraulicIndex+3];
-			ConvertsToMeter(Dmatrix_, dimMatrix);
+            Dmatrix_ = boost::lexical_cast<double>(dummyVector[hydraulicIndex+2]);
+            std::string dimMatrix = dummyVector[hydraulicIndex+3];
+            ConvertsToMeter(Dmatrix_, dimMatrix);
 
             if ( reactorType_ == "honeyComb" )
-			{
-				Dchannel_ = boost::lexical_cast<double>(dummyVector[diameterIndex+2]);
-				std::string dimChannel = dummyVector[diameterIndex+3];
-				ConvertsToMeter(Dchannel_, dimChannel);
+            {
+                Dchannel_ = boost::lexical_cast<double>(dummyVector[diameterIndex+2]);
+                std::string dimChannel = dummyVector[diameterIndex+3];
+                ConvertsToMeter(Dchannel_, dimChannel);
 
-				epsi_ = boost::lexical_cast<double>(dummyVector[epsiIndex+2]);
-				
-				av_   = 4.*epsi_/Dchannel_;
+                epsi_ = boost::lexical_cast<double>(dummyVector[epsiIndex+2]);
+                
+                av_   = 4.*epsi_/Dchannel_;
 
-				shape_ = dummyVector[shapeIndex+1+1];
-				if ( shape_ != "circle" && shape_ != "triangle" && shape_ != "square")
-				{
-					error();
-					std::cout << "key word ||" << " channel shape " << "|| MUST be || circle || triangle || square ||\n" << std::endl;
-					exit (EXIT_FAILURE);
-				}
+                shape_ = dummyVector[shapeIndex+1+1];
+                if ( shape_ != "circle" && shape_ != "triangle" && shape_ != "square")
+                {
+                    error();
+                    std::cout << "key word ||" << " channel shape " << "|| MUST be || circle || triangle || square ||\n" << std::endl;
+                    exit (EXIT_FAILURE);
+                }
 
-				limitations_ = dummyVector[limitationIndex+1+1];
-				if ( limitations_ != "massTransfer" && limitations_ != "chemicalRegime")
-				{
-					error();
-					std::cout << "key word ||" << " external limitations " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
-					exit (EXIT_FAILURE);
-				}
-			}
-			else if ( reactorType_ == "packedBed" )
-			{
-				Dp_ = boost::lexical_cast<double>(dummyVector[particleIndex+2]);
-				std::string dimParticle = dummyVector[particleIndex+3];
-				ConvertsToMeter(Dp_, dimParticle);
+                limitations_ = dummyVector[limitationIndex+1+1];
+                if ( limitations_ != "massTransfer" && limitations_ != "chemicalRegime")
+                {
+                    error();
+                    std::cout << "key word ||" << " external limitations " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
+                    exit (EXIT_FAILURE);
+                }
+            }
+            else if ( reactorType_ == "packedBed" )
+            {
+                Dp_ = boost::lexical_cast<double>(dummyVector[particleIndex+2]);
+                std::string dimParticle = dummyVector[particleIndex+3];
+                ConvertsToMeter(Dp_, dimParticle);
 
-				epsi_ = 0.4 + 0.05*Dp_/Dmatrix_ + 0.4*std::pow((Dp_/Dmatrix_),2.);
-				
-				av_   = 6.*(1. - epsi_)/Dp_;
+                epsi_ = 0.4 + 0.05*Dp_/Dmatrix_ + 0.4*std::pow((Dp_/Dmatrix_),2.);
+                
+                av_   = 6.*(1. - epsi_)/Dp_;
 
-				limitations_ = dummyVector[limitationIndex+1+1];
-				if ( limitations_ != "Yoshida" && limitations_ != "Wakao" && limitations_ != "Petrovic" )
-				{
-					error();
-					std::cout << "key word ||" << " external limitations " << "|| MUST be || Yoshida || Wakao || Petrovic || \n" << std::endl;
-					exit (EXIT_FAILURE);
-				}
+                limitations_ = dummyVector[limitationIndex+1+1];
+                if ( limitations_ != "Yoshida" && limitations_ != "Wakao" && limitations_ != "Petrovic" )
+                {
+                    error();
+                    std::cout << "key word ||" << " external limitations " << "|| MUST be || Yoshida || Wakao || Petrovic || \n" << std::endl;
+                    exit (EXIT_FAILURE);
+                }
 
-			}
+            }
 
         }
     }
@@ -1292,9 +1292,9 @@ namespace ASALI
                     double SiteD = 2.49e-08;
                     double ActiveArea = RhMassFraction*RhDispersion*Wcat/(RhPM*SiteD);
 
-					double Ain = 0.25*3.14*Dmatrix_*Dmatrix_;
-					double ReactorVolume = Ain*Lcat_;
-					alfa_ = dectivationFactor*ActiveArea/ReactorVolume;
+                    double Ain = 0.25*3.14*Dmatrix_*Dmatrix_;
+                    double ReactorVolume = Ain*Lcat_;
+                    alfa_ = dectivationFactor*ActiveArea/ReactorVolume;
                 }
             }
         }
@@ -1842,14 +1842,14 @@ namespace ASALI
         std::cout << "Catalytic lenght                         = " << Lcat_ << "\t[m]" << std::endl;
         if ( reactorType_ == "honeyComb" )
         {
-			std::cout << "Channel diameter                         = " << Dchannel_ << "\t[m]" << std::endl;
-			std::cout << "Honeycomb diameter                       = " << Dmatrix_ << "\t[m]" << std::endl;
-		}
-		else if ( reactorType_ == "packedBed" )
-		{
-			std::cout << "Particle diameter                        = " << Dp_ << "\t[m]" << std::endl;
-			std::cout << "Tube diameter                            = " << Dmatrix_ << "\t[m]" << std::endl;
-		}
+            std::cout << "Channel diameter                         = " << Dchannel_ << "\t[m]" << std::endl;
+            std::cout << "Honeycomb diameter                       = " << Dmatrix_ << "\t[m]" << std::endl;
+        }
+        else if ( reactorType_ == "packedBed" )
+        {
+            std::cout << "Particle diameter                        = " << Dp_ << "\t[m]" << std::endl;
+            std::cout << "Tube diameter                            = " << Dmatrix_ << "\t[m]" << std::endl;
+        }
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                       REACTOR PROPERTIES                                       \n" << std::endl;
         std::cout << "Specific area (av)                       = " << av_ << "\t[1/m]" << std::endl;
@@ -1857,9 +1857,9 @@ namespace ASALI
         std::cout << "Void fraction                            = " << epsi_ << "\t[-]" << std::endl;
         if ( reactorType_ == "honeyComb" )
         {
-			std::cout << "Transport regime:                          " << limitations_ << std::endl;
-			std::cout << "Channel shape:                             " << shape_ << std::endl;
-		}
+            std::cout << "Transport regime:                          " << limitations_ << std::endl;
+            std::cout << "Channel shape:                             " << shape_ << std::endl;
+        }
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                        SOLID PROPERTIES                                        \n" << std::endl;
         std::cout << "Density                                  = " << rhoSolid_ << "\t[Kg/m3]" << std::endl;
