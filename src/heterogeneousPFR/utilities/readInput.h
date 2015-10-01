@@ -59,7 +59,9 @@ namespace ASALI
             inline double getCatalyticLength()     const  { return Lcat_;};
             inline double getReactorLength()       const  { return Lcat_ + Linert_;};
             inline double getChannelDiameter()     const  { return Dchannel_;};
+            inline double getParticleDiameter()    const  { return Dp_;};
             inline double getHoneycombDiameter()   const  { return Dmatrix_;};
+            inline double getTubeDiameter()        const  { return Dmatrix_;};
             inline double getVoidFraction()        const  { return epsi_;};
             inline double getAlfa()                const  { return alfa_;};
             inline double getPressure()            const  { return p_;};
@@ -69,6 +71,7 @@ namespace ASALI
             inline double getSolidDensity()        const  { return rhoSolid_;};
             inline double getSolidConductivity()   const  { return condSolid_;};
             inline double getSolidSpecificHeat()   const  { return cpSolid_;};
+            inline double getSpecificArea()        const  { return av_;};
 
             inline unsigned int getRestartPoints()         const  { return int(restartN_);};
             inline unsigned int getMaxPointsNumber()       const  { return int(maxN_);};
@@ -87,6 +90,8 @@ namespace ASALI
             inline std::string getDaeSolver()            const  { return daeSolver_;};
             inline std::string getKineticsPath()         const  { return kineticsPath_;};
             inline std::string getDiscretizationScheme() const  { return discretizationScheme_;};
+            inline std::string getReactorType()          const  { return reactorType_;};
+            inline std::string getCorrelation()          const  { return limitations_;};
 
             inline bool getEnergy()                const  { return energy_;};
             inline bool getHomogeneousReactions()  const  { return homo_;};
@@ -125,6 +130,7 @@ namespace ASALI
             double Lcat_;
             double Linert_;
             double Dchannel_;
+            double Dp_;
             double Dmatrix_;
             double epsi_;
             double alfa_;
@@ -133,6 +139,7 @@ namespace ASALI
             double Tgas_;
             double Tsolid_;
             double v_;
+            double av_;
             double rhoSolid_;
             double cpSolid_;
             double condSolid_;
@@ -149,6 +156,7 @@ namespace ASALI
             std::string daeSolver_;
             std::string kineticsPath_;
             std::string discretizationScheme_;
+            std::string reactorType_;
 
             bool energy_;
             bool constraints_;
@@ -214,10 +222,12 @@ namespace ASALI
     options_(options)
     {
         NS_                = 0;
+        av_                = 0;
         minN_              = 0;
         maxN_              = 0;
         addN_              = 0;
         restartN_          = 0;
+        Dp_                = 0;
         absSpecieTol_      = 0;
         relSpecieTol_      = 0;
         absTemperatureTol_ = 0;
@@ -358,25 +368,25 @@ namespace ASALI
 
         for (unsigned int i=0;i<inputVector_.size();i++)
         {
-            if         (inputVector_[i]   == "Temperature")         {checkWord[0]  = true; temperatureIndex_  = i;}
-            else if (inputVector_[i]   == "Pressure")             {checkWord[1]  = true;}
+            if      (inputVector_[i]   == "Temperature")         {checkWord[0]  = true; temperatureIndex_  = i;}
+            else if (inputVector_[i]   == "Pressure")            {checkWord[1]  = true;}
             else if (inputVector_[i]   == "Reactor")             {checkWord[2]  = true; reactorIndex_      = i;}
-            else if (inputVector_[i]   == "Catalyst")             {checkWord[3]  = true; catalystIndex_     = i;}
+            else if (inputVector_[i]   == "Catalyst")            {checkWord[3]  = true; catalystIndex_     = i;}
             else if (inputVector_[i]   == "Mole" &&
-                     inputVector_[i+1] == "fractions" )         {checkWord[4]  = true; fractionIndex_     = i;}
+                     inputVector_[i+1] == "fractions" )          {checkWord[4]  = true; fractionIndex_     = i;}
             else if (inputVector_[i]   == "Mass" &&
-                     inputVector_[i+1] == "fractions" )         {checkWord[4]  = true; fractionIndex_     = i;}
+                     inputVector_[i+1] == "fractions" )          {checkWord[4]  = true; fractionIndex_     = i;}
             else if (inputVector_[i]   == "Solver" &&
-                     inputVector_[i+1] == "options" )             {checkWord[5]  = true; solverIndex_       = i;}
+                     inputVector_[i+1] == "options" )            {checkWord[5]  = true; solverIndex_       = i;}
             else if (inputVector_[i]   == "Volumetric" &&
                      inputVector_[i+1] == "flow" &&
-                     inputVector_[i+2] == "rate" )                 {checkWord[6]  = true;}
-            else if (inputVector_[i]   == "Velocity")             {checkWord[6]  = true;}
-            else if (inputVector_[i]   == "Solid")                 {checkWord[7]  = true; solidIndex_        = i;}
+                     inputVector_[i+2] == "rate" )               {checkWord[6]  = true;}
+            else if (inputVector_[i]   == "Velocity")            {checkWord[6]  = true;}
+            else if (inputVector_[i]   == "Solid")               {checkWord[7]  = true; solidIndex_        = i;}
             else if (inputVector_[i]   == "Numerical" &&
-                     inputVector_[i+1] == "solvers" )             {checkWord[8]  = true; numericalIndex_       = i;}
+                     inputVector_[i+1] == "solvers" )            {checkWord[8]  = true; numericalIndex_    = i;}
             else if (inputVector_[i]   == "Kinetics" &&
-                     inputVector_[i+1] == "path" )                 {checkWord[9]  = true; kineticsIndex_       = i;}
+                     inputVector_[i+1] == "path" )               {checkWord[9]  = true; kineticsIndex_     = i;}
         }
         
         for (unsigned int i=0;i<checkWord.size();i++)
@@ -464,20 +474,20 @@ namespace ASALI
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "Absolute" &&
+                if      (dummyVector[i] == "Absolute" &&
                          dummyVector[i+1] == "tollerance")         {checkWord[0] = true; absIndex         = i;}
                 else if (dummyVector[i] == "Relative" &&
                          dummyVector[i+1] == "tollerance")         {checkWord[1] = true; relIndex         = i;}
                 else if (dummyVector[i] == "Energy" &&
-                         dummyVector[i+1] == "equation")        {checkWord[2] = true; energyIndex      = i;}
+                         dummyVector[i+1] == "equation")           {checkWord[2] = true; energyIndex      = i;}
                 else if (dummyVector[i] == "Reactions")            {checkWord[3] = true; reactionIndex    = i;}
-                else if (dummyVector[i] == "Grid")                {checkWord[4] = true;}
+                else if (dummyVector[i] == "Grid")                 {checkWord[4] = true;}
                 else if (dummyVector[i] == "Integration" &&
-                         dummyVector[i+1] == "time")            {checkWord[5] = true; tIndex           = i;}
-                else if (dummyVector[i] == "Results")            {checkWord[6] = true; resultsIndex     = i;}
-                else if (dummyVector[i] == "Constraints")        {checkWord[7] = true; constraintIndex  = i;}
+                         dummyVector[i+1] == "time")               {checkWord[5] = true; tIndex           = i;}
+                else if (dummyVector[i] == "Results")              {checkWord[6] = true; resultsIndex     = i;}
+                else if (dummyVector[i] == "Constraints")          {checkWord[7] = true; constraintIndex  = i;}
                 else if (dummyVector[i] == "Accepted" &&
-                         dummyVector[i+1] == "errors")            {checkWord[8] = true; errorIndex        = i;}
+                         dummyVector[i+1] == "errors")             {checkWord[8] = true; errorIndex        = i;}
                 else if (dummyVector[i] == "Diffusion" &&
                          dummyVector[i+1] == "in" &&
                          dummyVector[i+2] == "gas")                {checkWord[9] = true; diffIndex         = i;}
@@ -790,9 +800,6 @@ namespace ASALI
                     }
                 }
             }
-
-
-
         }
     }
 
@@ -888,7 +895,7 @@ namespace ASALI
 
                 for (unsigned int i=0;i<vectorDummy.size();i++)
                 {
-                    if         (vectorDummy[i] == "Growing")             {checkWord[0] = true; growIndex     = i;}
+                    if      (vectorDummy[i] == "Growing")             {checkWord[0] = true; growIndex     = i;}
                     else if (vectorDummy[i] == "Minimum" &&
                              vectorDummy[i+1] == "number" &&
                              vectorDummy[i+2] == "of" &&
@@ -902,7 +909,7 @@ namespace ASALI
                              vectorDummy[i+2] == "of" &&
                              vectorDummy[i+3] == "points")            {checkWord[3] = true; addIndex      = i;}
                     else if (vectorDummy[i] == "Resolution" &&
-                             vectorDummy[i+1] == "type")            {checkWord[4] = true; startIndex    = i;}
+                             vectorDummy[i+1] == "type")              {checkWord[4] = true; startIndex    = i;}
                     else if (vectorDummy[i] == "Discretization" &&
                              vectorDummy[i+1] == "scheme")            {checkWord[5] = true; discreIndex    = i;}
                 }
@@ -1020,16 +1027,18 @@ namespace ASALI
                 }
             }
             
-            std::vector<bool>        checkWord(7);
-            std::vector<std::string> words(7);
+            std::vector<bool>        checkWord(9);
+            std::vector<std::string> words(9);
 
-            double inertIndex;
-            double catIndex;
-            double hydraulicIndex;
-            double diameterIndex;
-            double shapeIndex;
-            double epsiIndex;
-            double limitationIndex;
+            unsigned int inertIndex;
+            unsigned int catIndex;
+            unsigned int hydraulicIndex;
+            unsigned int diameterIndex;
+            unsigned int shapeIndex;
+            unsigned int epsiIndex;
+            unsigned int limitationIndex;
+            unsigned int typeIndex;
+            unsigned int particleIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
@@ -1041,24 +1050,51 @@ namespace ASALI
             words[4] = "channel shape";
             words[5] = "void fraction";
             words[6] = "external limitations";
+            words[7] = "type";
+            words[8] = "particle diameter";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "inert" &&
+                if      (dummyVector[i] == "inert" &&
                          dummyVector[i+1] == "length")             {checkWord[0] = true; inertIndex       = i;}
                 else if (dummyVector[i] == "catalytic" &&
                          dummyVector[i+1] == "length")             {checkWord[1] = true; catIndex         = i;}
                 else if (dummyVector[i] == "hydraulic" &&
-                         dummyVector[i+1] == "diameter")        {checkWord[2] = true; hydraulicIndex   = i;}
+                         dummyVector[i+1] == "diameter")           {checkWord[2] = true; hydraulicIndex   = i;}
                 else if (dummyVector[i] == "channel" &&
-                         dummyVector[i+1] == "diameter")        {checkWord[3] = true; diameterIndex    = i;}
+                         dummyVector[i+1] == "diameter")           {checkWord[3] = true; diameterIndex    = i;}
                 else if (dummyVector[i] == "channel" &&
-                         dummyVector[i+1] == "shape")            {checkWord[4] = true; shapeIndex       = i;}
+                         dummyVector[i+1] == "shape")              {checkWord[4] = true; shapeIndex       = i;}
                 else if (dummyVector[i] == "void" &&
-                         dummyVector[i+1] == "fraction")        {checkWord[5] = true; epsiIndex        = i;}
+                         dummyVector[i+1] == "fraction")           {checkWord[5] = true; epsiIndex        = i;}
                 else if (dummyVector[i] == "external" &&
-                         dummyVector[i+1] == "limitations")        {checkWord[6] = true; limitationIndex        = i;}
+                         dummyVector[i+1] == "limitations")        {checkWord[6] = true; limitationIndex  = i;}
+                else if (dummyVector[i] == "type")                 {checkWord[7] = true; typeIndex        = i;}
+                else if (dummyVector[i] == "particle" &&
+                         dummyVector[i+1] == "diameter")           {checkWord[8] = true; particleIndex    = i;}
             }
+
+            {
+				reactorType_ = dummyVector[typeIndex + 1];
+
+				if ( reactorType_ == "honeyComb" )
+				{
+					checkWord[8] = true;
+				}
+				else if ( reactorType_ == "packedBed" )
+				{
+					checkWord[3] = true;
+					checkWord[4] = true;
+					checkWord[5] = true;
+				}
+				else
+				{
+					error();
+					std::cout << "key word ||" << " type " << "|| MUST be || honeyComb || packedBed ||\n" << std::endl;
+					exit (EXIT_FAILURE);
+				}
+			}
+
 
             for (unsigned int i=0;i<checkWord.size();i++)
             {
@@ -1077,32 +1113,56 @@ namespace ASALI
             Linert_ = boost::lexical_cast<double>(dummyVector[inertIndex+2]);
             std::string dimInert = dummyVector[inertIndex+3];
             ConvertsToMeter(Linert_, dimInert);
-            
-            Dchannel_ = boost::lexical_cast<double>(dummyVector[diameterIndex+2]);
-            std::string dimChannel = dummyVector[diameterIndex+3];
-            ConvertsToMeter(Dchannel_, dimChannel);
 
-            Dmatrix_ = boost::lexical_cast<double>(dummyVector[hydraulicIndex+2]);
-            std::string dimMatrix = dummyVector[hydraulicIndex+3];
-            ConvertsToMeter(Dmatrix_, dimMatrix);
+			Dmatrix_ = boost::lexical_cast<double>(dummyVector[hydraulicIndex+2]);
+			std::string dimMatrix = dummyVector[hydraulicIndex+3];
+			ConvertsToMeter(Dmatrix_, dimMatrix);
 
-            epsi_ = boost::lexical_cast<double>(dummyVector[epsiIndex+2]);
+            if ( reactorType_ == "honeyComb" )
+			{
+				Dchannel_ = boost::lexical_cast<double>(dummyVector[diameterIndex+2]);
+				std::string dimChannel = dummyVector[diameterIndex+3];
+				ConvertsToMeter(Dchannel_, dimChannel);
 
-            shape_ = dummyVector[shapeIndex+1+1];
-            if ( shape_ != "circle" && shape_ != "triangle" && shape_ != "square")
-            {
-                error();
-                std::cout << "key word ||" << " channel shape " << "|| MUST be || circle || triangle || square ||\n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
+				epsi_ = boost::lexical_cast<double>(dummyVector[epsiIndex+2]);
+				
+				av_   = 4.*epsi_/Dchannel_;
 
-            limitations_ = dummyVector[limitationIndex+1+1];
-            if ( limitations_ != "massTransfer" && limitations_ != "chemicalRegime")
-            {
-                error();
-                std::cout << "key word ||" << " external limitations " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
+				shape_ = dummyVector[shapeIndex+1+1];
+				if ( shape_ != "circle" && shape_ != "triangle" && shape_ != "square")
+				{
+					error();
+					std::cout << "key word ||" << " channel shape " << "|| MUST be || circle || triangle || square ||\n" << std::endl;
+					exit (EXIT_FAILURE);
+				}
+
+				limitations_ = dummyVector[limitationIndex+1+1];
+				if ( limitations_ != "massTransfer" && limitations_ != "chemicalRegime")
+				{
+					error();
+					std::cout << "key word ||" << " external limitations " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
+					exit (EXIT_FAILURE);
+				}
+			}
+			else if ( reactorType_ == "packedBed" )
+			{
+				Dp_ = boost::lexical_cast<double>(dummyVector[particleIndex+2]);
+				std::string dimParticle = dummyVector[particleIndex+3];
+				ConvertsToMeter(Dp_, dimParticle);
+
+				epsi_ = 0.4 + 0.05*Dp_/Dmatrix_ + 0.4*std::pow((Dp_/Dmatrix_),2.);
+				
+				av_   = 6.*(1. - epsi_)/Dp_;
+
+				limitations_ = dummyVector[limitationIndex+1+1];
+				if ( limitations_ != "Yoshida" && limitations_ != "Wakao" && limitations_ != "Petrovic" )
+				{
+					error();
+					std::cout << "key word ||" << " external limitations " << "|| MUST be || Yoshida || Wakao || Petrovic || \n" << std::endl;
+					exit (EXIT_FAILURE);
+				}
+
+			}
 
         }
     }
@@ -1231,11 +1291,10 @@ namespace ASALI
                     double RhPM = 102.9;
                     double SiteD = 2.49e-08;
                     double ActiveArea = RhMassFraction*RhDispersion*Wcat/(RhPM*SiteD);
-                    
-                    double Ain = 0.25*3.14*Dmatrix_*Dmatrix_;
-                    double ReactorVolume = Ain*Lcat_;
-                    
-                    alfa_ = dectivationFactor*ActiveArea/ReactorVolume;
+
+					double Ain = 0.25*3.14*Dmatrix_*Dmatrix_;
+					double ReactorVolume = Ain*Lcat_;
+					alfa_ = dectivationFactor*ActiveArea/ReactorVolume;
                 }
             }
         }
@@ -1781,15 +1840,26 @@ namespace ASALI
         std::cout << "Reactor lenght                           = " << Lcat_ + Linert_ << "\t[m]" << std::endl;
         std::cout << "Inert lenght                             = " << Linert_ << "\t[m]" << std::endl;
         std::cout << "Catalytic lenght                         = " << Lcat_ << "\t[m]" << std::endl;
-        std::cout << "Channel diameter                         = " << Dchannel_ << "\t[m]" << std::endl;
-        std::cout << "Honeycomb diameter                       = " << Dmatrix_ << "\t[m]" << std::endl;
+        if ( reactorType_ == "honeyComb" )
+        {
+			std::cout << "Channel diameter                         = " << Dchannel_ << "\t[m]" << std::endl;
+			std::cout << "Honeycomb diameter                       = " << Dmatrix_ << "\t[m]" << std::endl;
+		}
+		else if ( reactorType_ == "packedBed" )
+		{
+			std::cout << "Particle diameter                        = " << Dp_ << "\t[m]" << std::endl;
+			std::cout << "Tube diameter                            = " << Dmatrix_ << "\t[m]" << std::endl;
+		}
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                       REACTOR PROPERTIES                                       \n" << std::endl;
-        std::cout << "Specific area (av)                       = " << 4.*epsi_/Dchannel_ << "\t[1/m]" << std::endl;
+        std::cout << "Specific area (av)                       = " << av_ << "\t[1/m]" << std::endl;
         std::cout << "Specific catalytic area (alfa)           = " << alfa_ << "\t[1/m]" << std::endl;
-        std::cout << "Channel void fraction                    = " << epsi_ << "\t[-]" << std::endl;
-        std::cout << "Transport regime:                          " << limitations_ << std::endl;
-        std::cout << "Channel shape:                             " << shape_ << std::endl;
+        std::cout << "Void fraction                            = " << epsi_ << "\t[-]" << std::endl;
+        if ( reactorType_ == "honeyComb" )
+        {
+			std::cout << "Transport regime:                          " << limitations_ << std::endl;
+			std::cout << "Channel shape:                             " << shape_ << std::endl;
+		}
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                        SOLID PROPERTIES                                        \n" << std::endl;
         std::cout << "Density                                  = " << rhoSolid_ << "\t[Kg/m3]" << std::endl;

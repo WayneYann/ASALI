@@ -35,6 +35,7 @@ echo '}' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo 'Reactor' >> heterogeneousPFR.txt
 echo '{' >> heterogeneousPFR.txt
+echo '  type                  honeyComb' >> heterogeneousPFR.txt
 echo '  inert length          0.5  cm' >> heterogeneousPFR.txt
 echo '  catalytic length      26   mm' >> heterogeneousPFR.txt
 echo '  hydraulic diameter    24   mm' >> heterogeneousPFR.txt

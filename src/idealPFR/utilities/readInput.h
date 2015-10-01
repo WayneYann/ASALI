@@ -233,24 +233,24 @@ namespace ASALI
 
         for (unsigned int i=0;i<inputVector_.size();i++)
         {
-            if         (inputVector_[i]   == "Temperature")         {checkWord[0]  = true;}
-            else if (inputVector_[i]   == "Pressure")             {checkWord[1]  = true;}
+            if      (inputVector_[i]   == "Temperature")         {checkWord[0]  = true;}
+            else if (inputVector_[i]   == "Pressure")            {checkWord[1]  = true;}
             else if (inputVector_[i]   == "Reactor")             {checkWord[2]  = true; reactorIndex_      = i;}
-            else if (inputVector_[i]   == "Catalyst")             {checkWord[3]  = true; catalystIndex_     = i;}
+            else if (inputVector_[i]   == "Catalyst")            {checkWord[3]  = true; catalystIndex_     = i;}
             else if (inputVector_[i]   == "Mole" &&
-                     inputVector_[i+1] == "fractions" )         {checkWord[4]  = true; fractionIndex_     = i;}
+                     inputVector_[i+1] == "fractions" )          {checkWord[4]  = true; fractionIndex_     = i;}
             else if (inputVector_[i]   == "Mass" &&
-                     inputVector_[i+1] == "fractions" )         {checkWord[4]  = true; fractionIndex_     = i;}
+                     inputVector_[i+1] == "fractions" )          {checkWord[4]  = true; fractionIndex_     = i;}
             else if (inputVector_[i]   == "Solver" &&
-                     inputVector_[i+1] == "options" )             {checkWord[5]  = true; solverIndex_       = i;}
+                     inputVector_[i+1] == "options" )            {checkWord[5]  = true; solverIndex_       = i;}
             else if (inputVector_[i]   == "Volumetric" &&
                      inputVector_[i+1] == "flow" &&
-                     inputVector_[i+2] == "rate" )                 {checkWord[6]  = true;}
-            else if (inputVector_[i]   == "Velocity")             {checkWord[6]  = true;}
+                     inputVector_[i+2] == "rate" )               {checkWord[6]  = true;}
+            else if (inputVector_[i]   == "Velocity")            {checkWord[6]  = true;}
             else if (inputVector_[i]   == "Numerical" &&
-                     inputVector_[i+1] == "solvers" )             {checkWord[7]  = true; numericalIndex_       = i;}
+                     inputVector_[i+1] == "solvers" )            {checkWord[7]  = true; numericalIndex_    = i;}
             else if (inputVector_[i]   == "Kinetics" &&
-                     inputVector_[i+1] == "path" )                 {checkWord[8]  = true; kineticsIndex_       = i;}
+                     inputVector_[i+1] == "path" )               {checkWord[8]  = true; kineticsIndex_     = i;}
         }
         
         for (unsigned int i=0;i<checkWord.size();i++)
@@ -327,12 +327,12 @@ namespace ASALI
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "Absolute" &&
-                         dummyVector[i+1] == "tollerance")         {checkWord[0] = true; absIndex      = i;}
+                if      (dummyVector[i] == "Absolute" &&
+                         dummyVector[i+1] == "tollerance")         {checkWord[0] = true; absIndex         = i;}
                 else if (dummyVector[i] == "Relative" &&
-                         dummyVector[i+1] == "tollerance")         {checkWord[1] = true; relIndex      = i;}
-                else if (dummyVector[i] == "Reactions")            {checkWord[2] = true; reactionIndex = i;}
-                else if (dummyVector[i] == "Constraints")        {checkWord[3] = true; constraintIndex  = i;}
+                         dummyVector[i+1] == "tollerance")         {checkWord[1] = true; relIndex         = i;}
+                else if (dummyVector[i] == "Reactions")            {checkWord[2] = true; reactionIndex    = i;}
+                else if (dummyVector[i] == "Constraints")          {checkWord[3] = true; constraintIndex  = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -607,8 +607,8 @@ namespace ASALI
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "type")                 {checkWord[0] = true; typeIndex        = i;}
-                else if (dummyVector[i] == "length")             {checkWord[1] = true; lengthIndex      = i;}
+                if      (dummyVector[i] == "type")              {checkWord[0] = true; typeIndex        = i;}
+                else if (dummyVector[i] == "length")            {checkWord[1] = true; lengthIndex      = i;}
                 else if (dummyVector[i] == "inner" &&
                          dummyVector[i+1] == "diameter")        {checkWord[2] = true; DintIndex        = i;}
                 else if (dummyVector[i] == "outer" &&

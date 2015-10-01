@@ -336,21 +336,21 @@ namespace ASALI
             {
                 if ( reactorType_ == "Monolith" )
                 {
-                    if         (dummyVector[i] == "void" &&
+                    if      (dummyVector[i] == "void" &&
                              dummyVector[i+1] == "fraction")         {checkWord[0] = true; void_particleIndex  = i;}
                     else if (dummyVector[i] == "reactor" &&
-                             dummyVector[i+1] == "length")             {checkWord[1] = true; lengthIndex         = i;}
+                             dummyVector[i+1] == "length")           {checkWord[1] = true; lengthIndex         = i;}
                     else if (dummyVector[i] == "shell" &&
-                             dummyVector[i+1] == "diameter")        {checkWord[2] = true; shellIndex          = i;}
+                             dummyVector[i+1] == "diameter")          {checkWord[2] = true; shellIndex          = i;}
                 }
                 else if ( reactorType_ == "PackedBed" )
                 {
-                    if         (dummyVector[i] == "particle" &&
+                    if      (dummyVector[i] == "particle" &&
                              dummyVector[i+1] == "diameter")         {checkWord[0] = true; void_particleIndex  = i;}
                     else if (dummyVector[i] == "reactor" &&
-                             dummyVector[i+1] == "length")             {checkWord[1] = true; lengthIndex         = i;}
+                             dummyVector[i+1] == "length")           {checkWord[1] = true; lengthIndex         = i;}
                     else if (dummyVector[i] == "shell" &&
-                             dummyVector[i+1] == "diameter")        {checkWord[2] = true; shellIndex          = i;}
+                             dummyVector[i+1] == "diameter")          {checkWord[2] = true; shellIndex          = i;}
                 }
             }
 

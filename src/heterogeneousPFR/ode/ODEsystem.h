@@ -61,12 +61,21 @@ public:
     void setHeterogeneusReactions(const bool flag) { heterogeneusReactions_ = flag; }
 
     void setDiffusion(const bool flag)             { gasDiffusion_ = flag; }
+    
+    void setReactorType(const std::string reactorType);
+    
+    void setCorrelation(const std::string correlation);
 
     void setDiscretizationScheme(const std::string discretizationScheme);
 
-    void setReactorGeometry( const double alfa,      const double epsi, 
-                             const double AsymptoticSh, const double Lcat, const double Linert,
-                             const double Dh,           const double G);
+	void setReactorGeometry( const double alfa, const double epsi, 
+							 const double Lcat, const double Linert,
+							 const double av,   const double G);
+
+	void setPackedBedProperties(const double Dh, const double Dt);
+
+	void setHoneyCombProperties(const double AsymptoticSh, const double Dh);
+
 
     void setFeedValue(const double p, const double T0,
                       const OpenSMOKE::OpenSMOKEVectorDouble x0bulk);
@@ -112,6 +121,7 @@ private:
     double epsi_;
     double Dh_;
     double Lcat_;
+    double Dt_;
     double Linert_;
     double L_;
     double AsymptoticSh_;
@@ -135,16 +145,18 @@ private:
 
     std::string inert_;
     std::string discretizationScheme_;
+    std::string reactorType_;
+    std::string correlation_;
 
     bool homogeneusReactions_ ;
     bool heterogeneusReactions_;
     bool gasDiffusion_;
 
-    OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&            thermodynamicsMap_;                //!< thermodynamic map
-    OpenSMOKE::KineticsMap_CHEMKIN<double>&                    kineticsMap_;                    //!< kinetic map
-    OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&    thermodynamicsSurfaceMap_;        //!< thermodynamic map
-    OpenSMOKE::KineticsMap_Surface_CHEMKIN<double>&            kineticsSurfaceMap_;            //!< kinetic map
-    OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&         transportMap_;                    //!< transport map
+    OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&            thermodynamicsMap_;             //!< thermodynamic map
+    OpenSMOKE::KineticsMap_CHEMKIN<double>&                  kineticsMap_;                   //!< kinetic map
+    OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&    thermodynamicsSurfaceMap_;      //!< thermodynamic map
+    OpenSMOKE::KineticsMap_Surface_CHEMKIN<double>&          kineticsSurfaceMap_;            //!< kinetic map
+    OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&       transportMap_;                  //!< transport map
 
     OpenSMOKE::OpenSMOKEVectorDouble *omegaBulk_;
     OpenSMOKE::OpenSMOKEVectorDouble *omegaWall_;
@@ -184,11 +196,11 @@ private:
 };
 
 
-ODESystem::ODESystem(    OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
-                        OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
-                        OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
-                        OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
-                        OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap):
+ODESystem::ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+                     OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
+                     OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
+                     OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
+                     OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap):
     thermodynamicsMap_(thermodynamicsMap), 
     kineticsMap_(kineticsMap),
     thermodynamicsSurfaceMap_(thermodynamicsSurfaceMap), 
@@ -250,19 +262,39 @@ void ODESystem::setDiscretizationScheme(const std::string discretizationScheme)
     discretizationScheme_ = discretizationScheme;
 }
 
-void ODESystem::setReactorGeometry( const double alfa,         const double epsi, 
-                                    const double AsymptoticSh, const double Lcat, const double Linert,
-                                    const double Dh,           const double G)
+void ODESystem::setReactorType(const std::string reactorType)
+{
+	reactorType_ = reactorType;
+}
+
+void ODESystem::setCorrelation(const std::string correlation)
+{
+	correlation_ = correlation;
+}
+
+void ODESystem::setReactorGeometry( const double alfa, const double epsi, 
+                                    const double Lcat, const double Linert,
+                                    const double av,   const double G)
 {
     alfaTemp_        = alfa;
-    Dh_              = Dh;
+    av_              = av;
     epsi_            = epsi;
     Lcat_            = Lcat;
     L_               = Lcat_ + Linert;
     Linert_          = Linert/L_;
-    AsymptoticSh_    = AsymptoticSh;
     G_               = G;
-    av_              = 4.*epsi/Dh;
+}
+
+void ODESystem::setPackedBedProperties(const double Dh, const double Dt)
+{
+    Dh_ = Dh;
+    Dt_ = Dt;
+}
+
+void ODESystem::setHoneyCombProperties(const double AsymptoticSh, const double Dh)
+{
+    Dh_           = Dh;
+    AsymptoticSh_ = AsymptoticSh;
 }
 
 void ODESystem::setFeedValue(const double p, const double T0,
@@ -288,27 +320,83 @@ void ODESystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 
 void ODESystem::MassTransferCoefficient(const double z)
 {
-    double Re = G_*Dh_/(etaMix_*epsi_);
-    OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
-    OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
-    double zNew;
-    double zStar;
-    for (unsigned int i=1;i<=NC_;i++)
-    {
-        Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
-        if ( z > Linert_)
-        {
-            zNew  = std::max( z - Linert_, 1e-06);
-            zStar = zNew/(Dh_*Re*Sc[i]);
-            zStar = fabs(zStar);
-            Sh[i] = AsymptoticSh_ + 6.874*pow((1000.*zStar),-0.488)*exp(-57.2*zStar);
-        }
-        else
-        {
-            Sh[i] = AsymptoticSh_;
-        }
-        Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
-    }
+	if ( reactorType_ == "honeyComb" )
+	{
+		double Re = G_*Dh_/(etaMix_*epsi_);
+		OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+		OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+		double zNew;
+		double zStar;
+		for (unsigned int i=1;i<=NC_;i++)
+		{
+			Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
+			if ( z > Linert_)
+			{
+				zNew  = std::max( z - Linert_, 1e-06);
+				zStar = zNew/(Dh_*Re*Sc[i]);
+				zStar = fabs(zStar);
+				Sh[i] = AsymptoticSh_ + 6.874*pow((1000.*zStar),-0.488)*exp(-57.2*zStar);
+			}
+			else
+			{
+				Sh[i] = AsymptoticSh_;
+			}
+			Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+		}
+	}
+	else if ( reactorType_ == "packedBed" )
+	{
+		if ( correlation_ == "Yoshida" )
+		{
+			double Re     = G_*Dh_/(epsi_*etaMix_*(1. - epsi_)*6.);
+			double ReReal = G_*Dh_/(etaMix_*epsi_);
+			OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+			OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+			OpenSMOKE::OpenSMOKEVectorDouble jM(NC_);
+			for (unsigned int i=1;i<=NC_;i++)
+			{
+				Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
+				if ( Re < 50. )
+				{
+					jM[i]    = 0.91/(std::pow(Re,0.51));
+					Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*ReReal;
+					Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+				}
+				else
+				{
+					jM[i]    = 0.61/(std::pow(Re,0.41));
+					Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*ReReal;
+					Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+				}
+			}
+		}
+		else if ( correlation_ == "Petrovic" )
+		{
+			double Re = G_*Dh_/(etaMix_*epsi_);
+			OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+			OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+			OpenSMOKE::OpenSMOKEVectorDouble jM(NC_);
+			for (unsigned int i=1;i<=NC_;i++)
+			{
+				Sc[i]    = etaMix_/(rhoBulk_*diffG_[i]);
+				jM[i]    = 0.357/(epsi_*std::pow(Re,0.359));
+				Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*Re;
+				Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+			}
+		}
+		else if ( correlation_ == "Wakao" )
+		{
+			double Re = G_*Dh_/(etaMix_*epsi_);
+			OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+			OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+			for (unsigned int i=1;i<=NC_;i++)
+			{
+				Sc[i]     = etaMix_/(rhoBulk_*diffG_[i]);
+				Sh[i]    = 2. + 1.1*std::pow(Re,0.6)*std::pow(Sc[i],(1./3.));
+				Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+			}
+		}
+	}
 }
 
 #if ASALI_USE_BZZ == 1
