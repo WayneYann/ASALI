@@ -289,31 +289,35 @@ void BVPSystem::setReactorGeometry( const double alfa,         const double epsi
                                     const double Dh,           const double G)
 {
     alfaTemp_        = alfa;
-    Dh_                = Dh;
+    Dh_              = Dh;
     epsi_            = epsi;
     Lcat_            = Lcat;
-    L_                = Lcat_ + Linert;
-    Linert_            = Linert/L_;
+    L_               = Lcat_ + Linert;
+    Linert_          = Linert/L_;
     AsymptoticSh_    = AsymptoticSh;
-    G_                = G;
-    av_                = 4.*epsi/Dh;
+    G_               = G;
+    av_              = 4.*epsi/Dh;
 }
 
 void BVPSystem::setFeedValue(const double p, const double T0,
                              const OpenSMOKE::OpenSMOKEVectorDouble x0bulk)
 {
-    p_                = p;
-    T0_                = T0;
+    p_  = p;
+    T0_ = T0;
     ChangeDimensions(x0bulk.Size(), &x0bulk_, true);
     for (unsigned int j=1;j<=x0bulk.Size();j++)
+    {
         x0bulk_[j] = x0bulk[j];
+    }
 }
 
 void BVPSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 {
     ChangeDimensions(z.Size(), &z_, true);
     for (unsigned int k=1;k<=z_.Size();k++)
+    {
         z_[k] = z[k]/L_;
+    }
 }
 
 void BVPSystem::HeatTransferCoefficient(const double z)

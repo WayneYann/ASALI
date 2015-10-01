@@ -56,6 +56,31 @@
         t_ = t;
     }
 
+    //- Create derivate
+    {
+        //- Temperature
+        cbulk_ = FirstOrderDerivate(Tbulk_);
+
+        //- Species
+        OpenSMOKE::OpenSMOKEVectorDouble omegagas_(NP_);
+        OpenSMOKE::OpenSMOKEVectorDouble cgas_(NP_);
+        for (unsigned int j=1;j<=NC_;j++)
+        {
+            for (unsigned int i=0;i<NP_;i++)
+            {
+                omegagas_[i+1]   = omegaBulk_[i][j];
+            }
+
+            cgas_   = FirstOrderDerivate(omegagas_);
+
+            for (unsigned int i=0;i<NP_;i++)
+            {
+                cGas_[i][j] = cgas_[i+1];
+            }
+        }
+    }
+
+
     unsigned int counter = 1;
     for (unsigned int i=0;i<NP_;i++)
     {
@@ -181,7 +206,7 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j] + (diffG_[j]*rhoBulk_/(G_*epsi_))*(omegaBulk_[i+1][j]-omegaBulk_[i][j])/(z_[i+1+1] - z_[i+1]);// ALGEBRAIC
+                        dyOS_[counter++] = G_*x0bulk_[j] - G_*omegaBulk_[i][j] + diffG_[j]*rhoBulk_*cGas_[i][j];// ALGEBRAIC
                     }
                     else
                     {
@@ -215,14 +240,16 @@
                     dyOS_[counter++] = 1e06*(1. - teta_[i].SumElements());
                 }
             }
+
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = T0_ - Tbulk_[i+1] + (condBulk_/(G_*cp_))*(Tbulk_[i+1+1]-Tbulk_[i+1])/(z[i+1+1] - z[i+1]); // ALGEBRAIC
+                dyOS_[counter++] = G_*cp_*T0_ - G_*cp_*Tbulk_[i+1] + condBulk_*cbulk_[i+1]; // ALGEBRAIC
             }
             else
             {
                 dyOS_[counter++] = T0_ - Tbulk_[i+1];
             }
+
             dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
         }
         else if (i==(NP_-1))
@@ -234,7 +261,7 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = omegaBulk_[i][j]-omegaBulk_[i-1][j]; // ALGEBRAIC
+                        dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*cGas_[i][j]; // ALGEBRAIC
                     }
                     else
                     {
@@ -271,7 +298,7 @@
 
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = Tbulk_[i+1] - Tbulk_[i-1+1]; // ALGEBRAIC
+                dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*cbulk_[i+1]; // ALGEBRAIC
             }
             else
             {

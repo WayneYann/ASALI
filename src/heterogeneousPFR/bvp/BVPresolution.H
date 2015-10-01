@@ -144,6 +144,7 @@ else if ( input.getDaeSolver() == "Sundials" )
     #if ASALI_USE_SUNDIALS == 1
     bvp->resize(N);
     bvp->setGrid(z);
+    bvp->setDiscretizationScheme(discretizationScheme);
 
     OpenSMOKE::OpenSMOKEVectorDouble residuals(bvp->NumberOfEquations());
     OpenSMOKE::OpenSMOKEVectorBool   algebraic(bvp->NumberOfEquations());

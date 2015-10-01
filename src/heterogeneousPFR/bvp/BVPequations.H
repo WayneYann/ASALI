@@ -240,14 +240,13 @@
         if(i==0)
         {
             //-INLET conditions
-            
             for (unsigned int j=1;j<=NC_;j++)
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j] + (diffG_[j]*rhoBulk_/(G_*epsi_))*(omegaBulk_[i+1][j]-omegaBulk_[i][j])/(z_[i+1+1] - z_[i+1]);// ALGEBRAIC
+                        dyOS_[counter++] = G_*x0bulk_[j] - G_*omegaBulk_[i][j] + diffG_[j]*rhoBulk_*cGas_[i][j];// ALGEBRAIC
                     }
                     else
                     {
@@ -284,7 +283,7 @@
             
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = T0_ - Tbulk_[i+1] + (condBulk_/(G_*cp_))*(Tbulk_[i+1+1]-Tbulk_[i+1])/(z[i+1+1] - z[i+1]); // ALGEBRAIC
+                dyOS_[counter++] = G_*cp_*T0_ - G_*cp_*Tbulk_[i+1] + condBulk_*cbulk_[i+1]; // ALGEBRAIC
             }
             else
             {
@@ -302,7 +301,7 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*(omegaBulk_[i][j]-omegaBulk_[i-1][j])/(z_[i+1] - z[i]); // ALGEBRAIC
+                        dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*cGas_[i][j]; // ALGEBRAIC
                     }
                     else
                     {
@@ -340,7 +339,7 @@
             }
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = Tbulk_[i+1] - Tbulk_[i-1+1]; // ALGEBRAIC
+                dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*cbulk_[i+1]; // ALGEBRAIC
             }
             else
             {

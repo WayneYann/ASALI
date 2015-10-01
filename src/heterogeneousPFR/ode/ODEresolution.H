@@ -43,6 +43,7 @@ if ( input.getOdeSolver() == "BzzMath")
     #if ASALI_USE_BZZ == 1
     ode->resize(N);
     ode->setGrid(z);
+    ode->setDiscretizationScheme(discretizationScheme);
 
     BzzVector yFbzz;
     BzzVector x0bzz;
@@ -146,6 +147,8 @@ else if ( input.getOdeSolver() == "Sundials" )
     #if ASALI_USE_SUNDIALS == 1
     ode->resize(N);
     ode->setGrid(z);
+    ode->setDiscretizationScheme(discretizationScheme);
+
     ChangeDimensions( ode->NumberOfEquations(), &yF, true);
 
     OpenSMOKE::ODESystem_CVODE_Template *odeSystemObject;
