@@ -414,6 +414,25 @@ void ODESystem::Nusselt(const double Reynolds)
                 exit (EXIT_FAILURE);
             }
         }
+        else if ( NuName_ == "Petrovic" )
+        {
+            if ( Reynolds > 3 && Reynolds < 230)
+            {
+                double jM = 0.357/(std::pow(Reynolds,0.359));
+                Nu_ = jM*Reynolds*std::pow(Pr_,(1./3.));
+            }
+            else
+            {
+                error();
+                std::cout << NuName_ << " correlation out of range!\n" << std::endl;
+                exit (EXIT_FAILURE);
+            }
+		}
+        else if ( NuName_ == "Rebughini" )
+        {
+			double jM = 0.393/(std::pow(Reynolds,0.384));
+			Nu_ = jM*Reynolds*std::pow(Pr_,(1./3.));
+		}
     }
     else if ( type_ == "Monolith" )
     {

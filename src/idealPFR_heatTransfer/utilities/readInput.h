@@ -313,21 +313,21 @@ namespace ASALI
             {
                 if ( reactorType_ == "Monolith" )
                 {
-                    if         (dummyVector[i] == "void" &&
+                    if      (dummyVector[i] == "void" &&
                              dummyVector[i+1] == "fraction")         {checkWord[0] = true; void_particleIndex  = i;}
                     else if (dummyVector[i] == "reactor" &&
-                             dummyVector[i+1] == "length")             {checkWord[1] = true; lengthIndex         = i;}
+                             dummyVector[i+1] == "length")           {checkWord[1] = true; lengthIndex         = i;}
                     else if (dummyVector[i] == "shell" &&
-                             dummyVector[i+1] == "diameter")        {checkWord[2] = true; shellIndex          = i;}
+                             dummyVector[i+1] == "diameter")         {checkWord[2] = true; shellIndex          = i;}
                 }
                 else if ( reactorType_ == "PackedBed" )
                 {
-                    if         (dummyVector[i] == "particle" &&
+                    if      (dummyVector[i] == "particle" &&
                              dummyVector[i+1] == "diameter")         {checkWord[0] = true; void_particleIndex  = i;}
                     else if (dummyVector[i] == "reactor" &&
-                             dummyVector[i+1] == "length")             {checkWord[1] = true; lengthIndex         = i;}
+                             dummyVector[i+1] == "length")           {checkWord[1] = true; lengthIndex         = i;}
                     else if (dummyVector[i] == "shell" &&
-                             dummyVector[i+1] == "diameter")        {checkWord[2] = true; shellIndex          = i;}
+                             dummyVector[i+1] == "diameter")         {checkWord[2] = true; shellIndex          = i;}
                 }
             }
 
@@ -433,15 +433,15 @@ namespace ASALI
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "specie" &&
+                if      (dummyVector[i] == "specie" &&
                          dummyVector[i+1] == "name")                 {checkWord[0] = true; specieIndex     = i;}
                 else if (dummyVector[i] == "feed" &&
-                         dummyVector[i+1] == "temperature")         {checkWord[1] = true; feedTindex      = i;}
+                         dummyVector[i+1] == "temperature")          {checkWord[1] = true; feedTindex      = i;}
                 else if (dummyVector[i] == "solid" &&
-                         dummyVector[i+1] == "temperature")            {checkWord[2] = true; wallTindex      = i;}
+                         dummyVector[i+1] == "temperature")          {checkWord[2] = true; wallTindex      = i;}
                 else if (dummyVector[i] == "feed" &&
-                         dummyVector[i+1] == "pressure")            {checkWord[3] = true; pIndex          = i;}
-                else if (dummyVector[i] == "velocity")                {checkWord[4] = true; vIndex          = i;}
+                         dummyVector[i+1] == "pressure")             {checkWord[3] = true; pIndex          = i;}
+                else if (dummyVector[i] == "velocity")               {checkWord[4] = true; vIndex          = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -557,12 +557,12 @@ namespace ASALI
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "thermophysical" &&
+                if      (dummyVector[i] == "thermophysical" &&
                          dummyVector[i+1] == "properties")         {checkWord[0] = true; thermoIndex  = i;}
                 else if (dummyVector[i] == "pressure" &&
-                         dummyVector[i+1] == "drops")             {checkWord[1] = true; pIndex       = i;}
+                         dummyVector[i+1] == "drops")              {checkWord[1] = true; pIndex       = i;}
                 else if (dummyVector[i] == "heat" &&
-                         dummyVector[i+1] == "transfer")        {checkWord[2] = true; hIndex       = i;}
+                         dummyVector[i+1] == "transfer")           {checkWord[2] = true; hIndex       = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -629,6 +629,14 @@ namespace ASALI
             {
                 hCorr_ = dummyVector[hIndex + 2];
             }
+            else if ( dummyVector[hIndex + 2] == "Rebughini")
+            {
+                hCorr_ = dummyVector[hIndex + 2];
+            }
+            else if ( dummyVector[hIndex + 2] == "Petrovic")
+            {
+                hCorr_ = dummyVector[hIndex + 2];
+            }
             else if ( dummyVector[hIndex + 2] == "Monolith")
             {
                 hCorr_ = dummyVector[hIndex + 2];
@@ -636,7 +644,7 @@ namespace ASALI
             else
             {
                 error();
-                std::cout << "key word || heat transfer || MUST BE || Wakao || Gupta || Gamson || Yoshida ||\n" << std::endl;
+                std::cout << "key word || heat transfer || MUST BE || Wakao || Gupta || Gamson || Yoshida || Petrovic || Rebughini \n" << std::endl;
                 exit (EXIT_FAILURE);
             }
         }
