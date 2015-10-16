@@ -110,55 +110,6 @@ int main( int argc, char** argv )
     #include "ODEresolution.H"
     #include "BVPresolution.H"
     #include "write.H"
-
-/*
-    if ( input.getStart() == "new")
-    {
-
-        #include "BVPresolution.H"
-
-
-        if ( grow == true)
-        {
-            while ( ended == false)
-            {
-                #include "grow.H"
-                #include "ODEresolution.H"
-                #include "BVPresolution.H"
-                #include "write.H"
-            }
-        }
-    }
-    else if ( input.getStart() == "latest")
-    {
-        #include "grow.H"
-        #include "ODEresolution.H"
-        #include "BVPresolution.H"
-        #include "write.H"
-
-        if ( grow == true)
-        {
-            while ( ended == false)
-            {
-                #include "grow.H"
-                #include "ODEresolution.H"
-                #include "BVPresolution.H"
-                #include "write.H"
-            }
-        }
-    }
-    else if ( input.getStart() == "converter"  ||
-              input.getStart() == "kinetic"    ||
-              input.getStart() == "RPA") 
-    {
-        #include "write.H"
-    }
-    else if ( input.getStart() == "sampling" )
-    {
-        #include "sampling.H"
-        #include "write.H"
-    }
-*/
     remove("BzzFile.txt");
 
     double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
