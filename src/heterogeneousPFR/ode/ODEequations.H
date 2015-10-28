@@ -56,26 +56,62 @@
         t_ = t;
     }
 
+    //- Properties estimation
+    {
+        for (unsigned int i=0;i<NP_;i++)
+        {
+            thermodynamicsMap_.SetTemperature(Tbulk_[i+1]);
+            thermodynamicsMap_.SetPressure(p_);
+            transportMap_.SetPressure(p_);
+            transportMap_.SetTemperature(Tbulk_[i+1]);
+
+            thermodynamicsMap_.MoleFractions_From_MassFractions(xBulk_,MWbulk_,omegaBulk_[i]);
+
+            // Density [kg/m3]
+            rhoBulk_[i+1] = p_*MWbulk_/(PhysicalConstants::R_J_kmol*Tbulk_[i+1]);
+
+            // Viscosity [kg/m/s]
+            transportMap_.DynamicViscosity(etaMix_[i+1], xBulk_);
+
+            // Specific heat [J/Kg/K]
+            thermodynamicsMap_.cpMolar_Mixture_From_MoleFractions(cp_[i+1], xBulk_);
+            cp_[i+1] = cp_[i+1]/MWbulk_;
+
+            // Thermal conductivity [W/m/K]
+            transportMap_.ThermalConductivity(condBulk_[i+1],xBulk_);
+            
+            // Diffusivity [m2/s]
+            transportMap_.MassDiffusionCoefficients(diffG_[i], xBulk_);
+        }
+    }
+
     //- Create derivate
     {
-        //- Temperature
-        cbulk_ = FirstOrderDerivate(Tbulk_);
+        //- Temperture - 1st
+        {
+            cbulk_ = FirstOrderDerivate(Tbulk_);
+        }
 
         //- Species
         OpenSMOKE::OpenSMOKEVectorDouble omegagas_(NP_);
         OpenSMOKE::OpenSMOKEVectorDouble cgas_(NP_);
+
         for (unsigned int j=1;j<=NC_;j++)
         {
-            for (unsigned int i=0;i<NP_;i++)
+            //- Species - 1st
             {
-                omegagas_[i+1]   = omegaBulk_[i][j];
-            }
+                OpenSMOKE::OpenSMOKEVectorDouble rhogas_(NP_);
+                for (unsigned int i=0;i<NP_;i++)
+                {
+                    omegagas_[i+1] = omegaBulk_[i][j];
+                }
 
-            cgas_   = FirstOrderDerivate(omegagas_);
+                cgas_   = FirstOrderDerivate(omegagas_);
 
-            for (unsigned int i=0;i<NP_;i++)
-            {
-                cGas_[i][j] = cgas_[i+1];
+                for (unsigned int i=0;i<NP_;i++)
+                {
+                    cGas_[i][j] = cgas_[i+1];
+                }
             }
         }
     }
@@ -100,7 +136,6 @@
         thermodynamicsMap_.MoleFractions_From_MassFractions(xBulk_,MWbulk_,omegaBulk_[i]);
 
         cTotBulk_ = p_/(PhysicalConstants::R_J_kmol*Tbulk_[i+1]);     // [Kmol/m3]
-        rhoBulk_ = cTotBulk_*MWbulk_;
         Product(cTotBulk_, xBulk_, &cBulk_);
 
         if ( homogeneusReactions_ == true )
@@ -112,27 +147,18 @@
         else
         {
             for (unsigned int j=1;j<=NC_;j++)
+            {
                 RfromGas_[j] = 0.;
+            }
         }
 
-        // Diffusity [m2/s]
-        transportMap_.MassDiffusionCoefficients(diffG_, xBulk_);
-
-        // Viscosity [kg/m/s]
-        transportMap_.DynamicViscosity(etaMix_, xBulk_);
-
-        //- Specific heat [J/Kg/K]
-        thermodynamicsMap_.cpMolar_Mixture_From_MoleFractions(cp_, xBulk_);
-        cp_ = cp_/MWbulk_;
-
-        //- Thermal conductivity [W/m/K]
-        transportMap_.ThermalConductivity(condBulk_,xBulk_);
-
-        MassTransferCoefficient(z_[i]);
+        MassTransferCoefficient(z_[i],rhoBulk_[i+1],etaMix_[i+1],diffG_[i]);
 
         // Fluxes from gas to solid [m/s]
         for (unsigned int j=1;j<=NC_;j++)
+        {
             jSolid_[i][j] = Kmat_[j]*(omegaBulk_[i][j] - omegaWall_[i][j]);
+        }
 
         //-Setting conditions for SOLID phase
         thermodynamicsMap_.SetTemperature(Twall_[i+1]);
@@ -158,7 +184,9 @@
             OpenSMOKE::OpenSMOKEVectorDouble fakebulk(NC_);
             OpenSMOKE::OpenSMOKEVectorDouble dummy;
             for(unsigned int j=1;j<=SURF_NP_;j++)
+            {
                 fakephase[j] = thermodynamicsSurfaceMap_.matrix_densities_site_phases()[0][j-1];
+            }
 
             SD_ = fakephase[1];
 
@@ -173,22 +201,33 @@
             OpenSMOKE::OpenSMOKEVectorDouble fakephase(SURF_NP_);
 
             for(unsigned int j=1;j<=SURF_NP_;j++)
+            {
                 fakephase[j] = thermodynamicsSurfaceMap_.matrix_densities_site_phases()[0][j-1];
+            }
 
             SD_ = fakephase[1];
 
             for (unsigned int j=1;j<=NC_;j++)
+            {
                 RfromSurface_[j] = 0.;
+            }
             for (unsigned int j=1;j<=SURF_NC_;j++)
+            {
                 Rsurface_[j] = 0.;
+            }
         }
 
         if ( z_[i+1] <= Linert_)
         {
             for (unsigned int j=1;j<=NC_;j++)
+            {
                 RfromSurface_[j] = 0.;
+            }
             for (unsigned int j=1;j<=SURF_NC_;j++)
+            {
                 Rsurface_[j] = 0.;
+            }
+
             alfa_ = 0;
         }
         else
@@ -206,7 +245,7 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = G_*x0bulk_[j] - G_*omegaBulk_[i][j] + diffG_[j]*rhoBulk_*cGas_[i][j];// ALGEBRAIC
+                        dyOS_[counter++] = G_*x0bulk_[j]/rhoBulk_[i+1] - G_*omegaBulk_[i][j]/rhoBulk_[i+1] + diffG_[i][j]*cGas_[i][j];// ALGEBRAIC
                     }
                     else
                     {
@@ -222,7 +261,7 @@
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
-                    dyOS_[counter++] = (+ av_*rhoBulk_*jSolid_[i][j]*epsi_ + RfromSurface_[j]*alfa_*epsi_); // ALGEBRAIC
+                    dyOS_[counter++] = (+ av_*rhoBulk_[i+1]*jSolid_[i][j]*epsi_ + RfromSurface_[j]*alfa_*epsi_); // ALGEBRAIC
                 }
                 else
                 {
@@ -243,7 +282,7 @@
 
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = G_*cp_*T0_ - G_*cp_*Tbulk_[i+1] + condBulk_*cbulk_[i+1]; // ALGEBRAIC
+                dyOS_[counter++] = G_*T0_- G_*Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/cp_[i+1]; // ALGEBRAIC
             }
             else
             {
@@ -261,7 +300,7 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*cGas_[i][j]; // ALGEBRAIC
+                        dyOS_[counter++] = (G_/(rhoBulk_[i+1]*epsi_))*cGas_[i][j]; // ALGEBRAIC
                     }
                     else
                     {
@@ -277,7 +316,7 @@
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
-                    dyOS_[counter++] = (+ av_*rhoBulk_*jSolid_[i][j]*epsi_ + RfromSurface_[j]*alfa_*epsi_); // ALGEBRAIC
+                    dyOS_[counter++] = (+ av_*rhoBulk_[i+1]*jSolid_[i][j]*epsi_ + RfromSurface_[j]*alfa_*epsi_); // ALGEBRAIC
                 }
                 else
                 {
@@ -298,7 +337,7 @@
 
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = (G_/(rhoBulk_*epsi_))*cbulk_[i+1]; // ALGEBRAIC
+                dyOS_[counter++] = (G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]; // ALGEBRAIC
             }
             else
             {
@@ -324,7 +363,7 @@
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
-                    dyOS_[counter++] = (+ av_*rhoBulk_*jSolid_[i][j]*epsi_ + RfromSurface_[j]*alfa_*epsi_); // ALGEBRAIC
+                    dyOS_[counter++] = (+ av_*rhoBulk_[i+1]*jSolid_[i][j]*epsi_ + RfromSurface_[j]*alfa_*epsi_); // ALGEBRAIC
                 }
                 else
                 {

@@ -110,12 +110,8 @@ private:
     double MWwall_;
     double cTotBulk_;
     double cTotWall_;
-    double rhoBulk_;
-    double cp_;
-    double condBulk_;
     double condWall_;
     double rhoWall_;
-    double etaMix_;
     double p_;
     double T0_;
     double epsi_;
@@ -161,7 +157,7 @@ private:
     OpenSMOKE::OpenSMOKEVectorDouble *omegaBulk_;
     OpenSMOKE::OpenSMOKEVectorDouble *omegaWall_;
     OpenSMOKE::OpenSMOKEVectorDouble *cGas_;
-
+    OpenSMOKE::OpenSMOKEVectorDouble *diffG_;
     OpenSMOKE::OpenSMOKEVectorDouble *jSolid_;
 
     OpenSMOKE::OpenSMOKEVectorDouble *teta_;
@@ -169,7 +165,10 @@ private:
     OpenSMOKE::OpenSMOKEVectorDouble  Tbulk_;
     OpenSMOKE::OpenSMOKEVectorDouble  Twall_;
     OpenSMOKE::OpenSMOKEVectorDouble  cbulk_;
-
+    OpenSMOKE::OpenSMOKEVectorDouble  rhoBulk_;
+    OpenSMOKE::OpenSMOKEVectorDouble  cp_;
+    OpenSMOKE::OpenSMOKEVectorDouble  condBulk_;
+    OpenSMOKE::OpenSMOKEVectorDouble  etaMix_;
     OpenSMOKE::OpenSMOKEVectorDouble  x0bulk_;
 
     OpenSMOKE::OpenSMOKEVectorDouble  z_;
@@ -178,7 +177,6 @@ private:
     OpenSMOKE::OpenSMOKEVectorDouble RfromSurface_;
     OpenSMOKE::OpenSMOKEVectorDouble Rsurface_;
 
-    OpenSMOKE::OpenSMOKEVectorDouble diffG_;
     OpenSMOKE::OpenSMOKEVectorDouble Kmat_;
 
     OpenSMOKE::OpenSMOKEVectorDouble xBulk_;
@@ -190,7 +188,7 @@ private:
     OpenSMOKE::OpenSMOKEVectorDouble dyOS_;
     OpenSMOKE::OpenSMOKEVectorDouble  yOS_;
 
-    void MassTransferCoefficient(const double z);
+    void MassTransferCoefficient(const double z, const double rho, const double eta, const OpenSMOKE::OpenSMOKEVectorDouble dG);
     OpenSMOKE::OpenSMOKEVectorDouble FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value);
 
 };
@@ -223,30 +221,35 @@ void ODESystem::resize(const unsigned int NP)
     omegaWall_     = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
     teta_          = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
     cGas_          = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
-
+    diffG_         = new OpenSMOKE::OpenSMOKEVectorDouble[NP_];
+ 
     for (unsigned int i=0;i<NP_;i++)
     {
         ChangeDimensions(NC_, &omegaBulk_[i], true);
         ChangeDimensions(NC_, &omegaWall_[i], true);
         ChangeDimensions(NC_, &cGas_[i],      true);
         ChangeDimensions(NC_, &jSolid_[i],    true);
+        ChangeDimensions(NC_, &diffG_[i],     true);
         ChangeDimensions(SURF_NC_, &teta_[i], true);
     }
 
-    ChangeDimensions(NC_, &RfromGas_, true);
-    ChangeDimensions(NC_, &RfromSurface_, true);
+    ChangeDimensions(NC_, &RfromGas_,      true);
+    ChangeDimensions(NC_, &RfromSurface_,  true);
     ChangeDimensions(SURF_NC_, &Rsurface_, true);
 
-    ChangeDimensions(NP_, &Tbulk_, true);
-    ChangeDimensions(NP_, &Twall_, true);
-
+    ChangeDimensions(NP_, &Tbulk_,    true);
+    ChangeDimensions(NP_, &Twall_,    true);
+    ChangeDimensions(NP_, &rhoBulk_,  true);
+    ChangeDimensions(NP_, &cp_,       true);
+    ChangeDimensions(NP_, &condBulk_, true);
+    ChangeDimensions(NP_, &etaMix_,   true);
+    ChangeDimensions(NP_, &cbulk_,    true);
+    
     ChangeDimensions(NC_, &xBulk_, true);
     ChangeDimensions(NC_, &xWall_, true);
     ChangeDimensions(NC_, &cBulk_, true);
     ChangeDimensions(NC_, &cWall_, true);
-    ChangeDimensions(NP_, &cbulk_, true);
-    ChangeDimensions(NC_, &diffG_, true);
-    ChangeDimensions(NC_, &Kmat_, true);
+    ChangeDimensions(NC_, &Kmat_,  true);
 
     ChangeDimensions(NE_, &dyOS_, true);
     ChangeDimensions(NE_, &yOS_, true);
@@ -318,18 +321,18 @@ void ODESystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
     }
 }
 
-void ODESystem::MassTransferCoefficient(const double z)
+void ODESystem::MassTransferCoefficient(const double z, const double rho, const double eta, const OpenSMOKE::OpenSMOKEVectorDouble dG)
 {
     if ( reactorType_ == "honeyComb" )
     {
-        double Re = G_*Dh_/(etaMix_*epsi_);
+        double Re = G_*Dh_/(eta*epsi_);
         OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
         OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
         double zNew;
         double zStar;
         for (unsigned int i=1;i<=NC_;i++)
         {
-            Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
+            Sc[i] = eta/(rho*dG[i]);
             if ( z > Linert_)
             {
                 zNew  = std::max( z - Linert_, 1e-06);
@@ -341,59 +344,59 @@ void ODESystem::MassTransferCoefficient(const double z)
             {
                 Sh[i] = AsymptoticSh_;
             }
-            Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+            Kmat_[i] = Sh[i]*dG[i]/Dh_;
         }
     }
     else if ( reactorType_ == "packedBed" )
     {
         if ( correlation_ == "Yoshida" )
         {
-            double Re     = G_*Dh_/(epsi_*etaMix_*(1. - epsi_)*6.);
-            double ReReal = G_*Dh_/(etaMix_*epsi_);
+            double Re     = G_*Dh_/(epsi_*eta*(1. - epsi_)*6.);
+            double ReReal = G_*Dh_/(eta*epsi_);
             OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
             OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
             OpenSMOKE::OpenSMOKEVectorDouble jM(NC_);
             for (unsigned int i=1;i<=NC_;i++)
             {
-                Sc[i] = etaMix_/(rhoBulk_*diffG_[i]);
+                Sc[i] = eta/(rho*dG[i]);
                 if ( Re < 50. )
                 {
                     jM[i]    = 0.91/(std::pow(Re,0.51));
                     Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*ReReal;
-                    Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+                    Kmat_[i] = Sh[i]*dG[i]/Dh_;
                 }
                 else
                 {
                     jM[i]    = 0.61/(std::pow(Re,0.41));
                     Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*ReReal;
-                    Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+                    Kmat_[i] = Sh[i]*dG[i]/Dh_;
                 }
             }
         }
         else if ( correlation_ == "Petrovic" )
         {
-            double Re = G_*Dh_/(etaMix_*epsi_);
+            double Re = G_*Dh_/(eta*epsi_);
             OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
             OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
             OpenSMOKE::OpenSMOKEVectorDouble jM(NC_);
             for (unsigned int i=1;i<=NC_;i++)
             {
-                Sc[i]    = etaMix_/(rhoBulk_*diffG_[i]);
+                Sc[i]    = eta/(rho*dG[i]);
                 jM[i]    = 0.357/(epsi_*std::pow(Re,0.359));
                 Sh[i]    = jM[i]*std::pow(Sc[i],(1./3.))*Re;
-                Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+                Kmat_[i] = Sh[i]*dG[i]/Dh_;
             }
         }
         else if ( correlation_ == "Wakao" )
         {
-            double Re = G_*Dh_/(etaMix_*epsi_);
+            double Re = G_*Dh_/(eta*epsi_);
             OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
             OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
             for (unsigned int i=1;i<=NC_;i++)
             {
-                Sc[i]     = etaMix_/(rhoBulk_*diffG_[i]);
+                Sc[i]     = eta/(rho*dG[i]);
                 Sh[i]    = 2. + 1.1*std::pow(Re,0.6)*std::pow(Sc[i],(1./3.));
-                Kmat_[i] = Sh[i]*diffG_[i]/Dh_;
+                Kmat_[i] = Sh[i]*dG[i]/Dh_;
             }
         }
     }
