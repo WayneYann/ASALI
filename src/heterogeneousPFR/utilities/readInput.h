@@ -978,13 +978,6 @@ namespace ASALI
                     std::cout << "key word || " << "Discretization scheme" << " || MUST be || CDS || BDS ||\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
-                
-                if ( gasDiffusion_ == true && grow_ == true )
-                {
-                    error();
-                    std::cout << "Due to NUMERICAL problem key word || Growing || MUST be || off || when key word || Diffusion in gas || is || on ||\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
             }
         }
     }

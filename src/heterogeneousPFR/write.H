@@ -375,10 +375,10 @@
         std::cout << "Number of grid point     = " << N << "\n" << std::endl; 
         std::cout << "Mass flux IN             = " << MassFluxIn << "    [Kg/m2/s]" << std::endl;
         std::cout << "Mass flux OUT            = " << MassFluxOut << "    [Kg/m2/s]\n" << std::endl;
-        std::cout << "ERROR on MASS BALANCE    = " << fabs((MassFluxIn - MassFluxOut)*100./MassFluxIn) << "    [%]\n" << std::endl;
-        std::cout << "Enthalpy flux IN         = " << fabs(EnthalpyFluxIn) << "    [W/m2]" << std::endl;
-        std::cout << "Enthalpy flux OUT        = " << fabs(EnthalpyFluxOut) << "    [W/m2]\n" << std::endl;
-        std::cout << "ERROR on ENERGY BALANCE  = " << fabs((EnthalpyFluxIn - EnthalpyFluxOut)*100./EnthalpyFluxIn) << "    [%]\n" << std::endl;
+        std::cout << "ERROR on MASS BALANCE    = " << (MassFluxIn - MassFluxOut)*100./MassFluxIn << "    [%]\n" << std::endl;
+        std::cout << "Enthalpy flux IN         = " << EnthalpyFluxIn << "    [W/m2]" << std::endl;
+        std::cout << "Enthalpy flux OUT        = " << EnthalpyFluxOut << "    [W/m2]\n" << std::endl;
+        std::cout << "ERROR on ENERGY BALANCE  = " << (EnthalpyFluxIn - EnthalpyFluxOut)*100./EnthalpyFluxIn << "    [%]\n" << std::endl;
         std::cout << "#################################################" << std::endl;
         std::cout << "\n############################" << std::endl;
         std::cout << "ATOMIC BALANCE               " << std::endl;

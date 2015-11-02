@@ -211,7 +211,8 @@ private:
     void HeatTransferCoefficient(const double z, const double cp,  const double eta, const double cond);
     void MassTransferCoefficient(const double z, const double rho, const double eta, const OpenSMOKE::OpenSMOKEVectorDouble dG);
     OpenSMOKE::OpenSMOKEVectorDouble FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value);
-    OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff);
+    OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff, const std::string type);
+    OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type);
 
 };
 
@@ -776,27 +777,90 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::FirstOrderDerivate (const OpenSMOKE:
     return dvalue_;
 }
 
-OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff)
+OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff, const std::string type)
 {
     OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
 
-    for (unsigned int k=1;k<=NP_;k++)
+    if ( type == "gas" )
     {
-        if ( k == 1 )
+        for (unsigned int k=1;k<=NP_;k++)
         {
-            dvalue_[k] = 0.;
+            if ( k == 1 )
+            {
+                dvalue_[k] = 0.;
+            }
+            else if ( k == NP_ )
+            {
+                dvalue_[k] = 0.;
+            }
+            else
+            {
+                dvalue_[k] = ((coeff[k+1]*value[k+1]-coeff[k]*value[k])/(z[k+1]-z[k])/L_ - (coeff[k]*value[k]-coeff[k-1]*value[k-1])/(z[k]-z[k-1])/L_)/(0.5*(z[k+1]-z[k-1])/L_);
+            }
         }
-        else if ( k == NP_ )
+    }
+    else if ( type == "solid" )
+    {
+        for (unsigned int k=1;k<=NP_;k++)
         {
-            dvalue_[k] = 0.;
-        }
-        else
-        {
-            dvalue_[k] = ((coeff[k+1]*value[k+1]-coeff[k]*value[k])/(z[k+1]-z[k])/L_ - (coeff[k]*value[k]-coeff[k-1]*value[k-1])/(z[k]-z[k-1])/L_)/(0.5*(z[k+1]-z[k-1])/L_);
+            if ( k == 1 )
+            {
+                dvalue_[k] = 0.;
+            }
+            else if ( k == NP_ )
+            {
+                dvalue_[k] = 0.;
+            }
+            else
+            {
+                dvalue_[k] = ((coeff[k+1]*value[k+1]-coeff[k]*value[k])/(z[k+1]-z[k])/L_ - (coeff[k]*value[k]-coeff[k-1]*value[k-1])/(z[k]-z[k-1])/L_)/(0.5*(z[k+1]-z[k-1])/L_);
+            }
         }
     }
 
     return dvalue_;
 }
 
+OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type)
+{
+    OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
+
+    if ( type == "gas" )
+    {
+        for (unsigned int k=1;k<=NP_;k++)
+        {
+            if ( k == 1 )
+            {
+                dvalue_[k] = 0.;
+            }
+            else if ( k == NP_ )
+            {
+                dvalue_[k] = 0.;
+            }
+            else
+            {
+                dvalue_[k] = (value[k+1]*(z[k]-z[k-1])/L_ + value[k-1]*(z[k+1]-z[k])/L_ - value[k]*(z[k+1]-z[k-1])/L_)/(0.5*((z[k+1]-z[k-1])/L_)*((z[k+1]-z[k])/L_)*((z[k]-z[k-1])/L_));
+            }
+        }
+    }
+    else if ( type == "solid" )
+    {
+        for (unsigned int k=1;k<=NP_;k++)
+        {
+            if ( k == 1 )
+            {
+                dvalue_[k] = 0.;
+            }
+            else if ( k == NP_ )
+            {
+                dvalue_[k] = 0.;
+            }
+            else
+            {
+                dvalue_[k] = ((value[k+1]-value[k])/(z[k+1]-z[k])/L_ - (value[k]-value[k-1])/(z[k]-z[k-1])/L_)/(0.5*(z[k+1]-z[k-1])/L_);
+            }
+        }
+    }
+    return dvalue_;
+}
 }

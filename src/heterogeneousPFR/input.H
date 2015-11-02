@@ -176,7 +176,18 @@ ASALI::GROWgrid  *growGrid;
         double step = input.getReactorLength()/(N-1);
         z[1] = 0.;
         for (unsigned int k=2;k<=z.Size();k++)
+        {
             z[k] = z[k-1] + step;
+        }
+        
+        for (unsigned int k=1;k<=z.Size();k++)
+        {
+            if ( z[k] > input.getInertLength() )
+            {
+                z[k] = input.getInertLength();
+                break;
+            }
+        }
 
         ChangeDimensions(NE, &x0, true);
         unsigned int counter = 1;

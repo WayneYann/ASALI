@@ -245,7 +245,7 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = G_*x0bulk_[j]/rhoBulk_[i+1] - G_*omegaBulk_[i][j]/rhoBulk_[i+1] + diffG_[i][j]*cGas_[i][j];// ALGEBRAIC
+                        dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j] + diffG_[i][j]*rhoBulk_[i+1]*cGas_[i][j]/G_;// ALGEBRAIC
                     }
                     else
                     {
@@ -282,7 +282,7 @@
 
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = G_*T0_- G_*Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/cp_[i+1]; // ALGEBRAIC
+                dyOS_[counter++] = T0_- Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/(G_*cp_[i+1]); // ALGEBRAIC
             }
             else
             {
@@ -300,11 +300,11 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = (G_/(rhoBulk_[i+1]*epsi_))*cGas_[i][j]; // ALGEBRAIC
+                        dyOS_[counter++] = omegaBulk_[i][j] - omegaBulk_[i-1][j]; // ALGEBRAIC
                     }
                     else
                     {
-                        dyOS_[counter++] = 0.;
+                        dyOS_[counter++] = 0.; //DIFFERENTIAL
                     }
                 }
                 else
@@ -337,11 +337,11 @@
 
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = (G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]; // ALGEBRAIC
+                dyOS_[counter++] = Tbulk_[i+1] - Tbulk_[i-1+1]; // ALGEBRAIC
             }
             else
             {
-                dyOS_[counter++] = 0.;
+                dyOS_[counter++] = 0.; // ALGEBRAIC
             }
 
             dyOS_[counter++] = Twall_[i+1] - Twall_[i-1+1]; // ALGEBRAIC
