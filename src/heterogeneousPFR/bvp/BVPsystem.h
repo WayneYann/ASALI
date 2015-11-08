@@ -537,8 +537,16 @@ void BVPSystem::AlgebraicEquations(BzzVectorInt& algebraic)
                     algebraic[counter++] = 0;
                 }
             }
-            algebraic[counter++] = 0;
-            algebraic[counter++] = 0;
+            if (energy_ == true)
+            {
+                algebraic[counter++] = 0;
+                algebraic[counter++] = 0;
+            }
+            else
+            {
+                algebraic[counter++] = 1;
+                algebraic[counter++] = 1;
+            }
         }
         else if ( i == (NP_ - 1) )
         {
@@ -573,15 +581,23 @@ void BVPSystem::AlgebraicEquations(BzzVectorInt& algebraic)
                     algebraic[counter++] = 0;
                 }
             }
-            if ( gasDiffusion_ == true)
+            if (energy_ == true)
             {
+                if ( gasDiffusion_ == true)
+                {
+                    algebraic[counter++] = 0;
+                }
+                else
+                {
+                    algebraic[counter++] = 1;
+                }
                 algebraic[counter++] = 0;
             }
             else
             {
-                algebraic[counter++] = 1.;
+                algebraic[counter++] = 1;
+                algebraic[counter++] = 1;
             }
-            algebraic[counter++] = 0;
         }
         else
         {
@@ -653,9 +669,26 @@ void BVPSystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
             for (unsigned int j=1;j<=NC_;j++)
                 algebraic[counter++] = true;
             for (unsigned int j=1;j<=SURF_NC_;j++)
+            {
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+                {
+                    algebraic[counter++] = false;
+                }
+                else
+                {
+                    algebraic[counter++] = true;
+                }
+            }
+            if (energy_ == true)
+            {
+                algebraic[counter++] = true;
+                algebraic[counter++] = true;
+            }
+            else
+            {
                 algebraic[counter++] = false;
-            algebraic[counter++] = true;
-            algebraic[counter++] = true;
+                algebraic[counter++] = false;
+            }
         }
         else if ( i == (NP_ - 1) )
         {
@@ -680,16 +713,33 @@ void BVPSystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
             for (unsigned int j=1;j<=NC_;j++)
                 algebraic[counter++] = true;
             for (unsigned int j=1;j<=SURF_NC_;j++)
-                algebraic[counter++] = false;
-            if ( gasDiffusion_ == true )
             {
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+                {
+                    algebraic[counter++] = false;
+                }
+                else
+                {
+                    algebraic[counter++] = true;
+                }
+            }
+            if (energy_ == true)
+            {
+                if ( gasDiffusion_ == true)
+                {
+                    algebraic[counter++] = true;
+                }
+                else
+                {
+                    algebraic[counter++] = false;
+                }
                 algebraic[counter++] = true;
             }
             else
             {
                 algebraic[counter++] = false;
+                algebraic[counter++] = false;
             }
-            algebraic[counter++] = true;
         }
         else
         {
@@ -707,7 +757,16 @@ void BVPSystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
             for (unsigned int j=1;j<=NC_;j++)
                 algebraic[counter++] = true;
             for (unsigned int j=1;j<=SURF_NC_;j++)
-                algebraic[counter++] = false;
+            {
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+                {
+                    algebraic[counter++] = false;
+                }
+                else
+                {
+                    algebraic[counter++] = true;
+                }
+            }
             algebraic[counter++] = false;
             algebraic[counter++] = false;
         }

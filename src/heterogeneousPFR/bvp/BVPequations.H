@@ -333,17 +333,25 @@
                     dyOS_[counter++] = 1. - teta_[i].SumElements();
                 }
             }
-            
-            if ( gasDiffusion_ == true )
+            if (energy_ == true)
             {
-                dyOS_[counter++] = T0_- Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/(G_*cp_[i+1]); // ALGEBRAIC
+                if ( gasDiffusion_ == true )
+                {
+                    dyOS_[counter++] = T0_- Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/(G_*cp_[i+1]); // ALGEBRAIC
+                }
+                else
+                {
+                    dyOS_[counter++] = T0_ - Tbulk_[i+1];
+                }
+
+                dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
             }
             else
             {
-                dyOS_[counter++] = T0_ - Tbulk_[i+1];
+                dyOS_[counter++]=0.; //DIFFERENTIAL
+                dyOS_[counter++]=0.; //DIFFERENTIAL
             }
 
-            dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
         }
         else if (i==(NP_-1))
         {
