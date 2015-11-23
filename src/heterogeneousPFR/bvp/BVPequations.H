@@ -408,7 +408,7 @@
                 {
                     dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
                                        - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
-                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]*epsi_);//DIFFERENTIAL
+                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
 
                 dyOS_[counter++] = Twall_[i+1] - Twall_[i-1+1]; // ALGEBRAIC
@@ -474,13 +474,13 @@
                     dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
                                        + jbulk_[i+1]/epsi_
                                        - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
-                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]*epsi_);//DIFFERENTIAL
+                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
                 else
                 {
                     dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
                                        - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
-                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]*epsi_);//DIFFERENTIAL
+                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
 
                 dyOS_[counter++] = + jwall_[i+1]/(rhoSolid_*cpSolid_)

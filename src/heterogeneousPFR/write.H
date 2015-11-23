@@ -285,12 +285,12 @@
     {
         OpenSMOKE::OpenSMOKEVectorDouble h(NC);
         thermodynamicsMapXML->SetPressure(input.getPressure());
-        thermodynamicsMapXML->SetTemperature(T0);
+        thermodynamicsMapXML->SetTemperature(Tbulk[N]);
         thermodynamicsMapXML->hMolar_Species(h);
         for (unsigned int j=1;j<=NC;j++)
         {
-            MassFluxIn += x0bulk[j]*G;
-            EnthalpyFluxIn += x0bulk[j]*h[j]*G/thermodynamicsMapXML->MW()[j];
+            MassFluxIn += omegaBulk[0][j]*G;
+            EnthalpyFluxIn += omegaBulk[0][j]*h[j]*G/thermodynamicsMapXML->MW()[j];
         }
 
         Eigen::MatrixXd SpecieAtomicComposition;
@@ -305,7 +305,7 @@
             IN[k] = 0.;
             Element = SpecieAtomicComposition.col(k);
             for (unsigned int j=0;j<NC;j++)
-                IN[k] += x0bulk[j+1]*G*Element[j]/thermodynamicsMapXML->MW()[j+1];
+                IN[k] += omegaBulk[0][j+1]*G*Element[j]/thermodynamicsMapXML->MW()[j+1];
         }
     }
 
