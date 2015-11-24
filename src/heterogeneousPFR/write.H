@@ -285,7 +285,7 @@
     {
         OpenSMOKE::OpenSMOKEVectorDouble h(NC);
         thermodynamicsMapXML->SetPressure(input.getPressure());
-        thermodynamicsMapXML->SetTemperature(Tbulk[N]);
+        thermodynamicsMapXML->SetTemperature(Tbulk[1]);
         thermodynamicsMapXML->hMolar_Species(h);
         for (unsigned int j=1;j<=NC;j++)
         {
