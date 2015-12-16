@@ -628,6 +628,14 @@ namespace ASALI
             {
                 hCorr_ = dummyVector[hIndex + 2];
             }
+            else if ( dummyVector[hIndex + 2] == "Rebughini")
+            {
+                hCorr_ = dummyVector[hIndex + 2];
+            }
+             else if ( dummyVector[hIndex + 2] == "Petrovic")
+            {
+                hCorr_ = dummyVector[hIndex + 2];
+            }
             else
             {
                 error();
