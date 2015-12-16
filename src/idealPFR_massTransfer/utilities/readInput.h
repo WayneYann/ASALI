@@ -631,7 +631,7 @@ namespace ASALI
             else
             {
                 error();
-                std::cout << "key word || mass transfer || MUST BE || Wakao || Gupta || Gamson || Yoshida ||\n" << std::endl;
+                std::cout << "key word || mass transfer || MUST BE || Wakao || Gupta || Gamson || Yoshida || Rebughini || Petrovic ||\n" << std::endl;
                 exit (EXIT_FAILURE);
             }
         }
