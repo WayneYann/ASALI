@@ -458,7 +458,7 @@ void DAESystem::Sherwood(const double Reynolds)
                 double jM = (0.01 + 0.863/(std::pow(Reynolds,0.58) - 0.483))/epsi_;
                 for (unsigned int i=1;i<=NC_;i++)
                 {
-                    Sh_[i]  = jM*Reynolds*std::pow(Sc_[i],(1./3.));
+                    Sh_[i] = jM*Reynolds*std::pow(Sc_[i],(1./3.));
                 }
             }
         }
@@ -506,6 +506,31 @@ void DAESystem::Sherwood(const double Reynolds)
                 error();
                 std::cout << NuName_ << " correlation out of range!\n" << std::endl;
                 exit (EXIT_FAILURE);
+            }
+        }
+        else if ( NuName_ == "Petrovic" )
+        {
+            if ( Reynolds > 3 && Reynolds < 230)
+            {
+                double jM = 0.357/(std::pow(Reynolds,0.359));
+                for (unsigned int i=1;i<=NC_;i++)
+                {
+                    Sh_[i] = jM*Reynolds*std::pow(Sc_[i],(1./3.))/epsi_;
+                }
+            }
+            else
+            {
+                error();
+                std::cout << NuName_ << " correlation out of range!\n" << std::endl;
+                exit (EXIT_FAILURE);
+            }
+        }
+        else if ( NuName_ == "Rebughini" )
+        {
+            double jM = 0.393/(std::pow(Reynolds,0.384));
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                Sh_[i] = jM*Reynolds*std::pow(Sc_[i],(1./3.))/epsi_;
             }
         }
     }
