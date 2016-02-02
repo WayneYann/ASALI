@@ -94,73 +94,73 @@ ASALI::ODESystem *ode;
     thermodynamicsMapXML->SetTemperature(input.getTemperature());
     thermodynamicsMapXML->SetPressure(input.getPressure());
 
-	{
-		std::vector<double> InletCOMPOSITION(input.getCoverage().size());
-		double sum = 0.;
-		for(unsigned int k=0; k<input.getCoverage().size(); k++)
-			sum = sum + input.getCoverage()[k];
+    {
+        std::vector<double> InletCOMPOSITION(input.getCoverage().size());
+        double sum = 0.;
+        for(unsigned int k=0; k<input.getCoverage().size(); k++)
+            sum = sum + input.getCoverage()[k];
 
-		if ( sum != 1. )
-		{
-			std::cout << "\nASALI::WARNING Sum of coverage composition is not 1!\n" << std::endl;
-			std::cout << "\nPress Enter to normalized them..." << std::endl;
-			getchar();
-			for(unsigned int k=0; k<input.getCoverage().size(); k++)
-				InletCOMPOSITION[k]=input.getCoverage()[k]/sum;
-		}
-		else
-		{
-			for(unsigned int k=0; k<input.getCoverage().size(); k++)
-				InletCOMPOSITION[k]=input.getCoverage()[k];
-		}
+        if ( sum != 1. )
+        {
+            std::cout << "\nASALI::WARNING Sum of coverage composition is not 1!\n" << std::endl;
+            std::cout << "\nPress Enter to normalized them..." << std::endl;
+            getchar();
+            for(unsigned int k=0; k<input.getCoverage().size(); k++)
+                InletCOMPOSITION[k]=input.getCoverage()[k]/sum;
+        }
+        else
+        {
+            for(unsigned int k=0; k<input.getCoverage().size(); k++)
+                InletCOMPOSITION[k]=input.getCoverage()[k];
+        }
 
-		double MW;
+        double MW;
 
-		OpenSMOKE::OpenSMOKEVectorDouble x(SURF_NC);
-		for(unsigned int k=0;k<input.getCoverageName().size();k++)
-		{
-			x0site[thermodynamicsSurfaceMapXML->IndexOfSpecies(input.getCoverageName()[k])-NC] = InletCOMPOSITION[k];
-		}
+        OpenSMOKE::OpenSMOKEVectorDouble x(SURF_NC);
+        for(unsigned int k=0;k<input.getCoverageName().size();k++)
+        {
+            x0site[thermodynamicsSurfaceMapXML->IndexOfSpecies(input.getCoverageName()[k])-NC] = InletCOMPOSITION[k];
+        }
 
-	}
+    }
 
-	double MW;
-	{
-		std::vector<double> InletCOMPOSITION(input.getFraction().size());
-		double sum = 0.;
-		for(unsigned int k=0; k<input.getFraction().size(); k++)
-			sum = sum + input.getFraction()[k];
+    double MW;
+    {
+        std::vector<double> InletCOMPOSITION(input.getFraction().size());
+        double sum = 0.;
+        for(unsigned int k=0; k<input.getFraction().size(); k++)
+            sum = sum + input.getFraction()[k];
 
-		if ( sum != 1. )
-		{
-			std::cout << "\nASALI::WARNING Sum of inlet composition is not 1!\n" << std::endl;
-			std::cout << "\nPress Enter to normalized them..." << std::endl;
-			getchar();
-			for(unsigned int k=0; k<input.getFraction().size(); k++)
-				InletCOMPOSITION[k]=input.getFraction()[k]/sum;
-		}
-		else
-		{
-			for(unsigned int k=0; k<input.getFraction().size(); k++)
-				InletCOMPOSITION[k]=input.getFraction()[k];
-		}
+        if ( sum != 1. )
+        {
+            std::cout << "\nASALI::WARNING Sum of inlet composition is not 1!\n" << std::endl;
+            std::cout << "\nPress Enter to normalized them..." << std::endl;
+            getchar();
+            for(unsigned int k=0; k<input.getFraction().size(); k++)
+                InletCOMPOSITION[k]=input.getFraction()[k]/sum;
+        }
+        else
+        {
+            for(unsigned int k=0; k<input.getFraction().size(); k++)
+                InletCOMPOSITION[k]=input.getFraction()[k];
+        }
 
-		if ( input.getFeed() == "Mole" )
-		{
-			OpenSMOKE::OpenSMOKEVectorDouble x(NC);
-			for(unsigned int k=0;k<input.getFractionName().size();k++)
-				x[thermodynamicsMapXML->IndexOfSpecies(input.getFractionName()[k])] = InletCOMPOSITION[k];
+        if ( input.getFeed() == "Mole" )
+        {
+            OpenSMOKE::OpenSMOKEVectorDouble x(NC);
+            for(unsigned int k=0;k<input.getFractionName().size();k++)
+                x[thermodynamicsMapXML->IndexOfSpecies(input.getFractionName()[k])] = InletCOMPOSITION[k];
 
-			thermodynamicsMapXML->MassFractions_From_MoleFractions(x0bulk,MW,x);
-		}
-		else if ( input.getFeed() == "Mass" )
-		{
-			for(unsigned int k=0;k<input.getFractionName().size();k++)
-				x0bulk[thermodynamicsMapXML->IndexOfSpecies(input.getFractionName()[k])] = InletCOMPOSITION[k];
+            thermodynamicsMapXML->MassFractions_From_MoleFractions(x0bulk,MW,x);
+        }
+        else if ( input.getFeed() == "Mass" )
+        {
+            for(unsigned int k=0;k<input.getFractionName().size();k++)
+                x0bulk[thermodynamicsMapXML->IndexOfSpecies(input.getFractionName()[k])] = InletCOMPOSITION[k];
 
-			thermodynamicsMapXML->MolecularWeight_From_MassFractions(MW,x0bulk);
-		}
-	}
+            thermodynamicsMapXML->MolecularWeight_From_MassFractions(MW,x0bulk);
+        }
+    }
 
     ChangeDimensions(NE, &x0, true);
     unsigned int counter = 1;

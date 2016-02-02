@@ -52,6 +52,8 @@ echo 'Solver options' >> idealBATCH.txt
 echo '{' >> idealBATCH.txt
 echo '  Constraints          false' >> idealBATCH.txt
 echo ' ' >> idealBATCH.txt
+echo '  Constant             pressure' >> idealBATCH.txt
+echo ' ' >> idealBATCH.txt
 echo '  Absolute tollerance' >> idealBATCH.txt
 echo '  (' >> idealBATCH.txt
 echo '    specie           1e-15' >> idealBATCH.txt

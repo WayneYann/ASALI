@@ -682,7 +682,6 @@ namespace ASALI
                     i++;
                     i++;
                 }
-                std::cout << i << " sono qui " << std::endl;
             }
         }
     }

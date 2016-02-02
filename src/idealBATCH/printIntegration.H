@@ -53,41 +53,41 @@
 
     Phase_.resize(iterator_*SURF_NP_);
 
-	{
-		unsigned int k=1;
+    {
+        unsigned int k=1;
 
-		for (unsigned int i=(iterator_-1)*NC_;i<(NC_*iterator_);i++)
-		{
-			Specie_[i]  = yOS_[k];
-			k++;
-		}
+        for (unsigned int i=(iterator_-1)*NC_;i<(NC_*iterator_);i++)
+        {
+            Specie_[i]  = yOS_[k];
+            k++;
+        }
 
-		{
-			Mass_[iterator_-1]  = yOS_[k];
-			k++;
-		}
+        {
+            Mass_[iterator_-1]  = yOS_[k];
+            k++;
+        }
 
-		for (unsigned int i=(iterator_-1)*SURF_NP_;i<(SURF_NP_*iterator_);i++)
-		{
-			Phase_[i]  = yOS_[k];
-			k++;
-		}
+        for (unsigned int i=(iterator_-1)*SURF_NP_;i<(SURF_NP_*iterator_);i++)
+        {
+            Phase_[i]  = yOS_[k];
+            k++;
+        }
 
-		for (unsigned int i=(iterator_-1)*SURF_NC_;i<(SURF_NC_*iterator_);i++)
-		{
-			Site_[i]  = yOS_[k];
-			k++;
-		}
+        for (unsigned int i=(iterator_-1)*SURF_NC_;i<(SURF_NC_*iterator_);i++)
+        {
+            Site_[i]  = yOS_[k];
+            k++;
+        }
 
-		{
-			Temperature_[iterator_-1]  = yOS_[k];
-			k++;
-		}
-	}
+        {
+            Temperature_[iterator_-1]  = yOS_[k];
+            k++;
+        }
+    }
 
-	Pressure_[iterator_-1] = P_;
-	Volume_[iterator_-1]   = V_;
-	Time_[iterator_-1]     = t_;
+    Pressure_[iterator_-1] = P_;
+    Volume_[iterator_-1]   = V_;
+    Time_[iterator_-1]     = t_;
 
     std::cout.precision(6);
     std::cout.setf(std::ios::scientific);
