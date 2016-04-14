@@ -213,7 +213,7 @@ private:
     OpenSMOKE::OpenSMOKEVectorDouble FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value);
     OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff, const std::string type);
     OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type);
-
+    double EffectiveThermalConductivity(const double T, const double condG);
 };
 
 
@@ -356,6 +356,26 @@ void BVPSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
         z_[k] = z[k]/L_;
     }
 }
+
+double BVPSystem::EffectiveThermalConductivity(const double T, const double condG)
+{
+    double newCond = 0.;
+    if ( reactorType_ == "honeyComb" )
+    {
+        newCond = condSolid_ + (16./3.)*(5.67*1.e-08)*((1.12*Dh_)/2.)*std::pow(T,3.);
+    }
+    else if ( reactorType_ == "packedBed" )
+    {
+        double B = 1.25*std::pow((1-epsi_)/epsi_,(10./9.));
+        double M = condG/condSolid_;
+        
+        newCond = condG*(2./(1.-M*B))*((1-M)*B*std::log(1./(M*B))/std::pow((1-M*B),2.)
+                - 0.5*(B+1)
+                - (B-1)/(1-M*B));
+    }
+    return newCond;
+}
+
 
 void BVPSystem::HeatTransferCoefficient(const double z, const double cp, const double eta, const double cond)
 {

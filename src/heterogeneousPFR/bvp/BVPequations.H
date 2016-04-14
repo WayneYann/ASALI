@@ -113,7 +113,7 @@
 
             for (unsigned int i=0;i<NP_;i++)
             {
-                newCondSolid_[i+1] = condSolid_ + (16./3.)*(5.67*1.e-08)*((1.12*Dh_)/2.)*std::pow(Twall_[i+1],3.);
+                newCondSolid_[i+1] = EffectiveThermalConductivity(Twall_[i+1],condBulk_[i+1]);
             }
 
             jwall_ = SecondOrderDerivate(Twall_,newCondSolid_,"solid");
