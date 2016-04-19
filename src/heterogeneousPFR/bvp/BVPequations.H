@@ -211,6 +211,16 @@
 
         HeatTransferCoefficient(z_[i], cp_[i+1], etaMix_[i+1], condBulk_[i+1]);
 
+
+        if ( hex_ == true )
+        {
+            U_ = OverallHeatTransferCoefficient(cp_[i+1], etaMix_[i+1], condBulk_[i+1]);
+        }
+        else
+        {
+            U_ = 0.;
+        }
+
         //-Setting conditions for SOLID phase
         thermodynamicsMap_.SetTemperature(Twall_[i+1]);
         thermodynamicsMap_.SetPressure(p_);
@@ -406,9 +416,19 @@
                 }
                 else
                 {
-                    dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
-                                       - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
-                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    if ( reactorType_ == "honeyComb" )
+                    {
+                        dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
+                                           - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
+                                           + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    }
+                    else if ( reactorType_ == "packedBed" )
+                    {
+                        dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
+                                           - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1])
+                                           - U_*aex_*(Tbulk_[i+1]-Tex_)/(epsi_*rhoBulk_[i+1]*cp_[i+1])
+                                           + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    }
                 }
 
                 dyOS_[counter++] = Twall_[i+1] - Twall_[i-1+1]; // ALGEBRAIC
@@ -469,23 +489,54 @@
             }
             if (energy_ == true)
             {
-                if ( gasDiffusion_ == true )
+                if ( reactorType_ == "honeyComb" )
                 {
-                    dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
-                                       + jbulk_[i+1]/epsi_
-                                       - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
-                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    if ( gasDiffusion_ == true )
+                    {
+                        dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
+                                           + jbulk_[i+1]/epsi_
+                                           - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
+                                           + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    }
+                    else
+                    {
+                        dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
+                                           - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
+                                           + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    }
                 }
-                else
+                else if ( reactorType_ == "packedBed" )
                 {
-                    dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
-                                       - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
-                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    if ( gasDiffusion_ == true )
+                    {
+                        dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
+                                           + jbulk_[i+1]/epsi_
+                                           - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1])
+                                           - U_*aex_*(Tbulk_[i+1]-Tex_)/(epsi_*rhoBulk_[i+1]*cp_[i+1])
+                                           + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    }
+                    else
+                    {
+                        dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
+                                           - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1])
+                                           - U_*aex_*(Tbulk_[i+1]-Tex_)/(epsi_*rhoBulk_[i+1]*cp_[i+1])
+                                           + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
+                    }
                 }
 
-                dyOS_[counter++] = + jwall_[i+1]/(rhoSolid_*cpSolid_)
-                                   + h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))
-                                   + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1-epsi_));//DIFFERENTIAL 
+                if ( reactorType_ == "honeyComb" )
+                {
+                    dyOS_[counter++] = + jwall_[i+1]/(rhoSolid_*cpSolid_)
+                                       + h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))
+                                       + U_*aex_*(Tex_-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))
+                                       + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1-epsi_));//DIFFERENTIAL
+                }
+                else if ( reactorType_ == "packedBed" )
+                {
+                    dyOS_[counter++] = + jwall_[i+1]/(rhoSolid_*cpSolid_)
+                                       + h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))
+                                       + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1-epsi_));//DIFFERENTIAL
+                }
             }
             else
             {

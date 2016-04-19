@@ -31,18 +31,19 @@ echo 'Temperature' >> heterogeneousPFR.txt
 echo '{' >> heterogeneousPFR.txt
 echo '  solid                 500 °C' >> heterogeneousPFR.txt
 echo '  gas                    40 °C' >> heterogeneousPFR.txt
+echo '  wall                  100 °C' >> heterogeneousPFR.txt
 echo '}' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo 'Reactor' >> heterogeneousPFR.txt
 echo '{' >> heterogeneousPFR.txt
-echo '  type                  honeyComb' >> heterogeneousPFR.txt
-echo '  inert length          0.5  cm' >> heterogeneousPFR.txt
-echo '  catalytic length      26   mm' >> heterogeneousPFR.txt
-echo '  hydraulic diameter    24   mm' >> heterogeneousPFR.txt
-echo '  channel diameter      1.1  mm' >> heterogeneousPFR.txt
-echo '  channel shape         square' >> heterogeneousPFR.txt
-echo '  void fraction         0.75' >> heterogeneousPFR.txt
-echo '  external limitations  massTransfer' >> heterogeneousPFR.txt
+echo '  type                      honeyComb' >> heterogeneousPFR.txt
+echo '  inert length              0.5  cm' >> heterogeneousPFR.txt
+echo '  catalytic length          26   mm' >> heterogeneousPFR.txt
+echo '  hydraulic diameter        24   mm' >> heterogeneousPFR.txt
+echo '  channel diameter          1.1  mm' >> heterogeneousPFR.txt
+echo '  channel shape             square' >> heterogeneousPFR.txt
+echo '  void fraction             0.75' >> heterogeneousPFR.txt
+echo '  gas-to-solid correlation  massTransfer' >> heterogeneousPFR.txt
 echo '}' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo 'Catalyst' >> heterogeneousPFR.txt
@@ -103,6 +104,8 @@ echo '    Discretization scheme     BDS' >> heterogeneousPFR.txt
 echo '  )' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo '  Diffusion in gas off' >> heterogeneousPFR.txt
+echo ' ' >> heterogeneousPFR.txt
+echo '  External heat exchange off' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo '  Accepted errors' >> heterogeneousPFR.txt
 echo '  (' >> heterogeneousPFR.txt

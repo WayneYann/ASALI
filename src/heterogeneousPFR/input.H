@@ -405,11 +405,12 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
         bvp->setCorrelation(input.getCorrelation());
     }
     bvp->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
-                            input.getInertLength(), input.getSpecificArea(), G);
+                            input.getInertLength(), input.getSpecificArea(), input.getExternalArea(),
+                            G);
     bvp->setFeedValue(input.getPressure(),T0,x0bulk);
     bvp->setInert(input.getInert());
     bvp->setDiffusion(input.getDiffusion());
-    
+    bvp->setExternalHeatExchange(input.getExternalHeatExchange(),input.getWallTemperature());
 
     growGrid = new ASALI::GROWgrid(NC, SURF_NC);
 

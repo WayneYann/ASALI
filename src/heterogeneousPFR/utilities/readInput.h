@@ -67,11 +67,13 @@ namespace ASALI
             inline double getPressure()            const  { return p_;};
             inline double getGasTemperature()      const  { return Tgas_;};
             inline double getSolidTemperature()    const  { return Tsolid_;};
+            inline double getWallTemperature()     const  { return Tex_;};
             inline double getVelocity()            const  { return v_;};
             inline double getSolidDensity()        const  { return rhoSolid_;};
             inline double getSolidConductivity()   const  { return condSolid_;};
             inline double getSolidSpecificHeat()   const  { return cpSolid_;};
             inline double getSpecificArea()        const  { return av_;};
+            inline double getExternalArea()        const  { return aex_;};
 
             inline unsigned int getRestartPoints()         const  { return int(restartN_);};
             inline unsigned int getMaxPointsNumber()       const  { return int(maxN_);};
@@ -96,6 +98,7 @@ namespace ASALI
             inline bool getEnergy()                const  { return energy_;};
             inline bool getHomogeneousReactions()  const  { return homo_;};
             inline bool getHeterogenousReactions() const  { return het_;};
+            inline bool getExternalHeatExchange()  const  { return hex_;};
             inline bool getGridType()              const  { return grow_;};
             inline bool getConstraints()           const  { return constraints_;};
             inline bool getDiffusion()             const  { return gasDiffusion_;};
@@ -138,8 +141,10 @@ namespace ASALI
             double p_;
             double Tgas_;
             double Tsolid_;
+            double Tex_;
             double v_;
             double av_;
+            double aex_;
             double rhoSolid_;
             double cpSolid_;
             double condSolid_;
@@ -164,6 +169,7 @@ namespace ASALI
             bool het_;
             bool grow_;
             bool gasDiffusion_;
+            bool hex_;
 
             const std::string& file_;
             const std::string& options_;
@@ -223,6 +229,7 @@ namespace ASALI
     {
         NS_                = 0;
         av_                = 0;
+        aex_               = 0;
         minN_              = 0;
         maxN_              = 0;
         addN_              = 0;
@@ -245,6 +252,7 @@ namespace ASALI
         p_                 = 0;
         Tgas_              = 0;
         Tsolid_            = 0;
+        Tex_               = 0;
         v_                 = 0;
         rhoSolid_          = 0;
         cpSolid_           = 0;
@@ -256,6 +264,7 @@ namespace ASALI
         het_               = false;
         grow_              = false;
         gasDiffusion_      = false;
+        hex_               = false;
 
         reactorIndex_      = 0;
         solverIndex_       = 0;
@@ -445,8 +454,8 @@ namespace ASALI
                 }
             }
 
-            std::vector<bool>        checkWord(10);
-            std::vector<std::string> words(10);
+            std::vector<bool>        checkWord(11);
+            std::vector<std::string> words(11);
 
             double absIndex;
             double relIndex;
@@ -457,6 +466,7 @@ namespace ASALI
             double constraintIndex;
             double errorIndex;
             double diffIndex;
+            double hexIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
@@ -471,6 +481,7 @@ namespace ASALI
             words[7] = "Constraints";
             words[8] = "Accepted errors";
             words[9] = "Diffusion in gas";
+            words[10] = "External heat exchange";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
@@ -491,6 +502,9 @@ namespace ASALI
                 else if (dummyVector[i] == "Diffusion" &&
                          dummyVector[i+1] == "in" &&
                          dummyVector[i+2] == "gas")                {checkWord[9] = true; diffIndex         = i;}
+                else if (dummyVector[i] == "External" &&
+                         dummyVector[i+1] == "heat" &&
+                         dummyVector[i+2] == "exchange")           {checkWord[10] = true; hexIndex         = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -513,6 +527,18 @@ namespace ASALI
                 gasDiffusion_ = true;
             else
                 gasDiffusion_ = false;
+
+            if ( dummyVector[hexIndex+3] == "on" )
+                hex_ = true;
+            else if ( dummyVector[hexIndex+3] == "true" )
+                hex_ = true;
+            else if ( dummyVector[hexIndex+3] == "yes" )
+                hex_ = true;
+            else if ( dummyVector[hexIndex+3] == "1" )
+                hex_ = true;
+            else
+                hex_ = false;
+
 
             if ( dummyVector[energyIndex+2] == "on" )
                 energy_ = true;
@@ -1049,7 +1075,7 @@ namespace ASALI
             words[3] = "channel diameter";
             words[4] = "channel shape";
             words[5] = "void fraction";
-            words[6] = "external limitations";
+            words[6] = "gas-to-solid correlation";
             words[7] = "type";
             words[8] = "particle diameter";
 
@@ -1067,8 +1093,8 @@ namespace ASALI
                          dummyVector[i+1] == "shape")              {checkWord[4] = true; shapeIndex       = i;}
                 else if (dummyVector[i] == "void" &&
                          dummyVector[i+1] == "fraction")           {checkWord[5] = true; epsiIndex        = i;}
-                else if (dummyVector[i] == "external" &&
-                         dummyVector[i+1] == "limitations")        {checkWord[6] = true; limitationIndex  = i;}
+                else if (dummyVector[i] == "gas-to-solid" &&
+                         dummyVector[i+1] == "correlation")        {checkWord[6] = true; limitationIndex  = i;}
                 else if (dummyVector[i] == "type")                 {checkWord[7] = true; typeIndex        = i;}
                 else if (dummyVector[i] == "particle" &&
                          dummyVector[i+1] == "diameter")           {checkWord[8] = true; particleIndex    = i;}
@@ -1127,6 +1153,8 @@ namespace ASALI
                 epsi_ = boost::lexical_cast<double>(dummyVector[epsiIndex+2]);
                 
                 av_   = 4.*epsi_/Dchannel_;
+                
+                aex_  = 4./Dmatrix_;
 
                 shape_ = dummyVector[shapeIndex+1+1];
                 if ( shape_ != "circle" && shape_ != "triangle" && shape_ != "square")
@@ -1153,6 +1181,8 @@ namespace ASALI
                 epsi_ = 0.4 + 0.05*Dp_/Dmatrix_ + 0.4*std::pow((Dp_/Dmatrix_),2.);
                 
                 av_   = 6.*(1. - epsi_)/Dp_;
+                
+                aex_  = 4./Dmatrix_;
 
                 limitations_ = dummyVector[limitationIndex+1+1];
                 if ( limitations_ != "Yoshida" && limitations_ != "Wakao" && limitations_ != "Petrovic" )
@@ -1233,12 +1263,12 @@ namespace ASALI
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "mass")                 {checkWord[0] = true; massIndex           = i;}
-                else if (dummyVector[i] == "dispersion")         {checkWord[1] = true; dispersionIndex     = i;}
+                if         (dummyVector[i] == "mass")           {checkWord[0] = true; massIndex           = i;}
+                else if (dummyVector[i] == "dispersion")        {checkWord[1] = true; dispersionIndex     = i;}
                 else if (dummyVector[i] == "Rh" &&
                          dummyVector[i+1] == "fraction")        {checkWord[2] = true; RhIndex             = i;}
                 else if (dummyVector[i] == "deactivation" &&
-                         dummyVector[i+1] == "factor")            {checkWord[3] = true; deactivationIndex    = i;}
+                         dummyVector[i+1] == "factor")          {checkWord[3] = true; deactivationIndex    = i;}
             }
 
             for (unsigned int i=0;i<dummyVector.size();i++)
@@ -1251,12 +1281,12 @@ namespace ASALI
                     alfaIndex = i;
                     break;
                 }
-                else if (dummyVector[i] == "mass")                 {checkWord[4] = true; massIndex           = i;}
-                else if (dummyVector[i] == "dispersion")         {checkWord[4] = true; dispersionIndex     = i;}
+                else if (dummyVector[i] == "mass")              {checkWord[4] = true; massIndex           = i;}
+                else if (dummyVector[i] == "dispersion")        {checkWord[4] = true; dispersionIndex     = i;}
                 else if (dummyVector[i] == "Rh" &&
                          dummyVector[i+1] == "fraction")        {checkWord[4] = true; RhIndex             = i;}
                 else if (dummyVector[i] == "deactivation" &&
-                         dummyVector[i+1] == "factor")            {checkWord[4] = true; deactivationIndex    = i;}
+                         dummyVector[i+1] == "factor")          {checkWord[4] = true; deactivationIndex    = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -1453,23 +1483,26 @@ namespace ASALI
                 }
             }
 
-            std::vector<bool>        checkWord(2);
-            std::vector<std::string> words(2);
+            std::vector<bool>        checkWord(3);
+            std::vector<std::string> words(3);
 
             double gasIndex;
             double solidIndex;
+            double exIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
 
             words[0] = "gas";
             words[1] = "solid";
+            words[2] = "wall";
 
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "gas")                 {checkWord[0] = true; gasIndex       = i;}
-                else if (dummyVector[i] == "solid")                {checkWord[1] = true; solidIndex     = i;}
+                     if (dummyVector[i] == "gas")               {checkWord[0] = true; gasIndex       = i;}
+                else if (dummyVector[i] == "solid")             {checkWord[1] = true; solidIndex     = i;}
+                else if (dummyVector[i] == "wall")              {checkWord[2] = true; exIndex        = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -1477,20 +1510,32 @@ namespace ASALI
                 if ( checkWord[i] == false)
                 {
                     error();
-                    std::cout << "key word || " << words[i] << " || alfa || is MISSING in Reactor sub-dictionary!\n" << std::endl;
+                    std::cout << "key word || " << words[i] << " || is MISSING in Temperature sub-dictionary!\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
             }
 
-            Tgas_ = boost::lexical_cast<double>(dummyVector[gasIndex+1]);
-            std::string dimGas = dummyVector[gasIndex+2];
-            if ( dimGas == "°C")
-                FromCelsiusToKelvin(Tgas_,dimGas);
+            {
+                Tgas_ = boost::lexical_cast<double>(dummyVector[gasIndex+1]);
+                std::string dim = dummyVector[gasIndex+2];
+                if ( dim == "°C")
+                    FromCelsiusToKelvin(Tgas_,dim);
+            }
+            
+            {
+                Tsolid_ = boost::lexical_cast<double>(dummyVector[solidIndex+1]);
+                std::string dim = dummyVector[solidIndex+2];
+                if ( dim == "°C")
+                    FromCelsiusToKelvin(Tsolid_,dim);
+            }
 
-            Tsolid_ = boost::lexical_cast<double>(dummyVector[solidIndex+1]);
-            std::string dimSolid = dummyVector[solidIndex+2];
-            if ( dimGas == "°C")
-                FromCelsiusToKelvin(Tsolid_,dimSolid);
+            {
+                Tex_ = boost::lexical_cast<double>(dummyVector[exIndex+1]);
+                std::string dim = dummyVector[exIndex+2];
+                if ( dim == "°C")
+                    FromCelsiusToKelvin(Tex_,dim);
+            }
+
         }
     }
 
@@ -1876,6 +1921,7 @@ namespace ASALI
         std::cout << "Homogeneous  reactions:                    " << boolOnScreen(homo_) << std::endl;
         std::cout << "Heterogeneus reactions:                    " << boolOnScreen(het_) << std::endl;
         std::cout << "Energy balance:                            " << boolOnScreen(energy_) << std::endl;
+        std::cout << "External heat exchange:                    " << boolOnScreen(hex_) << std::endl;
         std::cout << "Feed in:                                   " << feed_ << " fractions" << std::endl;
         std::cout << "Results in:                                " << results_ << " fractions" << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
