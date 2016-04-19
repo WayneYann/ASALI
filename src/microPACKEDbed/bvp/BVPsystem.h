@@ -64,7 +64,9 @@ public:
 
     void setHeterogeneusReactions(const bool flag) { heterogeneusReactions_ = flag; }
 
-    void setEnergyEquation(const bool flag)        { energy_ = flag; }
+    void setEnergyEquation(const bool flag)        { energy_ = flag;}
+    
+    void setExternalHeatExchange(const bool flag, const double Tex);
     
     void setDiffusion(const bool flag)             { gasDiffusion_ = flag; }
  
@@ -74,11 +76,11 @@ public:
 
     void setReactorGeometry( const double alfa, const double G, 
                              const double Lcat, const double Linert,
-                             const double av,   const double aex);
+                             const double av);
 
-    void setPackedBedProperties(const double Dp, const double Dt, const double epsi);
+    void setPackedBedProperties(const double Dp, const double Dt, const double epsi, const double aex);
 
-    void setHoneyCombProperties(const double epsi, const double Dh);
+    void setHoneyCombProperties(const double epsi, const double Dh, const double aex);
 
     void setFeedValue(const double p, const double T0,
                       const OpenSMOKE::OpenSMOKEVectorDouble x0bulk);
@@ -134,10 +136,13 @@ private:
     double G_;
     double SD_;
     double av_;
-    double aex_;
+    double aexP_;
+    double aexH_;
     double h_;
-    double U_;
+    double UP_;
+    double UH_;
     double t_;
+    double Tex_;
 
     double rhoH_;
     double cpH_;
@@ -167,6 +172,7 @@ private:
     bool heterogeneusReactions_;
     bool energy_;
     bool gasDiffusion_;
+    bool hex_;
 
     OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&              thermodynamicsMap_;             //!< thermodynamic map
     OpenSMOKE::KineticsMap_CHEMKIN<double>&                    kineticsMap_;                   //!< kinetic map
@@ -219,12 +225,12 @@ private:
     OpenSMOKE::OpenSMOKEVectorDouble  yOS_;
 
     void HeatTransferCoefficient(const double z, const double cp,  const double eta, const double cond);
-    void OverallHeatTransferCoefficient(const double cp, const double eta, const double cond);
     void MassTransferCoefficient(const double z, const double rho, const double eta, const OpenSMOKE::OpenSMOKEVectorDouble dG);
     OpenSMOKE::OpenSMOKEVectorDouble FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value);
     OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff, const std::string type);
     OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type);
     double EffectiveThermalConductivity(const double T, const double condG, const std::string type);
+    double OverallHeatTransferCoefficient(const double cp, const double eta, const double cond, const std::string type);
 };
 
 
@@ -327,30 +333,37 @@ void BVPSystem::setCorrelation(const std::string correlation)
     correlation_ = correlation;
 }
 
+void BVPSystem::setExternalHeatExchange(const bool flag, const double Tex)
+{
+    hex_ = flag;
+    Tex_ = Tex;
+}
+
 void BVPSystem::setReactorGeometry( const double alfa, const double G, 
                                     const double Lcat, const double Linert,
-                                    const double av,   const double aex)
+                                    const double av)
 {
     alfaTemp_        = alfa;
     av_              = av;
-    aex_             = aex;
     Lcat_            = Lcat;
     L_               = Lcat_ + Linert;
     Linert_          = Linert/L_;
     G_               = G;
 }
 
-void BVPSystem::setPackedBedProperties(const double Dp, const double Dt, const double epsi)
+void BVPSystem::setPackedBedProperties(const double Dp, const double Dt, const double epsi, const double aex)
 {
     Dp_    = Dp;
     Dt_    = Dt;
     epsiP_ = epsi;
+    aexP_  = aex;
 }
 
-void BVPSystem::setHoneyCombProperties(const double epsi, const double Dh)
+void BVPSystem::setHoneyCombProperties(const double epsi, const double Dh, const double aex)
 {
     Dh_    = Dh;
     epsiH_ = epsi;
+    aexH_  = aex;
 }
 
 void BVPSystem::setFeedValue(const double p, const double T0,
@@ -383,45 +396,53 @@ double BVPSystem::EffectiveThermalConductivity(const double T, const double cond
     }
     else if ( type == "packedBed" )
     {
-        double B = 1.25*std::pow((1-epsiP_)/epsiP_,(10./9.));
-        double M = condG/condP_;
+       double B  = 1.25*std::pow((1-epsiP_)/epsiP_,(10./9.));
+       double ks = condP_/condG;
+       double M  = (ks - B)/ks;
         
-        newCond = condG*(2./(1.-M*B))*((1-M)*B*std::log(1./(M*B))/std::pow((1-M*B),2.)
-                - 0.5*(B+1)
-                - (B-1)/(1-M*B));
+       newCond  = condG*(2./M)*(B*(ks-1.)*std::log(ks/B)/(ks*M*M) - (B+1.)*0.5 - (B-1.)/M);
     }
     return newCond;
 }
 
-void BVPSystem::OverallHeatTransferCoefficient(const double cp, const double eta, const double cond)
+double BVPSystem::OverallHeatTransferCoefficient(const double cp, const double eta, const double cond, const std::string type)
 {
-    double phi;
-    double A = condP_/cond;
-    if ( epsiP_ <= 0.26 )
+    double U = 0.;
+    if ( type == "honeyComb" )
     {
-        phi = 0.072*std::pow((1. - 1./A),2.)/(std::log(A-0.925*(A-1.))-0.075*(1.-1./A)) - 2./(3.*A);
+        U = 500.;
     }
-    else if ( epsiP_ >= 0.476 )
+    else if ( type == "packedBed" )
     {
-        phi = (1/3)*std::pow((1. - 1./A),2.)/(std::log(A-0.577*(A-1.))-0.423*(1.-1./A)) - 2./(3.*A);
-    }
-    else
-    {
-        double phi1 = (1./3.)*std::pow((1. - 1./A),2.)/(std::log(A-0.577*(A-1.))-0.423*(1.-1./A)) - 2./(3.*A);
-        double phi2 = 0.072*std::pow((1. - 1./A),2.)/(std::log(A-0.925*(A-1.))-0.075*(1.-1./A)) - 2./(3.*A);
-        phi = phi2 + (phi1-phi2)*(epsiP_-0.26)/0.216;
+        double phi;
+        double A = condP_/cond;
+        if ( epsiP_ <= 0.26 )
+        {
+            phi = 0.072*std::pow((1. - 1./A),2.)/(std::log(A-0.925*(A-1.))-0.075*(1.-1./A)) - 2./(3.*A);
+        }
+        else if ( epsiP_ >= 0.476 )
+        {
+            phi = (1/3)*std::pow((1. - 1./A),2.)/(std::log(A-0.577*(A-1.))-0.423*(1.-1./A)) - 2./(3.*A);
+        }
+        else
+        {
+            double phi1 = (1./3.)*std::pow((1. - 1./A),2.)/(std::log(A-0.577*(A-1.))-0.423*(1.-1./A)) - 2./(3.*A);
+            double phi2 = 0.072*std::pow((1. - 1./A),2.)/(std::log(A-0.925*(A-1.))-0.075*(1.-1./A)) - 2./(3.*A);
+            phi = phi2 + (phi1-phi2)*(epsiP_-0.26)/0.216;
+        }
+        
+        double krs = (1.-epsiP_)*(1.+2.66*std::sqrt(Dp_/Dt_))/(2./(3.*A) + phi);
+        double krf = G_*cp*Dp_/(8.6*(1+19.4*std::pow((Dp_/Dt_),2.)));
+        double Re  = G_*Dp_/(epsiP_*eta);
+        double h   = 0.574*G_*cp*std::pow(Re,-0.407)/epsiP_;
+        double Ns  = 1.5*(1.-epsiP_)*h*std::pow(Dt_,2.)/(krs*Dp_);
+        double Bi  = 5.73*std::sqrt(Dt_/Dp_)*std::pow(Re,-0.26);
+        double kr  = krf + krs*(1.+4./Bi)/(1.+8./Ns);
+        double hw  = Bi*2.*kr/Dt_;
+               U   = 1./(1./hw + 0.5*Dt_*(Bi+3.)/(3.*kr*(Bi+4.)));
     }
     
-    double krs = (1.-epsiP_)*(1.+2.66*std::sqrt(Dp_/Dt_))/(2./(3.*A) + phi);
-    double krf = G_*cp*Dp_/(8.6*(1+19.4*std::pow((Dp_/Dt_),2.)));
-    double Re  = G_*Dp_/(epsiP_*eta);
-    double h   = 0.574*G_*cp*std::pow(Re,-0.407)/epsiP_;
-    double Ns  = 1.5*(1.-epsiP_)*h*std::pow(Dt_,2.)/(krs*Dp_);
-    double Bi  = 5.73*std::sqrt(Dt_/Dp_)*std::pow(Re,-0.26);
-    double kr  = krf + krs*(1.+4./Bi)/(1.+8./Ns);
-    double hw  = Bi*2.*kr/Dt_;
-    
-    U_ = 1./(1./hw + 0.5*Dt_*(Bi+3.)/(3.*kr*(Bi+4.)));
+    return U;
 }
 
 void BVPSystem::HeatTransferCoefficient(const double z, const double cp, const double eta, const double cond)

@@ -114,8 +114,8 @@
 
             for (unsigned int i=0;i<NP_;i++)
             {
-                condHeff_[i+1] = EffectiveThermalConductivity(Th_[i+1],condBulk_[i+1],"honeycomb");
-                condPeff_[i+1] = EffectiveThermalConductivity(Th_[i+1],condBulk_[i+1],"packedbed");
+                condHeff_[i+1] = EffectiveThermalConductivity(Th_[i+1],condBulk_[i+1],"honeyComb");
+                condPeff_[i+1] = EffectiveThermalConductivity(Tp_[i+1],condBulk_[i+1],"packedBed");
             }
 
             jh_ = SecondOrderDerivate(Th_,condHeff_,"solid");
@@ -214,7 +214,16 @@
 
         HeatTransferCoefficient(z_[i], cp_[i+1], etaMix_[i+1], condBulk_[i+1]);
 
-        OverallHeatTransferCoefficient(cp_[i+1], etaMix_[i+1], condBulk_[i+1]);
+        if ( hex_ == true )
+        {
+            UH_ = OverallHeatTransferCoefficient(cp_[i+1], etaMix_[i+1], condBulk_[i+1], "honeyComb");
+            UP_ = OverallHeatTransferCoefficient(cp_[i+1], etaMix_[i+1], condBulk_[i+1], "packedBed");
+        }
+        else
+        {
+            UH_ = 0.;
+            UP_ = OverallHeatTransferCoefficient(cp_[i+1], etaMix_[i+1], condBulk_[i+1], "packedBed");
+        }
 
         //-Setting conditions for SOLID phase
         thermodynamicsMap_.SetTemperature(Tp_[i+1]);
@@ -415,7 +424,7 @@
                 {
                     dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsiP_*epsiH_))*cbulk_[i+1]
                                        - h_*av_*(Tbulk_[i+1]-Tp_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1])
-                                       - U_*aex_*(Tbulk_[i+1]-Th_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1]) 
+                                       - UP_*aexP_*(Tbulk_[i+1]-Th_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1]) 
                                        + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
 
@@ -484,20 +493,21 @@
                     dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsiP_*epsiH_))*cbulk_[i+1]
                                        + jbulk_[i+1]/(epsiP_*epsiH_)
                                        - h_*av_*(Tbulk_[i+1]-Tp_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1])
-                                       - U_*aex_*(Tbulk_[i+1]-Th_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1]) 
+                                       - UP_*aexP_*(Tbulk_[i+1]-Th_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1]) 
                                        + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
                 else
                 {
                     dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsiP_*epsiH_))*cbulk_[i+1]
                                        - h_*av_*(Tbulk_[i+1]-Tp_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1])
-                                       - U_*aex_*(Tbulk_[i+1]-Th_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1]) 
+                                       - UP_*aexP_*(Tbulk_[i+1]-Th_[i+1])/(epsiP_*epsiH_*rhoBulk_[i+1]*cp_[i+1])
                                        + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
 
                 dyOS_[counter++] = + jh_[i+1]/(rhoH_*cpH_)
-                                   + U_*aex_*(Tbulk_[i+1]-Th_[i+1])/(cpH_*rhoH_*(1.-epsiH_));
-
+                                   + UP_*aexP_*(Tbulk_[i+1]-Th_[i+1])/(cpH_*rhoH_*(1.-epsiH_))
+                                   + UH_*aexH_*(Tex_-Th_[i+1])/(cpH_*rhoH_*(1.-epsiH_));
+  
                 dyOS_[counter++] = + jp_[i+1]/(rhoP_*cpP_*epsiH_)
                                    + h_*av_*(Tbulk_[i+1]-Tp_[i+1])/(cpP_*rhoP_*(1.-epsiP_)*epsiH_)
                                    + QfromSurface_*alfa_/(cpP_*rhoP_*(1.-epsiP_)*epsiH_);//DIFFERENTIAL 

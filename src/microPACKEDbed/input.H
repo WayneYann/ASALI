@@ -366,8 +366,7 @@ ASALI::GROWgrid  *growGrid;
                             G,
                             input.getCatalyticLength(),
                             input.getInertLength(),
-                            input.getSpecificArea(),
-                            input.getExternalArea());
+                            input.getSpecificArea());
     ode->setFeedValue(input.getPressure(),T0,x0bulk);
     ode->setInert(input.getInert());
     ode->setDiffusion(input.getDiffusion());
@@ -381,15 +380,20 @@ ASALI::GROWgrid  *growGrid;
     bvp->setHomogeneusReactions(input.getHomogeneousReactions());
     bvp->setHeterogeneusReactions(input.getHeterogenousReactions());
     bvp->setEnergyEquation(input.getEnergy());
-    bvp->setHoneyCombProperties(input.getHoneyCombVoidFraction(),input.getChannelDiameter());
-    bvp->setPackedBedProperties(input.getParticleDiameter(),input.getChannelDiameter(),input.getPackedBedVoidFraction());
+    bvp->setHoneyCombProperties(input.getHoneyCombVoidFraction(),
+                                input.getChannelDiameter(),
+                                input.getHoneycombExternalArea());
+    bvp->setPackedBedProperties(input.getParticleDiameter(),
+                                input.getChannelDiameter(),
+                                input.getPackedBedVoidFraction(),
+                                input.getPackingExternalArea());
     bvp->setCorrelation(input.getCorrelation());
     bvp->setReactorGeometry(input.getAlfa(),
                             G,
                             input.getCatalyticLength(),
                             input.getInertLength(),
-                            input.getSpecificArea(),
-                            input.getExternalArea());
+                            input.getSpecificArea());
+    bvp->setExternalHeatExchange(input.getExternalHeatExchange(),input.getWallTemperature());
     bvp->setFeedValue(input.getPressure(),T0,x0bulk);
     bvp->setInert(input.getInert());
     bvp->setDiffusion(input.getDiffusion());

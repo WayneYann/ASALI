@@ -68,7 +68,7 @@ public:
 
     void setReactorGeometry( const double alfa, const double G, 
                              const double Lcat, const double Linert,
-                             const double av,   const double aex);
+                             const double av);
 
     void setPackedBedProperties(const double Dp, const double Dt, const double epsi);
 
@@ -125,7 +125,6 @@ private:
     double G_;
     double SD_;
     double av_;
-    double aex_;
     double h_;
     double t_;
 
@@ -273,11 +272,10 @@ void ODESystem::setCorrelation(const std::string correlation)
 
 void ODESystem::setReactorGeometry( const double alfa, const double G, 
                                     const double Lcat, const double Linert,
-                                    const double av,   const double aex)
+                                    const double av)
 {
     alfaTemp_        = alfa;
     av_              = av;
-    aex_             = aex;
     Lcat_            = Lcat;
     L_               = Lcat_ + Linert;
     Linert_          = Linert/L_;
