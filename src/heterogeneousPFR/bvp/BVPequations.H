@@ -449,7 +449,7 @@
                     if ( gasDiffusion_ == true )
                     {
                         dyOS_[counter++] = (-G_/(rhoBulk_[i+1]*epsi_))*cGas_[i][j]
-                                           + diffG_[i][j]*jGas_[i][j]/epsi_
+                                           + jGas_[i][j]/epsi_
                                            - av_*jSolid_[i][j]/epsi_
                                            + RfromGas_[j]/rhoBulk_[i+1]; //DIFFERENTIAL
                     }
