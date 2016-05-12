@@ -1,6 +1,6 @@
 # ASALI
 
-1D models for reacting flows with heterogeneous reaction based OpenSMOKE++ Library
+1D/2D models for reacting flows with heterogeneous/homogeneous reactions
 
 Compulsory libraries
 
