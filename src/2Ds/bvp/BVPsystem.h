@@ -61,7 +61,9 @@ public:
                           
     void setCatalystProperties(const double cpC,
                                const double kC,
-                               const double rhoC);
+                               const double rhoC,
+                               const double epsiC,
+                               const double tauC);
 
     void setSupportProperties(const double cpS,
                               const double kS,
@@ -139,6 +141,8 @@ private:
     double cpS_;
     double kC_;
     double rhoC_;
+    double epsiC_;
+    double tauC_;
     double cpC_;
     double DpP_;
     double DtP_;
@@ -167,6 +171,10 @@ private:
     double hw_;
     double Tin_;
     double U_;
+    double Lgeo_;
+    double LgeoP_;
+    double LgeoH_;
+    double LgeoM_;
 
     std::string reactionType_;
     std::string reactorType_;
@@ -236,6 +244,8 @@ BVPSystem::BVPSystem()
         cpS_    = 0.;
         kC_     = 0.;
         rhoC_   = 0.;
+        tauC_   = 0.;
+        epsiC_  = 0.;
         cpC_    = 0.;
         DpP_    = 0.;
         DtP_    = 0.;
@@ -261,6 +271,10 @@ BVPSystem::BVPSystem()
         hw_     = 0.;
         Tin_    = 0.;
         U_      = 0.;
+        Lgeo_   = 0.;
+        LgeoP_  = 0.;
+        LgeoH_  = 0.;
+        LgeoM_  = 0.;
     }
 
 void BVPSystem::setFlowRate(const double G)
@@ -316,11 +330,15 @@ void BVPSystem::setGasProperties(const double cpG,
 
 void BVPSystem::setCatalystProperties(const double cpC,
                                       const double kC,
-                                      const double rhoC)
+                                      const double rhoC,
+                                      const double epsiC,
+                                      const double tauC)
 {
-    cpC_  = cpC;
-    kC_   = kC;
-    rhoC_ = rhoC;
+    cpC_   = cpC;
+    kC_    = kC;
+    rhoC_  = rhoC;
+    epsiC_ = epsiC;
+    tauC_  = tauC;
 }
 
 void BVPSystem::setSupportProperties(const double cpS,
@@ -350,7 +368,8 @@ void BVPSystem::setPackedBed(const double Dt, const double Dp, const double L)
     DtP_   = Dt;
     DpP_   = Dp;
     LP_    = L;
-
+    LgeoP_ = DpP_/6.;
+    
     epsiP_ = 0.4 + 0.05/NP + 0.412/(NP*NP);
 
     ChangeDimensions(Na_, &zP_, true);
@@ -386,6 +405,7 @@ void BVPSystem::setHoneyComb(const double Dt,
         epsiH_   = std::pow((DcH_/m),2.);
         epsiHC_  = (std::pow((DcH_ + 2.*Sw),2.) - std::pow(DcH_,2.))/std::pow(m,2.);
         epsiHS_  = 1. - epsiH_ - epsiHC_;
+        LgeoH_   = ((DcH_ + 2.*Sw)*(DcH_ + 2.*Sw) - DcH_*DcH_)/(4.*DcH_);
     }
     else if ( typeH_ == "extruded" )
     {
@@ -394,6 +414,7 @@ void BVPSystem::setHoneyComb(const double Dt,
         epsiH_   = std::pow((DcH_/m),2.);
         epsiHC_  = 1. - epsiH_;
         epsiHS_  = 1. - epsiH_;
+        LgeoH_   = (m*m - DcH_*DcH_)/(4.*DcH_);
     }
 
     avH_ = 4.*epsiH_/DcH_;
@@ -422,6 +443,7 @@ void BVPSystem::setMicroBed(const double Dt,
     DtM_   = Dt;
     DpM_   = Dp;
     LM_    = L;
+    LgeoM_ = DpM_/6.;
 
     double m = (25.4/std::sqrt(CPSI))*1e-03;
     DcM_     = m - (w*2.54/1000)*0.01;

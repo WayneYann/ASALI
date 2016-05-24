@@ -51,7 +51,9 @@ ASALI::ODESystem  *ode;
                          
     ode->setCatalystProperties(input.getCatalystSpecificHeat(),
                                input.getCatalystConductivity(),
-                               input.getCatalystDensity());
+                               input.getCatalystDensity(),
+                               input.getCatalystVoidFraction(),
+                               input.getCatalystTortuosity());
                               
     ode->setSupportProperties(input.getSupportSpecificHeat(),
                               input.getSupportConductivity(),
@@ -105,7 +107,9 @@ ASALI::BVPSystem  *bvp;
                          
     bvp->setCatalystProperties(input.getCatalystSpecificHeat(),
                                input.getCatalystConductivity(),
-                               input.getCatalystDensity());
+                               input.getCatalystDensity(),
+                               input.getCatalystVoidFraction(),
+                               input.getCatalystTortuosity());
                               
     bvp->setSupportProperties(input.getSupportSpecificHeat(),
                               input.getSupportConductivity(),
@@ -150,8 +154,10 @@ ASALI::BVPSystem  *bvp;
     }
 
 }
+
 {
     ASALI::logo();
+    input.recapOnScreen();
     unsigned int WP = 6;
     std::cout.setf(std::ios::scientific);
     std::cout.precision(WP);

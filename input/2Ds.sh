@@ -63,6 +63,8 @@ echo '<catalystProperties>' >> 2Ds.xml
 echo '	<conductivity>0.22</conductivity>' >> 2Ds.xml
 echo '	<specificHeat>925</specificHeat>' >> 2Ds.xml
 echo '	<density>2100</density>' >> 2Ds.xml
+echo '	<voidFraction>0.68</voidFraction>' >> 2Ds.xml
+echo '	<tortuosity>8</tortuosity>' >> 2Ds.xml
 echo '</catalystProperties>' >> 2Ds.xml
 echo ' ' >> 2Ds.xml
 echo '<supportProperties>' >> 2Ds.xml

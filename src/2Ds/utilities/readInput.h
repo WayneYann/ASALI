@@ -86,10 +86,14 @@ namespace ASALI
             inline double                   getGasConductivity()            const {return kG_;};
             inline double                   getCatalystSpecificHeat()       const {return cpC_;};
             inline double                   getCatalystDensity()            const {return rhoC_;};
+            inline double                   getCatalystVoidFraction()       const {return epsiC_;};
+            inline double                   getCatalystTortuosity()         const {return tauC_;};
             inline double                   getCatalystConductivity()       const {return kC_;};
             inline double                   getSupportSpecificHeat()        const {return cpS_;};
             inline double                   getSupportDensity()             const {return rhoS_;};
             inline double                   getSupportConductivity()        const {return kS_;};
+
+            void recapOnScreen();
 
         private:
 
@@ -138,6 +142,8 @@ namespace ASALI
             double kS_;
             double cpS_;
             double rhoS_;
+            double tauC_;
+            double epsiC_;
 
             void error() { std::cout << "\nASALI::readInput::ERROR\n" << std::endl;};
             
@@ -189,32 +195,46 @@ namespace ASALI
 
                 if ( reactionType_ == "O-xylene-to-phthalic" )
                 {
-                    NC_    = 8;
+                    NC_    = 5;
 
                     MW_.resize(NC_);
                     MW_[0] = 32.;
                     MW_[1] = 106.16;
                     MW_[2] = 148.12;
-                    MW_[3] = 28.;
-                    MW_[4] = 44.;
-                    MW_[5] = 18.;
-                    MW_[6] = 2.;
-                    MW_[7] = 28.;
+                    MW_[3] = 18.;
+                    MW_[4] = 28.;
 
                     name_.resize(NC_);
                     name_[0] = "O2";
                     name_[1] = "XYLENE";
                     name_[2] = "PHTHALIC";
-                    name_[3] = "CO";
-                    name_[4] = "CO2";
+                    name_[3] = "H2O";
+                    name_[4] = "N2";
+                }
+                else if ( reactionType_ == "O-xylene-to-phthalic-complex" )
+                {
+                    NC_    = 6;
+
+                    MW_.resize(NC_);
+                    MW_[0] = 32.;
+                    MW_[1] = 106.16;
+                    MW_[2] = 148.12;
+                    MW_[3] = 44.;
+                    MW_[4] = 28.;
+                    MW_[5] = 18.;
+
+                    name_.resize(NC_);
+                    name_[0] = "O2";
+                    name_[1] = "XYLENE";
+                    name_[2] = "PHTHALIC";
+                    name_[3] = "CO2";
+                    name_[4] = "N2";
                     name_[5] = "H2O";
-                    name_[6] = "H2";
-                    name_[7] = "N2";
                 }
                 else
                 {
                     error();
-                    std::cout << "node || reaction || could be only || O-xylene-to-phthalic || \n" << std::endl;
+                    std::cout << "node || reaction || could be only || O-xylene-to-phthalic || O-xylene-to-phthalic-complex ||\n" << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }
@@ -225,11 +245,32 @@ namespace ASALI
 
                 std::vector<double> x(NC_);
                 double sum = 0;
+                if ( reactionType_ == "O-xylene-to-phthalic" )
+                {
+                     for (unsigned int i=0;i<NC_;i++)
+                    {
+                       x[i] = 0.;
+                    }
+
+                    x[0]     = tree.get<double>("mole.O2");
+                    x[1]     = tree.get<double>("mole.XYLENE");
+                    x[4]     = tree.get<double>("mole.N2");
+                }
+                else if ( reactionType_ == "O-xylene-to-phthalic-complex" )
+                {
+                    for (unsigned int i=0;i<NC_;i++)
+                    {
+                       x[i] = 0.;
+                    }
+
+                    x[0]     = tree.get<double>("mole.O2");
+                    x[1]     = tree.get<double>("mole.XYLENE");
+                    x[4]     = tree.get<double>("mole.N2");
+                }
+
                 for (unsigned int i=0;i<NC_;i++)
                 {
-                    std::string nodeName = "mole." + name_[i];
-                                x[i]     = tree.get<double>(nodeName);
-                                sum      = sum + x[i];
+                   sum      = sum + x[i];
                 }
 
                 if ( sum != 1. )
@@ -318,9 +359,11 @@ namespace ASALI
 
             // catalyst properties
             {
-                cpC_  = tree.get<double>("catalystProperties.specificHeat");  
-                rhoC_ = tree.get<double>("catalystProperties.density");
-                kC_   = tree.get<double>("catalystProperties.conductivity");
+                cpC_   = tree.get<double>("catalystProperties.specificHeat");  
+                rhoC_  = tree.get<double>("catalystProperties.density");
+                kC_    = tree.get<double>("catalystProperties.conductivity");
+                epsiC_ = tree.get<double>("catalystProperties.voidFraction");
+                tauC_  = tree.get<double>("catalystProperties.tortuosity");
             }
 
             // support properties
@@ -420,4 +463,89 @@ namespace ASALI
         }
         return true;
     }
+
+    void readInput::recapOnScreen()
+    {
+        std::cout.precision(6);
+        std::cout << "\n################################################################################################" << std::endl;
+        if ( models_[0] == true )
+        {
+            std::cout << "                                        HONEYCOMB REACTOR                                       \n" << std::endl;
+            std::cout << "Type:                                       " << typeH_ << std::endl;
+            std::cout << "CPSI                                      = " << CPSIH_ << std::endl;
+            std::cout << "Tube     diameter                         = " << DtH_ << "\t[m]" << std::endl;
+            std::cout << "Reactor  length                           = " << LH_ << "\t[m]" << std::endl;
+            std::cout << "Wall     thickness                        = " << wH_ << "\t[mills]" << std::endl;
+            if ( typeH_ == "washcoated" )
+            {
+                std::cout << "Washcoat thickness                        = " << SwH_ << "\t[m]" << std::endl;
+            }
+            std::cout << "\n################################################################################################" << std::endl;
+        }
+        else if ( models_[1] == true )
+        {
+            std::cout << "                                       PACKED BED REACTOR                                       \n" << std::endl;
+            std::cout << "Tube     diameter                         = " << DtP_ << "\t[m]" << std::endl;
+            std::cout << "Reactor  length                           = " << LP_ << "\t[m]" << std::endl;
+            std::cout << "Particle diameter                         = " << DpP_ << "\t[m]" << std::endl;
+            std::cout << "\n################################################################################################" << std::endl;
+        }
+        else if ( models_[2] == true )
+        {
+            std::cout << "                                    MICRO PACKED BED REACTOR                                    \n" << std::endl;
+            std::cout << "CPSI                                      = " << CPSIM_ << std::endl;
+            std::cout << "Tube     diameter                         = " << DtM_ << "\t[m]" << std::endl;
+            std::cout << "Particle diameter                         = " << DpM_ << "\t[m]" << std::endl;
+            std::cout << "Reactor  length                           = " << LM_ << "\t[m]" << std::endl;
+            std::cout << "Wall     thickness                        = " << wM_ << "\t[mills]" << std::endl;
+            std::cout << "\n################################################################################################" << std::endl;
+        }
+        else
+        {
+            std::cout << "\nNone of the reactor types has been selected" << std::endl;
+            std::cout << "\n################################################################################################" << std::endl;
+        }
+        std::cout << "                                      CATALYST PROPERTIES                                       \n" << std::endl;
+        std::cout << "Density                                  = " << rhoC_ << "\t[Kg/m3]" << std::endl;
+        std::cout << "Specific heat                            = " << cpC_ << "\t[J/Kg/K]" << std::endl;
+        std::cout << "Conductivity                             = " << kC_ << "\t[W/m/K]" << std::endl;
+        std::cout << "Tortuosity                               = " << tauC_ << "\t[-]" << std::endl;
+        std::cout << "Void fraction                            = " << epsiC_ << "\t[-]" << std::endl;
+        std::cout << "\n################################################################################################" << std::endl;
+        std::cout << "                                      SUPPORT  PROPERTIES                                       \n" << std::endl;
+        std::cout << "Density                                  = " << rhoS_ << "\t[Kg/m3]" << std::endl;
+        std::cout << "Specific heat                            = " << cpS_ << "\t[J/Kg/K]" << std::endl;
+        std::cout << "Conductivity                             = " << kS_ << "\t[W/m/K]" << std::endl;
+        std::cout << "\n################################################################################################" << std::endl;
+        std::cout << "                                         GAS PROPERTIES                                         \n" << std::endl;
+        std::cout << "Viscosity                                = " << mu_ << "\t[Pas]" << std::endl;
+        std::cout << "Specific heat                            = " << cpG_ << "\t[J/Kg/K]" << std::endl;
+        std::cout << "Conductivity                             = " << kG_ << "\t[W/m/K]" << std::endl;
+        std::cout << "Diffusivity                              = " << diff_ << "\t[m2/s]" << std::endl;
+        std::cout << "\n################################################################################################" << std::endl;
+        std::cout << "                                      OPERATING CONDITIONS                                      \n" << std::endl;
+        std::cout << "Specific mass flow rate                  = " << G_ << "\t[Kg/m2/s]" << std::endl;
+        std::cout << "Pressure                                 = " << p_ << "\t[Pa]" << std::endl;
+        std::cout << "Feed  temperature                        = " << Tin_ << "\t[K]" << std::endl;
+        std::cout << "Shell temperature                        = " << Tw_ << "\t[K]" << std::endl;
+        std::cout << "\n################################################################################################" << std::endl;
+        std::cout << "                                         SOLVER OPTIONS                                         \n" << std::endl;
+        std::cout << "Axial  number of points:                   " << Na_ << std::endl;
+        std::cout << "Radial number of points:                   " << Nr_ << std::endl;
+        std::cout << "Chemistry scheme:                          " << reactionType_ << std::endl;
+        std::cout << "\n################################################################################################" << std::endl;
+        std::cout << "                                        NUMERICAL SOLVER                                        \n" << std::endl;
+        std::cout << "Solver compiled with                        ";
+        #if ASALI_USE_BZZ == 1
+        std::cout << "|| BzzMath ";
+        #endif
+        #if ASALI_USE_SUNDIALS == 1
+        std::cout << "|| Sundials ";
+        #endif
+        std::cout << "||" << std::endl;
+        std::cout << "ODE:                                        " << ode_ << std::endl;
+        std::cout << "BVP:                                        " << bvp_ << std::endl;
+        std::cout << "\n################################################################################################" << std::endl;
+    }
+
 }

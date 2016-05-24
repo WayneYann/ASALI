@@ -61,7 +61,9 @@ public:
                           
     void setCatalystProperties(const double cpC,
                                const double kC,
-                               const double rhoC);
+                               const double rhoC,
+                               const double epsiC,
+                               const double tauC);
 
     void setSupportProperties(const double cpS,
                               const double kS,
@@ -137,6 +139,8 @@ private:
     double kC_;
     double rhoC_;
     double cpC_;
+    double epsiC_;
+    double tauC_;
     double DpP_;
     double DtP_;
     double LP_;
@@ -165,6 +169,10 @@ private:
     double hw_;
     double U_;
     double Tin_;
+    double Lgeo_;
+    double LgeoP_;
+    double LgeoH_;
+    double LgeoM_;
 
     std::string reactionType_;
     std::string reactorType_;
@@ -234,6 +242,8 @@ ODESystem::ODESystem()
         cpS_    = 0.;
         kC_     = 0.;
         rhoC_   = 0.;
+        tauC_   = 0.;
+        epsiC_  = 0.;
         cpC_    = 0.;
         DpP_    = 0.;
         DtP_    = 0.;
@@ -260,6 +270,10 @@ ODESystem::ODESystem()
         hw_     = 0.;
         U_      = 0.;
         Tin_    = 0.;
+        Lgeo_   = 0.;
+        LgeoP_  = 0.;
+        LgeoH_  = 0.;
+        LgeoM_  = 0.;
     }
 
 void ODESystem::setFlowRate(const double G)
@@ -315,11 +329,15 @@ void ODESystem::setGasProperties(const double cpG,
 
 void ODESystem::setCatalystProperties(const double cpC,
                                       const double kC,
-                                      const double rhoC)
+                                      const double rhoC,
+                                      const double epsiC,
+                                      const double tauC)
 {
-    cpC_  = cpC;
-    kC_   = kC;
-    rhoC_ = rhoC;
+    cpC_   = cpC;
+    kC_    = kC;
+    rhoC_  = rhoC;
+    epsiC_ = epsiC;
+    tauC_  = tauC;
 }
 
 void ODESystem::setSupportProperties(const double cpS,
@@ -349,6 +367,7 @@ void ODESystem::setPackedBed(const double Dt, const double Dp, const double L)
     DtP_   = Dt;
     DpP_   = Dp;
     LP_    = L;
+    LgeoP_ = DpP_/6.;
 
     epsiP_ = 0.4 + 0.05/NP + 0.412/(NP*NP);
     aexP_  = 4./Dt;
@@ -386,6 +405,7 @@ void ODESystem::setHoneyComb(const double Dt,
         epsiH_   = std::pow((DcH_/m),2.);
         epsiHC_  = (std::pow((DcH_ + 2.*Sw),2.) - std::pow(DcH_,2.))/std::pow(m,2.);
         epsiHS_  = 1. - epsiH_ - epsiHC_;
+        LgeoH_   = ((DcH_ + 2.*Sw)*(DcH_ + 2.*Sw) - DcH_*DcH_)/(4.*DcH_);
     }
     else if ( typeH_ == "extruded" )
     {
@@ -394,6 +414,7 @@ void ODESystem::setHoneyComb(const double Dt,
         epsiH_   = std::pow((DcH_/m),2.);
         epsiHC_  = 1. - epsiH_;
         epsiHS_  = 1. - epsiH_;
+        LgeoH_   = (m*m - DcH_*DcH_)/(4.*DcH_);
     }
 
     avH_ = 4.*epsiH_/DcH_;
@@ -422,6 +443,7 @@ void ODESystem::setMicroBed(const double Dt,
     DtM_   = Dt;
     DpM_   = Dp;
     LM_    = L;
+    LgeoM_ = DpM_/6.;
 
     double m = (25.4/std::sqrt(CPSI))*1e-03;
     DcM_     = m - (w*2.54/1000)*0.01;
@@ -452,15 +474,18 @@ void ODESystem::resize(const std::string type)
     iteration    = 0.;
     if ( reactorType_ == "honeyComb" )
     {
-        NB_ = NC_ + NC_ + 1 + 1;
+        NB_   = NC_ + NC_ + 1 + 1;
+        Lgeo_ = LgeoH_;
     }
     else if ( reactorType_ == "packedBed" )
     {
-        NB_ = NC_ + 1;
+        NB_   = NC_ + 1;
+        Lgeo_ = LgeoP_;
     }
     else if ( reactorType_ == "microBed" )
     {
         NB_ = NC_ + 1 + 1;
+        Lgeo_ = LgeoM_;
     }
 
     NE_      = NB_*Na_*Nr_;

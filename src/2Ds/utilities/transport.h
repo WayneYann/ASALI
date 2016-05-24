@@ -64,30 +64,15 @@ double AxialConduction(const std::string type)
     }
     else if ( type == "packedBed" )
     {
-        double Re  = G_*DpP_/mu_;
-        double krf = G_*cpG_*DpP_/(8.6*(1.+19.4*std::pow((DpP_/DtP_),2.)));
-        double A   = kC_/kG_;
-        double p1  = ((1./3.)*std::pow((1.-1./A),2.))/(std::log(A-0.577*(A-1))-0.423*(1.-1./A)) - 2./(3.*A);
-        double p2  = ((0.072)*std::pow((1.-1./A),2.))/(std::log(A-0.925*(A-1))-0.075*(1.-1./A)) - 2./(3.*A);
-        double p   = 0.;
-        if ( epsiP_ <= 0.26 )
-        {
-            p = p2;
-        }
-        else if ( epsiP_ >= 0.476 )
-        {
-            p = p1;
-        }
-        else
-        {
-            p = p2 + (p1-p2)*(epsiP_-0.26)/0.216;
-        }
-
-        double krs    = kG_*(1.-epsiP_)*(1.+2.66*std::sqrt(DpP_/DtP_))/(2./(3.*A) + p);
-        double Bi     = 5.73*std::sqrt(DtP_/DpP_)*std::pow(Re,-0.262);
-        double h      = 0.393*G_*cpG_*std::pow(Re,-0.384)/(epsiP_*std::pow(Pr_,(2./3.)));        
-        double Ns     = 1.5*(1-epsiP_)*h*DtP_*DtP_/(krs*DpP_);
-               condAx = krf + krs*(1+4/Bi)/(1+8/Ns);
+        double Re     = G_*DpP_/mu_;
+        double B      = 1.25*std::pow(((1. - epsiP_)/epsiP_),(10./9.));
+        double A      = kG_/kC_;
+        double teta   = (1. - A)*B*std::log(1./(B*A))/std::pow((1. - B*A),2.) - (B - 1.)/(1. - B*A) - (B + 1.)/2.;
+        double kr0    = kG_*((1. - std::sqrt(1. - epsiP_)) + 2.*std::sqrt(1.-epsiP_)*teta/(1. - B*A));
+        double Peinf  = 8.*(2. - std::pow((1. - 2.*DpP_/DtP_),2.));
+        double Pe     = 1./(1./Peinf + (2./3.)*epsiP_/(Re*Pr_));
+        double kr     = (1./Pe)*Re*Pr_*kG_;
+               condAx = kr0 + kr;
     }
     else if ( type == "microBed" )
     {
@@ -113,30 +98,15 @@ double RadialConduction(const std::string type)
     }
     else if ( type == "packedBed" )
     {
-        double Re  = G_*DpP_/mu_;
-        double krf = G_*cpG_*DpP_/(8.6*(1.+19.4*std::pow((DpP_/DtP_),2.)));
-        double A   = kC_/kG_;
-        double p1  = ((1./3.)*std::pow((1.-1./A),2.))/(std::log(A-0.577*(A-1))-0.423*(1.-1./A)) - 2./(3.*A);
-        double p2  = ((0.072)*std::pow((1.-1./A),2.))/(std::log(A-0.925*(A-1))-0.075*(1.-1./A)) - 2./(3.*A);
-        double p   = 0.;
-        if ( epsiP_ <= 0.26 )
-        {
-            p = p2;
-        }
-        else if ( epsiP_ >= 0.476 )
-        {
-            p = p1;
-        }
-        else
-        {
-            p = p2 + (p1-p2)*(epsiP_-0.26)/0.216;
-        }
-
-        double krs   = kG_*(1.-epsiP_)*(1.+2.66*std::sqrt(DpP_/DtP_))/(2./(3.*A) + p);
-        double Bi    = 5.73*std::sqrt(DtP_/DpP_)*std::pow(Re,-0.262);
-        double h     = 0.393*G_*cpG_*std::pow(Re,-0.384)/(epsiP_*std::pow(Pr_,(2./3.)));        
-        double Ns    = 1.5*(1-epsiP_)*h*DtP_*DtP_/(krs*DpP_);
-               condR = krf + krs*(1+4/Bi)/(1+8/Ns);
+        double Re    = G_*DpP_/mu_;
+        double B     = 1.25*std::pow(((1. - epsiP_)/epsiP_),(10./9.));
+        double A     = kG_/kC_;
+        double teta  = (1. - A)*B*std::log(1./(B*A))/std::pow((1. - B*A),2.) - (B - 1.)/(1. - B*A) - (B + 1.)/2.;
+        double kr0   = kG_*((1. - std::sqrt(1. - epsiP_)) + 2.*std::sqrt(1.-epsiP_)*teta/(1. - B*A));
+        double Peinf = 8.*(2. - std::pow((1. - 2.*DpP_/DtP_),2.));
+        double Pe    = 1./(1./Peinf + (2./3.)*epsiP_/(Re*Pr_));
+        double kr    = (1./Pe)*Re*Pr_*kG_;
+               condR = kr0 + kr;
     }
     else if ( type == "microBed" )
     {
@@ -174,31 +144,14 @@ double ExternalHeatTransfer(const std::string type)
     }
     else if ( type == "packedBed" )
     {
-        double Re  = G_*DpP_/mu_;
-        double krf = G_*cpG_*DpP_/(8.6*(1.+19.4*std::pow((DpP_/DtP_),2.)));
-        double A   = kC_/kG_;
-        double p1  = ((1./3.)*std::pow((1.-1./A),2.))/(std::log(A-0.577*(A-1))-0.423*(1.-1./A)) - 2./(3.*A);
-        double p2  = ((0.072)*std::pow((1.-1./A),2.))/(std::log(A-0.925*(A-1))-0.075*(1.-1./A)) - 2./(3.*A);
-        double p   = 0.;
-        if ( epsiP_ <= 0.26 )
-        {
-            p = p2;
-        }
-        else if ( epsiP_ >= 0.476 )
-        {
-            p = p1;
-        }
-        else
-        {
-            p = p2 + (p1-p2)*(epsiP_-0.26)/0.216;
-        }
-
-        double krs   = kG_*(1.-epsiP_)*(1.+2.66*std::sqrt(DpP_/DtP_))/(2./(3.*A) + p);
-        double Bi    = 5.73*std::sqrt(DtP_/DpP_)*std::pow(Re,-0.262);
-        double h     = 0.393*G_*cpG_*std::pow(Re,-0.384)/(epsiP_*std::pow(Pr_,(2./3.)));        
-        double Ns    = 1.5*(1-epsiP_)*h*DtP_*DtP_/(krs*DpP_);
-        double kr    = krf + krs*(1+4/Bi)/(1+8/Ns);
-               U     = Bi*2.*kr/DtP_;
+        double Re    = G_*DpP_/mu_;
+        double B     = 1.25*std::pow(((1. - epsiP_)/epsiP_),(10./9.));
+        double A     = kG_/kC_;
+        double teta  = (1. - A)*B*std::log(1./(B*A))/std::pow((1. - B*A),2.) - (B - 1.)/(1. - B*A) - (B + 1.)/2.;
+        double kr0   = kG_*((1. - std::sqrt(1. - epsiP_)) + 2.*std::sqrt(1.-epsiP_)*teta/(1. - B*A));
+        double Nw0   = (1.3 + 5.*DpP_/DtP_)*(kr0/kG_);
+        double Nw    = Nw0 + 0.19*std::pow(Re,0.75)*std::pow(Pr_,(1./3.));
+               U     = Nw*kG_/DpP_;
     }
     else if ( type == "microBed" )
     {
