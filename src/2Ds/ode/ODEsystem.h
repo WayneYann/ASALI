@@ -75,6 +75,8 @@ public:
     
     void setPressure(const double p);
     
+    void setInertLength(const double L);
+    
     void setFlowRate(const double G);
     
     void setCoolantTemperature(const double Tw);
@@ -173,6 +175,7 @@ private:
     double LgeoP_;
     double LgeoH_;
     double LgeoM_;
+    double Linert_;
 
     std::string reactionType_;
     std::string reactorType_;
@@ -274,6 +277,7 @@ ODESystem::ODESystem()
         LgeoP_  = 0.;
         LgeoH_  = 0.;
         LgeoM_  = 0.;
+        Linert_ = 0.;
     }
 
 void ODESystem::setFlowRate(const double G)
@@ -303,6 +307,11 @@ void ODESystem::setCoolantTemperature(const double Tw)
 void ODESystem::setPressure(const double p)
 {
     p_ = p;
+}
+
+void ODESystem::setInertLength(const double L)
+{
+    Linert_ = L;
 }
 
 void ODESystem::setThermodinamicsData(const std::vector<double> MW, const unsigned int NC)
@@ -366,7 +375,7 @@ void ODESystem::setPackedBed(const double Dt, const double Dp, const double L)
 
     DtP_   = Dt;
     DpP_   = Dp;
-    LP_    = L;
+    LP_    = L + Linert_;
     LgeoP_ = DpP_/6.;
 
     epsiP_ = 0.4 + 0.05/NP + 0.412/(NP*NP);
@@ -395,7 +404,7 @@ void ODESystem::setHoneyComb(const double Dt,
                              const std::string type)
 {
     DtH_   = Dt;
-    LH_    = L;
+    LH_    = L + Linert_;
     typeH_ = type;
 
     if ( typeH_ == "washcoated" )
@@ -442,7 +451,7 @@ void ODESystem::setMicroBed(const double Dt,
 {
     DtM_   = Dt;
     DpM_   = Dp;
-    LM_    = L;
+    LM_    = L + Linert_;
     LgeoM_ = DpM_/6.;
 
     double m = (25.4/std::sqrt(CPSI))*1e-03;

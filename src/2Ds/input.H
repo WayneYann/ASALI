@@ -62,6 +62,7 @@ ASALI::ODESystem  *ode;
     ode->setGrid(input.axialPoints(),input.radialPoints());
     
     ode->setReactionType(input.getReactionType());
+    ode->setInertLength(input.getInertLength());
     
     ode->setPressure(input.getPressure());
     ode->setCoolantTemperature(input.getCoolantTemperature());
@@ -118,7 +119,8 @@ ASALI::BVPSystem  *bvp;
     bvp->setGrid(input.axialPoints(),input.radialPoints());
     
     bvp->setReactionType(input.getReactionType());
-    
+    bvp->setInertLength(input.getInertLength());
+
     bvp->setPressure(input.getPressure());
     bvp->setCoolantTemperature(input.getCoolantTemperature());
     bvp->setFeedTemperature(input.getFeedTemperature());

@@ -92,6 +92,7 @@ namespace ASALI
             inline double                   getSupportSpecificHeat()        const {return cpS_;};
             inline double                   getSupportDensity()             const {return rhoS_;};
             inline double                   getSupportConductivity()        const {return kS_;};
+            inline double                   getInertLength()                const {return Linert_;};
 
             void recapOnScreen();
 
@@ -144,6 +145,7 @@ namespace ASALI
             double rhoS_;
             double tauC_;
             double epsiC_;
+            double Linert_;
 
             void error() { std::cout << "\nASALI::readInput::ERROR\n" << std::endl;};
             
@@ -294,10 +296,11 @@ namespace ASALI
 
             // operating conditions
             {
-                Tw_  = tree.get<double>("operatingConditions.temperauture.coolant");
-                Tin_ = tree.get<double>("operatingConditions.temperauture.feed");
-                p_   = tree.get<double>("operatingConditions.pressure");
-                G_   = tree.get<double>("operatingConditions.specificMassFlowRate");
+                Tw_     = tree.get<double>("operatingConditions.temperauture.coolant");
+                Tin_    = tree.get<double>("operatingConditions.temperauture.feed");
+                p_      = tree.get<double>("operatingConditions.pressure");
+                G_      = tree.get<double>("operatingConditions.specificMassFlowRate");
+                Linert_ = tree.get<double>("operatingConditions.inertLength");
             }
             
             // packed bed

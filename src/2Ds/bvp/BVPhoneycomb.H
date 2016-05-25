@@ -67,8 +67,16 @@
                 v_[a][r+1]    = G_/rho_[a][r+1];
                 h_[a][r+1]    = heatTransfer(zH_[a+1]);
                 kMat_[a][r+1] = massTransfer(zH_[a+1],rho_[a][r+1]);
-                R_[a][r]      = ReactionRate(omegaWall_[a][r],TWall_[a][r+1]);
-                Q_[a][r+1]    = ReactionHeat(omegaWall_[a][r],TWall_[a][r+1]);
+                if ( zH_[a + 1] < Linert_ )
+                {
+                    R_[a][r]      = 0.;
+                    Q_[a][r+1]    = 0.;
+                }
+                else
+                {
+                    R_[a][r]      = ReactionRate(omegaWall_[a][r],TWall_[a][r+1]);
+                    Q_[a][r+1]    = ReactionHeat(omegaWall_[a][r],TWall_[a][r+1]);
+                }
             }
         }
 

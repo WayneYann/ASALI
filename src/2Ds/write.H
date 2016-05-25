@@ -143,7 +143,7 @@
             z[1] = 0.;
             for (unsigned int a=2;a<=Na;a++)
             {
-                z[a] = z[a-1] + input.getHoneyCombLength()/double(Na-1);
+                z[a] = z[a-1] + (input.getHoneyCombLength() + input.getInertLength())/double(Na-1);
             }
         }
 
@@ -231,7 +231,7 @@
             z[1] = 0.;
             for (unsigned int a=2;a<=Na;a++)
             {
-                z[a] = z[a-1] + input.getPackedBedLength()/double(Na-1);
+                z[a] = z[a-1] + (input.getPackedBedLength() + input.getInertLength())/double(Na-1);
             }
         }
 
@@ -320,7 +320,7 @@
             z[1] = 0.;
             for (unsigned int a=2;a<=Na;a++)
             {
-                z[a] = z[a-1] + input.getMicroBedLength()/double(Na-1);
+                z[a] = z[a-1] + (input.getMicroBedLength() + input.getInertLength())/double(Na-1);
             }
         }
 

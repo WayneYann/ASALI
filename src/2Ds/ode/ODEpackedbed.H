@@ -62,8 +62,16 @@
             {
                 rho_[a][r+1]  = p_*mixtureMolecularWeight(omegaBulk_[a][r])/(8314.*TBulk_[a][r+1]);
                 v_[a][r+1]    = G_/rho_[a][r+1];
-                R_[a][r]      = ReactionRate(omegaBulk_[a][r],TBulk_[a][r+1]);
-                Q_[a][r+1]    = ReactionHeat(omegaBulk_[a][r],TBulk_[a][r+1]);
+                if ( zP_[a + 1] < Linert_ )
+                {
+                    R_[a][r]      = 0.;
+                    Q_[a][r+1]    = 0.;
+                }
+                else
+                {
+                    R_[a][r]      = ReactionRate(omegaBulk_[a][r],TBulk_[a][r+1]);
+                    Q_[a][r+1]    = ReactionHeat(omegaBulk_[a][r],TBulk_[a][r+1]);
+                }
             }
         }
 
