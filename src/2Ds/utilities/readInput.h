@@ -147,7 +147,7 @@ namespace ASALI
             double epsiC_;
             double Linert_;
 
-            void error() { std::cout << "\nASALI::readInput::ERROR\n" << std::endl;};
+            void error() { remove("BzzFile.txt"); std::cout << "\nASALI::readInput::ERROR\n" << std::endl;};
             
             bool fileExist(const std::string &file);
     };

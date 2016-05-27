@@ -188,7 +188,8 @@
                 {
                     for (unsigned int s=1;s<=NC_;s++)
                     {
-                        domegaBulk_[a][r][s] = -v_[a][r+1]*d1stomegaBulk_[a][r][s] - avH_*kMat_[a][r+1]*(omegaBulk_[a][r][s]- omegaWall_[a][r][s]);
+                        domegaBulk_[a][r][s] = -v_[a][r+1]*d1stomegaBulk_[a][r][s]
+                                               -avH_*kMat_[a][r+1]*(omegaBulk_[a][r][s]- omegaWall_[a][r][s]);
                     }
 
                     for (unsigned int s=1;s<=NC_;s++)
@@ -196,14 +197,17 @@
                         domegaWall_[a][r][s] = rho_[a][r+1]*avH_*kMat_[a][r+1]*(omegaBulk_[a][r][s]- omegaWall_[a][r][s]) + R_[a][r][s]*epsiHC_;
                     }
 
-                    dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1] - (avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1]))/(rho_[a][r+1]*cpG_);
+                    dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
+                                      -avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiH_);
+                                      
                     dTWall_[a][r+1] = TWall_[a][r+1] - TWall_[a-1][r+1];
                 }
                 else
                 {
                     for (unsigned int s=1;s<=NC_;s++)
                     {
-                        domegaBulk_[a][r][s] = -v_[a][r+1]*d1stomegaBulk_[a][r][s] - avH_*kMat_[a][r+1]*(omegaBulk_[a][r][s]- omegaWall_[a][r][s]);
+                        domegaBulk_[a][r][s] = -v_[a][r+1]*d1stomegaBulk_[a][r][s]
+                                               -avH_*kMat_[a][r+1]*(omegaBulk_[a][r][s]- omegaWall_[a][r][s]);
                     }
 
                     for (unsigned int s=1;s<=NC_;s++)
@@ -213,18 +217,27 @@
                     
                     if ( r == 0 )
                     {
-                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1] - (avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1]))/(rho_[a][r+1]*cpG_);
+                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
+                                          -avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiH_);
+                                         
                         dTWall_[a][r+1] = TWall_[a][r+1+1] - TWall_[a][r+1];
                     }
                     else if ( r == (Nr_ - 1))
                     {
-                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1] - (avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1]))/(rho_[a][r+1]*cpG_);
+                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
+                                          -avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiH_);
+                                          
                         dTWall_[a][r+1] = (kr_/hw_)*(TWall_[a][r+1] - TWall_[a][r+1-1])/(rH_[r+1] - rH_[r+1-1]) + (TWall_[a][r+1] - Tw_);
                     }
                     else
                     {
-                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1] - (avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1]))/(rho_[a][r+1]*cpG_);
-                        dTWall_[a][r+1] = d2ndTWallaxial_[a][r+1] + d2ndTWallradial_[a][r+1] + avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1]) - Q_[a][r+1]*epsiHC_;
+                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
+                                          -avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiH_);
+                                          
+                        dTWall_[a][r+1] =  d2ndTWallaxial_[a][r+1]/(rhoS_*cpS_*(1. - epsiH_))
+                                          +d2ndTWallradial_[a][r+1]/(rhoS_*cpS_*(1. - epsiH_))
+                                          +avH_*h_[a][r+1]*(TBulk_[a][r+1] - TWall_[a][r+1])/(rhoS_*cpS_*(1. - epsiH_))
+                                          -Q_[a][r+1]*epsiHC_/(rhoS_*cpS_*(1. - epsiH_));
                     }
                 }
             }

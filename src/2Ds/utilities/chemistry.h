@@ -229,7 +229,7 @@ void runAway(const double T)
 {
     if ( reactionType_ == "O-xylene-to-phthalic" )
     {
-        if ( T > (450. + 273.14) )
+        if ( T > (500. + 273.14) )
         {
             std::cout << "\n######################################" << std::endl;
             std::cout << "#                                    #" << std::endl;
@@ -246,12 +246,13 @@ void runAway(const double T)
             std::cout << "#              RUN-AWAY              #" << std::endl;
             std::cout << "#                                    #" << std::endl;
             std::cout << "######################################\n" << std::endl;
+            remove("BzzFile.txt");
             exit(EXIT_FAILURE);
         }
     }
     else if ( reactionType_ == "O-xylene-to-phthalic-complex" )
     {
-        if ( T > (450. + 273.14) )
+        if ( T > (500. + 273.14) )
         {
             std::cout << "\n######################################" << std::endl;
             std::cout << "#                                    #" << std::endl;
@@ -268,6 +269,7 @@ void runAway(const double T)
             std::cout << "#              RUN-AWAY              #" << std::endl;
             std::cout << "#                                    #" << std::endl;
             std::cout << "######################################\n" << std::endl;
+            remove("BzzFile.txt");
             exit(EXIT_FAILURE);
         }
     }
