@@ -55,31 +55,20 @@ namespace ASALI
             inline std::vector<std::string> getModelName()                  const {return modelsName_;};
             
             inline unsigned int             numberOfSpecies()               const {return NC_;};
-            inline unsigned int             axialPoints()                   const {return Na_;};
-            inline unsigned int             radialPoints()                  const {return Nr_;};
+
+            inline bool                     externalExchange()              const {return extHeat_;};
 
             inline std::string              getReactionType()               const {return reactionType_;};
-            inline std::string              getHoneyCombType()              const {return typeH_;};
             inline std::string              getODEsolver()                  const {return ode_;};
-            inline std::string              getBVPsolver()                  const {return bvp_;};
+            inline std::string              getDAEsolver()                  const {return dae_;};
 
             inline double                   getCoolantTemperature()         const {return Tw_;};
             inline double                   getFeedTemperature()            const {return Tin_;};
             inline double                   getPressure()                   const {return p_;};
             inline double                   getSpecificMassFlowRate()       const {return G_;};
-            inline double                   getPackedBedTubeDiameter()      const {return DtP_;};
-            inline double                   getPackedBedParticleDiameter()  const {return DpP_;};
-            inline double                   getPackedBedLength()            const {return LP_;};
-            inline double                   getHoneyCombTubeDiameter()      const {return DtH_;};
-            inline double                   getHoneyCombCPSI()              const {return CPSIH_;};
-            inline double                   getHoneyCombLength()            const {return LH_;};
-            inline double                   getHoneyCombWashCoat()          const {return SwH_;};
-            inline double                   getHoneyCombWall()              const {return wH_;};
-            inline double                   getMicroBedTubeDiameter()       const {return DtM_;};
-            inline double                   getMicroBedCPSI()               const {return CPSIM_;};
-            inline double                   getMicroBedLength()             const {return LM_;};
-            inline double                   getMicroBedParticleDiameter()   const {return DpM_;};
-            inline double                   getMicroBedWall()               const {return wM_;};
+            inline double                   getTubeDiameter()               const {return Dt_;};
+            inline double                   getParticleDiameter()           const {return Dp_;};
+            inline double                   getReactorLength()              const {return L_;};
             inline double                   getGasSpecificHeat()            const {return cpG_;};
             inline double                   getGasViscosity()               const {return mu_;};
             inline double                   getGasDiffusivity()             const {return diff_;};
@@ -89,10 +78,6 @@ namespace ASALI
             inline double                   getCatalystVoidFraction()       const {return epsiC_;};
             inline double                   getCatalystTortuosity()         const {return tauC_;};
             inline double                   getCatalystConductivity()       const {return kC_;};
-            inline double                   getSupportSpecificHeat()        const {return cpS_;};
-            inline double                   getSupportDensity()             const {return rhoS_;};
-            inline double                   getSupportConductivity()        const {return kS_;};
-            inline double                   getInertLength()                const {return Linert_;};
 
             void recapOnScreen();
 
@@ -100,9 +85,8 @@ namespace ASALI
 
             std::string file_;
             std::string reactionType_;
-            std::string typeH_;
             std::string ode_;
-            std::string bvp_;
+            std::string dae_;
 
             std::vector<bool> models_;
 
@@ -113,26 +97,14 @@ namespace ASALI
             std::vector<std::string> modelsName_;
 
             unsigned int NC_;
-            unsigned int Na_;
-            unsigned int Nr_;
 
             double Tw_;
             double Tin_;
             double p_;
             double G_;
-            double DpP_;
-            double DtP_;
-            double LP_;
-            double DtH_;
-            double CPSIH_;
-            double SwH_;
-            double LH_;
-            double wH_;
-            double DtM_;
-            double DpM_;
-            double CPSIM_;
-            double wM_;
-            double LM_;
+            double Dp_;
+            double Dt_;
+            double L_;
             double cpG_;
             double mu_;
             double kG_;
@@ -141,15 +113,16 @@ namespace ASALI
             double cpC_;
             double rhoC_;
             double kS_;
-            double cpS_;
-            double rhoS_;
             double tauC_;
             double epsiC_;
-            double Linert_;
 
-            void error() { std::cout << "\nASALI::readInput::ERROR\n" << std::endl;};
+            bool   extHeat_;
+
+            void error() { remove("BzzFile.txt"); std::cout << "\nASALI::readInput::ERROR\n" << std::endl;};
             
             bool fileExist(const std::string &file);
+            
+            std::string boolOnScreen(bool value);
     };
     
     readInput::readInput(std::string& file):
@@ -180,15 +153,13 @@ namespace ASALI
         {
             // models
             {
-                models_.resize(3);
-                models_[0] = tree.get<bool>("models.honeyComb");
-                models_[1] = tree.get<bool>("models.packedBed");
-                models_[2] = tree.get<bool>("models.microPackedbed");
+                models_.resize(2);
+                models_[0] = tree.get<bool>("models.heterogeneous");
+                models_[1] = tree.get<bool>("models.pseudoHomogeneous");
                 
-                modelsName_.resize(3);
-                modelsName_[0] = "honeyComb";
-                modelsName_[1] = "packedBed";
-                modelsName_[2] = "microBed";
+                modelsName_.resize(2);
+                modelsName_[0] = "heterogeneous";
+                modelsName_[1] = "pseudoHomogeneous";
             }
 
             //reaction
@@ -296,62 +267,20 @@ namespace ASALI
 
             // operating conditions
             {
-                Tw_     = tree.get<double>("operatingConditions.temperauture.coolant");
-                Tin_    = tree.get<double>("operatingConditions.temperauture.feed");
-                p_      = tree.get<double>("operatingConditions.pressure");
-                G_      = tree.get<double>("operatingConditions.specificMassFlowRate");
-                Linert_ = tree.get<double>("operatingConditions.inertLength");
+                Tw_       = tree.get<double>("operatingConditions.temperauture.coolant");
+                Tin_      = tree.get<double>("operatingConditions.temperauture.feed");
+                p_        = tree.get<double>("operatingConditions.pressure");
+                G_        = tree.get<double>("operatingConditions.specificMassFlowRate");
+                extHeat_  = tree.get<bool>("operatingConditions.externalExchange");  
             }
             
-            // packed bed
+            // reactor dimensions
             {
-                if (models_[1] == true )
-                {
-                    DpP_ = tree.get<double>("packedBed.particleDiameter"); 
-                    DtP_ = tree.get<double>("packedBed.tubeDiameter"); 
-                    LP_  = tree.get<double>("packedBed.length"); 
-                }
+                Dp_     = tree.get<double>("reactorDimensions.particleDiameter"); 
+                Dt_     = tree.get<double>("reactorDimensions.tubeDiameter"); 
+                L_      = tree.get<double>("reactorDimensions.length");
             }
 
-            // honeycomb
-            {
-                if ( models_[0] == true)
-                {
-                    typeH_ = tree.get<std::string>("honeyComb.type"); 
-                    CPSIH_ = tree.get<double>("honeyComb.CPSI"); 
-                    DtH_   = tree.get<double>("honeyComb.tubeDiameter");
-                    LH_    = tree.get<double>("honeyComb.length");
-                    wH_    = tree.get<double>("honeyComb.wallThickness");
-
-                    if ( typeH_ == "washcoated" )
-                    {
-                        SwH_ = tree.get<double>("honeyComb.washcoatThickness"); 
-                    }
-                    else if ( typeH_ == "extruded" )
-                    {
-                        SwH_ = 0.;
-                    }
-                    else
-                    {
-                        error();
-                        std::cout << "node || honeyComb.type || could be || washcoated || extruded ||\n" << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-                }
-            }
-
-            // micro bed
-            {
-                if ( models_[3] == true)
-                {
-                    CPSIM_ = tree.get<double>("microBed.CPSI"); 
-                    DtM_   = tree.get<double>("microBed.tubeDiameter");
-                    LM_    = tree.get<double>("microBed.length");
-                    wM_    = tree.get<double>("microBed.wallThickness");
-                    DpM_   = tree.get<double>("microBed.particleDiameter");
-                }
-            }
-            
             // gas properties
             {
                 cpG_  = tree.get<double>("gasProperties.specificHeat");  
@@ -369,23 +298,11 @@ namespace ASALI
                 tauC_  = tree.get<double>("catalystProperties.tortuosity");
             }
 
-            // support properties
-            {
-                cpS_  = tree.get<double>("supportProperties.specificHeat");  
-                rhoS_ = tree.get<double>("supportProperties.density");
-                kS_   = tree.get<double>("supportProperties.conductivity");
-            }
-            
-            // grid
-            {
-                Na_  = tree.get<unsigned int>("grid.axial");  
-                Nr_  = tree.get<unsigned int>("grid.radial");  
-            }
-            
+
             // solver
             {
                 ode_ = tree.get<std::string>("solver.ODE");
-                bvp_ = tree.get<std::string>("solver.BVP");
+                dae_ = tree.get<std::string>("solver.DAE");
 
                 if (ode_ == "BzzMath" )
                 {
@@ -417,26 +334,26 @@ namespace ASALI
                     exit(EXIT_FAILURE);
                 }
 
-                if (bvp_ == "BzzMath" )
+                if (dae_ == "BzzMath" )
                 {
                     #if ASALI_USE_BZZ == 0
                         error();
-                        std::cout << "node || solver.BVP || cannot be || BzzMath || \n" << std::endl;
+                        std::cout << "node || solver.DAE || cannot be || BzzMath || \n" << std::endl;
                         exit(EXIT_FAILURE);
                     #endif
                 }
-                else if (bvp_ == "Sundials" )
+                else if (dae_ == "Sundials" )
                 {
                     #if ASALI_USE_SUNDIALS == 0
                         error();
-                        std::cout << "node || solver.BVP || cannot be || Sundials || \n" << std::endl;
+                        std::cout << "node || solver.DAE || cannot be || Sundials || \n" << std::endl;
                         exit(EXIT_FAILURE);
                     #endif
                 }
                 else
                 {
                     error();
-                    std::cout << "node || solver.BVP || could be ";
+                    std::cout << "node || solver.DAE || could be ";
                     #if ASALI_USE_SUNDIALS == 1
                         std::cout << "|| Sundials ||" << std::endl;
                     #endif
@@ -471,54 +388,17 @@ namespace ASALI
     {
         std::cout.precision(6);
         std::cout << "\n################################################################################################" << std::endl;
-        if ( models_[0] == true )
-        {
-            std::cout << "                                        HONEYCOMB REACTOR                                       \n" << std::endl;
-            std::cout << "Type:                                       " << typeH_ << std::endl;
-            std::cout << "CPSI                                      = " << CPSIH_ << std::endl;
-            std::cout << "Tube     diameter                         = " << DtH_ << "\t[m]" << std::endl;
-            std::cout << "Reactor  length                           = " << LH_ << "\t[m]" << std::endl;
-            std::cout << "Wall     thickness                        = " << wH_ << "\t[mills]" << std::endl;
-            if ( typeH_ == "washcoated" )
-            {
-                std::cout << "Washcoat thickness                        = " << SwH_ << "\t[m]" << std::endl;
-            }
-            std::cout << "\n################################################################################################" << std::endl;
-        }
-        else if ( models_[1] == true )
-        {
-            std::cout << "                                       PACKED BED REACTOR                                       \n" << std::endl;
-            std::cout << "Tube     diameter                         = " << DtP_ << "\t[m]" << std::endl;
-            std::cout << "Reactor  length                           = " << LP_ << "\t[m]" << std::endl;
-            std::cout << "Particle diameter                         = " << DpP_ << "\t[m]" << std::endl;
-            std::cout << "\n################################################################################################" << std::endl;
-        }
-        else if ( models_[2] == true )
-        {
-            std::cout << "                                    MICRO PACKED BED REACTOR                                    \n" << std::endl;
-            std::cout << "CPSI                                      = " << CPSIM_ << std::endl;
-            std::cout << "Tube     diameter                         = " << DtM_ << "\t[m]" << std::endl;
-            std::cout << "Particle diameter                         = " << DpM_ << "\t[m]" << std::endl;
-            std::cout << "Reactor  length                           = " << LM_ << "\t[m]" << std::endl;
-            std::cout << "Wall     thickness                        = " << wM_ << "\t[mills]" << std::endl;
-            std::cout << "\n################################################################################################" << std::endl;
-        }
-        else
-        {
-            std::cout << "\nNone of the reactor types has been selected" << std::endl;
-            std::cout << "\n################################################################################################" << std::endl;
-        }
+        std::cout << "                                       PACKED BED REACTOR                                       \n" << std::endl;
+        std::cout << "Tube     diameter                         = " << Dt_ << "\t[m]" << std::endl;
+        std::cout << "Reactor  length                           = " << L_ << "\t[m]" << std::endl;
+        std::cout << "Particle diameter                         = " << Dp_ << "\t[m]" << std::endl;
+        std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                      CATALYST PROPERTIES                                       \n" << std::endl;
         std::cout << "Density                                  = " << rhoC_ << "\t[Kg/m3]" << std::endl;
         std::cout << "Specific heat                            = " << cpC_ << "\t[J/Kg/K]" << std::endl;
         std::cout << "Conductivity                             = " << kC_ << "\t[W/m/K]" << std::endl;
         std::cout << "Tortuosity                               = " << tauC_ << "\t[-]" << std::endl;
         std::cout << "Void fraction                            = " << epsiC_ << "\t[-]" << std::endl;
-        std::cout << "\n################################################################################################" << std::endl;
-        std::cout << "                                      SUPPORT  PROPERTIES                                       \n" << std::endl;
-        std::cout << "Density                                  = " << rhoS_ << "\t[Kg/m3]" << std::endl;
-        std::cout << "Specific heat                            = " << cpS_ << "\t[J/Kg/K]" << std::endl;
-        std::cout << "Conductivity                             = " << kS_ << "\t[W/m/K]" << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                         GAS PROPERTIES                                         \n" << std::endl;
         std::cout << "Viscosity                                = " << mu_ << "\t[Pas]" << std::endl;
@@ -533,8 +413,7 @@ namespace ASALI
         std::cout << "Shell temperature                        = " << Tw_ << "\t[K]" << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                         SOLVER OPTIONS                                         \n" << std::endl;
-        std::cout << "Axial  number of points:                   " << Na_ << std::endl;
-        std::cout << "Radial number of points:                   " << Nr_ << std::endl;
+        std::cout << "External heat exchange:                    " << boolOnScreen(extHeat_) << std::endl;
         std::cout << "Chemistry scheme:                          " << reactionType_ << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                        NUMERICAL SOLVER                                        \n" << std::endl;
@@ -547,8 +426,19 @@ namespace ASALI
         #endif
         std::cout << "||" << std::endl;
         std::cout << "ODE:                                        " << ode_ << std::endl;
-        std::cout << "BVP:                                        " << bvp_ << std::endl;
+        std::cout << "DAE:                                        " << dae_ << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
+    }
+
+    std::string readInput::boolOnScreen(bool value)
+    {
+        std::string value_;
+        if ( value == true)
+            value_ = "on";
+        else
+            value_ = "off";
+        
+        return value_;
     }
 
 }

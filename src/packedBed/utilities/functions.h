@@ -111,5 +111,29 @@ namespace ASALI
     void error()
     {
         std::cout << "\nASALI::READinput::ERROR\n" << std::endl;
+        remove("BzzFile.txt");
     }
+
+    OpenSMOKE::OpenSMOKEVectorDouble FromMassToMoleFraction(const OpenSMOKE::OpenSMOKEVectorDouble omega,
+                                                            const std::vector<double> MW)
+    {
+        double       MWmix = 0.;
+        unsigned int NC    = omega.Size();
+        OpenSMOKE::OpenSMOKEVectorDouble x(NC);
+        
+        for (unsigned int i=1;i<=NC;i++)
+        {
+            MWmix = MWmix + omega[i]/MW[i-1];
+        }
+
+        MWmix = 1./MWmix;
+
+        for (unsigned int i=1;i<=NC;i++)
+        {
+            x[i] = omega[i]*MWmix/MW[i-1];
+        }
+        
+        return x;
+    }
+
 }
