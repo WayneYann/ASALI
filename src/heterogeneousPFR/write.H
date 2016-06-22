@@ -113,7 +113,21 @@
             results = "mole";
         }
     }
+    else if ( input.getStart() == "conversion")
+    {
+        folderName = "results/" + ASALI::to_string(N) + ".conversion";
+        boost::filesystem::create_directory(folderName);
 
+        if ( input.getRestartResults() == "mass")
+        {
+            results = "mass";
+        }
+        else if ( input.getRestartResults() == "mole")
+        {
+            results = "mole";
+        }
+    }
+ 
     std::ofstream bulk;
     std::string fileNameBulk = folderName + "/bulkSpecies.txt";
     const char *pathBulk = fileNameBulk.c_str();
@@ -433,6 +447,32 @@
     else if ( input.getStart() == "RPA" )
     {
         #include "RPA.H"
+    }
+    else if ( input.getStart() == "conversion" )
+    {
+        std::ofstream conv;
+        std::string fileNameConv = folderName + "/conversion.txt";
+        const char *pathConv = fileNameConv.c_str();
+        remove(pathConv);
+        conv.open(pathConv,std::ios::out);
+        conv.setf(std::ios::scientific);
+
+        for (unsigned int j=1;j<=NC;j++)
+        {
+            if ( omegaBulk[0][j] > 1e-09 )
+            {
+                conv << thermodynamicsMapXML->NamesOfSpecies()[j-1] << "\t" << (omegaBulk[0][j] - omegaBulk[N-1][j])/omegaBulk[0][j] << std::endl;
+            }
+        }
+
+        conv.close();
+        remove(pathBulk);
+        remove(pathWall);
+        remove(pathSite);
+        remove(pathTemp);
+        remove(pathGrid);
+        remove(pathExtra);
+        remove(pathVel);
     }
 
     delete [] omegaBulk;

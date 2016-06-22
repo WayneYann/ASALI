@@ -144,7 +144,8 @@ int main( int argc, char** argv )
     }
     else if ( input.getStart() == "converter"  ||
               input.getStart() == "kinetic"    ||
-              input.getStart() == "RPA") 
+              input.getStart() == "RPA"        ||
+              input.getStart() == "conversion") 
     {
         #include "write.H"
     }

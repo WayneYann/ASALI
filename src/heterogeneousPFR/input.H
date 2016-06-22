@@ -212,7 +212,8 @@ ASALI::GROWgrid  *growGrid;
               input.getStart() == "converter"   || 
               input.getStart() == "sampling"    ||
               input.getStart() == "kinetic"     ||
-              input.getStart() == "RPA")
+              input.getStart() == "RPA"         ||
+              input.getStart() == "conversion")
     {
         N       = input.getRestartPoints();
         NC      = thermodynamicsMapXML->NumberOfSpecies();
@@ -405,12 +406,11 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
         bvp->setCorrelation(input.getCorrelation());
     }
     bvp->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
-                            input.getInertLength(), input.getSpecificArea(), input.getExternalArea(),
-                            G);
+                            input.getInertLength(), input.getSpecificArea(), G);
     bvp->setFeedValue(input.getPressure(),T0,x0bulk);
     bvp->setInert(input.getInert());
     bvp->setDiffusion(input.getDiffusion());
-    bvp->setExternalHeatExchange(input.getExternalHeatExchange(),input.getWallTemperature());
+    
 
     growGrid = new ASALI::GROWgrid(NC, SURF_NC);
 

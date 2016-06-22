@@ -100,6 +100,12 @@ namespace ASALI
             std::cout << "#                              # " << std::endl;
             std::cout << "################################\n " << std::endl;
         }
+        else if ( type == "conversion" )
+        {
+            std::cout << "\n################################" << std::endl;
+            std::cout << "#          CONVERSION          # " << std::endl;
+            std::cout << "################################\n " << std::endl;
+        }
     }
 
     void check( const int argc )
