@@ -1,7 +1,0 @@
-./make_heterogeneousPFR_with_sundials.sh
-./make_idealPFR_heatTransfer_with_sundials.sh
-./make_idealPFR_with_sundials.sh
-./make_idealBATCH_with_sundials.sh
-./make_idealPFR_massTransfer_with_sundials.sh
-./make_catalyticSLAB_with_sundials.sh
-./make_heterogeneousPFR_with_sundials.sh

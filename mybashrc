@@ -6,6 +6,7 @@ export OPENSMOKE=$HOME/NumericalLibraries/OpenSMOKEpp/source
 
 #External support options for MKL
 export SUPPORT='-DOPENSMOKE_USE_MKL=1'
+export ASALI_SUPPORT='-DASALI_USE_BZZ=1'
 
 #MLK library options
 export MKL_INCLUDE=$HOME/NumericalLibraries/MKL/mkl/include
@@ -16,8 +17,3 @@ export MKL_LIBS='-Wl,--start-group -Wl,-Bstatic -lmkl_intel_lp64 -lmkl_core -lmk
 export BZZ_INCLUDE=$HOME/NumericalLibraries/BzzMath/BzzMath6-dev/hpp
 export BZZ_LIBS_PATH=$HOME/NumericalLibraries/BzzMath/BzzMath6-dev/lib/release/
 export BZZ_LIBS='-lBzzMath6_GNU_MKL'
-
-#Sundials options
-export SUNDIALS_INCLUDE=$HOME/NumericalLibraries/Sundials/sundials-2.5.0/build-gcc-serial-64bit/include
-export SUNDIALS_LIBS_PATH=$HOME/NumericalLibraries/Sundials/sundials-2.5.0/build-gcc-serial-64bit/lib
-export SUNDIALS_LIBS='-lsundials_cvode -lsundials_ida -lsundials_idas -lsundials_nvecserial'

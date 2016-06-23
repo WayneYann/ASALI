@@ -1,5 +1,4 @@
 source mybashrc
-export ASALI_SUPPORT='-DASALI_USE_BZZ=1'
 mkdir exe
 rm -f exe/packedBed.sh
 

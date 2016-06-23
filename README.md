@@ -12,5 +12,4 @@ Compulsory libraries
 Optional libraries
 
     Intel MKL (https://software.intel.com/en-us/intel-mkl)
-    Sundials  (http://computation.llnl.gov/casc/sundials/main.html)
     BzzMath   (http://super.chem.polimi.it/)
