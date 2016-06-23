@@ -87,7 +87,7 @@
         std::vector<double> Tw;
         std::vector<double> omegaw;
         std::vector<double> z;
-        dae->GetProfile(z,Tb,Tw,omegab,omegaw);
+        eq->GetDaeProfile(z,Tb,Tw,omegab,omegaw);
 
         OpenSMOKE::OpenSMOKEVectorDouble *omegaBulk;
         OpenSMOKE::OpenSMOKEVectorDouble *omegaWall;
@@ -152,7 +152,7 @@
         std::vector<double> T;
         std::vector<double> comp;
         std::vector<double> z;
-        ode->GetProfile(z,T,comp);
+        eq->GetOdeProfile(z,T,comp);
 
         OpenSMOKE::OpenSMOKEVectorDouble *omega;
 

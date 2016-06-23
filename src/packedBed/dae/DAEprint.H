@@ -39,25 +39,25 @@
 ##############################################################################################*/
 
 {
-    iterator_++;
-    Tb_.resize(iterator_);
-    omegab_.resize(NC_*iterator_);
-    TW_.resize(iterator_);
-    omegaw_.resize(NC_*iterator_);
-    z_.resize(iterator_);
+    dae_iterator_++;
+    Tb_.resize(dae_iterator_);
+    omegab_.resize(NC_*dae_iterator_);
+    TW_.resize(dae_iterator_);
+    omegaw_.resize(NC_*dae_iterator_);
+    z_.resize(dae_iterator_);
 
     unsigned int contator = 1;
-    for (unsigned int i=(iterator_-1)*NC_;i<(NC_*iterator_);i++)
+    for (unsigned int i=(dae_iterator_-1)*NC_;i<(NC_*dae_iterator_);i++)
     {
         omegab_[i]= yOS_[contator++];
     }
 
-    for (unsigned int i=(iterator_-1)*NC_;i<(NC_*iterator_);i++)
+    for (unsigned int i=(dae_iterator_-1)*NC_;i<(NC_*dae_iterator_);i++)
     {
         omegaw_[i]= yOS_[contator++];
     }
 
-    Tb_[iterator_-1] = yOS_[contator++];
-    TW_[iterator_-1] = yOS_[contator++];
-    z_[iterator_-1]        = t_;
+    Tb_[dae_iterator_-1] = yOS_[contator++];
+    TW_[dae_iterator_-1] = yOS_[contator++];
+    z_[dae_iterator_-1]        = t_;
 }

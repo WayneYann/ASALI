@@ -42,58 +42,31 @@ ASALI::check(argc);
 std::string*      file = new std::string(argv[1]);
 ASALI::readInput  input(*file);
 
-ASALI::ODESystem  *ode;
+ASALI::equationSystem  *eq;
 {
-    ode = new ASALI::ODESystem();
+    eq = new ASALI::equationSystem();
 
-    ode->setGasProperties(input.getGasSpecificHeat(),input.getGasConductivity(),
-                          input.getGasViscosity(),   input.getGasDiffusivity());
+    eq->setGasProperties(input.getGasSpecificHeat(),input.getGasConductivity(),
+                         input.getGasViscosity(),   input.getGasDiffusivity());
                          
-    ode->setCatalystProperties(input.getCatalystSpecificHeat(),
-                               input.getCatalystConductivity(),
-                               input.getCatalystDensity(),
-                               input.getCatalystVoidFraction(),
-                               input.getCatalystTortuosity());
+    eq->setCatalystProperties(input.getCatalystSpecificHeat(),
+                              input.getCatalystConductivity(),
+                              input.getCatalystDensity(),
+                              input.getCatalystVoidFraction(),
+                              input.getCatalystTortuosity());
 
-    ode->setReactionType(input.getReactionType());
+    eq->setReactionType(input.getReactionType());
     
-    ode->setPressure(input.getPressure());
-    ode->setCoolantTemperature(input.getCoolantTemperature());
-    ode->setFlowRate(input.getSpecificMassFlowRate());
+    eq->setPressure(input.getPressure());
+    eq->setCoolantTemperature(input.getCoolantTemperature());
+    eq->setFlowRate(input.getSpecificMassFlowRate());
 
-    ode->setThermodinamicsData(input.getMW(),input.numberOfSpecies());
+    eq->setThermodinamicsData(input.getMW(),input.numberOfSpecies());
 
-    ode->setGeometry(input.getTubeDiameter(),
-                     input.getParticleDiameter());
+    eq->setGeometry(input.getTubeDiameter(),
+                    input.getParticleDiameter());
 
-    ode->setHeatExchange(input.externalExchange());
-}
-
-ASALI::DAESystem  *dae;
-{
-    dae = new ASALI::DAESystem();
-
-    dae->setGasProperties(input.getGasSpecificHeat(),input.getGasConductivity(),
-                          input.getGasViscosity(),   input.getGasDiffusivity());
-                         
-    dae->setCatalystProperties(input.getCatalystSpecificHeat(),
-                               input.getCatalystConductivity(),
-                               input.getCatalystDensity(),
-                               input.getCatalystVoidFraction(),
-                               input.getCatalystTortuosity());
-
-    dae->setReactionType(input.getReactionType());
-    
-    dae->setPressure(input.getPressure());
-    dae->setCoolantTemperature(input.getCoolantTemperature());
-    dae->setFlowRate(input.getSpecificMassFlowRate());
-
-    dae->setThermodinamicsData(input.getMW(),input.numberOfSpecies());
-
-    dae->setGeometry(input.getTubeDiameter(),
-                     input.getParticleDiameter());
-
-    dae->setHeatExchange(input.externalExchange());
+    eq->setHeatExchange(input.externalExchange());
 }
 
 {

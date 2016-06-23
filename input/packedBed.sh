@@ -45,7 +45,4 @@ echo '	<voidFraction>0.68</voidFraction>' >> packedBed.xml
 echo '	<tortuosity>8</tortuosity>' >> packedBed.xml
 echo '</catalystProperties>' >> packedBed.xml
 echo ' ' >> packedBed.xml
-echo '<solver>' >> packedBed.xml
-echo '	<ODE>BzzMath</ODE>' >> packedBed.xml
-echo '	<DAE>BzzMath</DAE>' >> packedBed.xml
-echo '</solver>' >> packedBed.xml
+echo '<solver>OpenSMOKE</solver>' >> packedBed.xml

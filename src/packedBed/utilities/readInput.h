@@ -59,8 +59,7 @@ namespace ASALI
             inline bool                     externalExchange()              const {return extHeat_;};
 
             inline std::string              getReactionType()               const {return reactionType_;};
-            inline std::string              getODEsolver()                  const {return ode_;};
-            inline std::string              getDAEsolver()                  const {return dae_;};
+            inline std::string              getSolver()                     const {return solver_;};
 
             inline double                   getCoolantTemperature()         const {return Tw_;};
             inline double                   getFeedTemperature()            const {return Tin_;};
@@ -85,8 +84,7 @@ namespace ASALI
 
             std::string file_;
             std::string reactionType_;
-            std::string ode_;
-            std::string dae_;
+            std::string solver_;
 
             std::vector<bool> models_;
 
@@ -301,40 +299,9 @@ namespace ASALI
 
             // solver
             {
-                ode_ = tree.get<std::string>("solver.ODE");
-                dae_ = tree.get<std::string>("solver.DAE");
+                solver_ = tree.get<std::string>("solver");
 
-                if (ode_ == "BzzMath" )
-                {
-                    #if ASALI_USE_BZZ == 0
-                        error();
-                        std::cout << "node || solver.ODE || cannot be || BzzMath || \n" << std::endl;
-                        exit(EXIT_FAILURE);
-                    #endif
-                }
-                else if (ode_ == "Sundials" )
-                {
-                    #if ASALI_USE_SUNDIALS == 0
-                        error();
-                        std::cout << "node || solver.ODE || cannot be || Sundials || \n" << std::endl;
-                        exit(EXIT_FAILURE);
-                    #endif
-                }
-                else
-                {
-                    error();
-                    std::cout << "node || solver.ODE || could be ";
-                    #if ASALI_USE_SUNDIALS == 1
-                        std::cout << "|| Sundials ||" << std::endl;
-                    #endif
-                    #if ASALI_USE_BZZ == 1
-                        std::cout << "|| BzzMath ||" << std::endl;
-                    #endif
-                    std::cout << "\n" << std::endl;
-                    exit(EXIT_FAILURE);
-                }
-
-                if (dae_ == "BzzMath" )
+                if (solver_ == "BzzMath" )
                 {
                     #if ASALI_USE_BZZ == 0
                         error();
@@ -342,24 +309,12 @@ namespace ASALI
                         exit(EXIT_FAILURE);
                     #endif
                 }
-                else if (dae_ == "Sundials" )
-                {
-                    #if ASALI_USE_SUNDIALS == 0
-                        error();
-                        std::cout << "node || solver.DAE || cannot be || Sundials || \n" << std::endl;
-                        exit(EXIT_FAILURE);
-                    #endif
-                }
+                else if ( solver_ == "OpenSMOKE" )
+                {}
                 else
                 {
                     error();
-                    std::cout << "node || solver.DAE || could be ";
-                    #if ASALI_USE_SUNDIALS == 1
-                        std::cout << "|| Sundials ||" << std::endl;
-                    #endif
-                    #if ASALI_USE_BZZ == 1
-                        std::cout << "|| BzzMath ||" << std::endl;
-                    #endif
+                    std::cout << "node || solver.DAE || could be || OpenSMOKE ||" << std::endl;
                     std::cout << "\n" << std::endl;
                     exit(EXIT_FAILURE);
                 }
@@ -421,12 +376,9 @@ namespace ASALI
         #if ASALI_USE_BZZ == 1
         std::cout << "|| BzzMath ";
         #endif
-        #if ASALI_USE_SUNDIALS == 1
-        std::cout << "|| Sundials ";
-        #endif
+        std::cout << "|| OpenSMOKE ";
         std::cout << "||" << std::endl;
-        std::cout << "ODE:                                        " << ode_ << std::endl;
-        std::cout << "DAE:                                        " << dae_ << std::endl;
+        std::cout << "Chosen solver:                              || " << solver_ << " ||" << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
     }
 

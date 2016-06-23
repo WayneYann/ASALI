@@ -40,15 +40,12 @@
 
 namespace ASALI
 {
-class DAESystem
-#if ASALI_USE_BZZ == 1
- : public BzzDaeSystemObject
-#endif
+class equationSystem
 {
 
 public:
 
-    DAESystem();
+    equationSystem();
 
     unsigned int BlockDimension()       const {return NB_;};
 
@@ -82,27 +79,26 @@ public:
 
     void resize(const std::string type);
 
-    void GetProfile(std::vector<double> &z, 
-                    std::vector<double> &Tb,
-                    std::vector<double> &Tw,
-                    std::vector<double> &omegab,
-                    std::vector<double> &omegaw);
+    void GetDaeProfile(std::vector<double> &z, 
+                       std::vector<double> &Tb,
+                       std::vector<double> &Tw,
+                       std::vector<double> &omegab,
+                       std::vector<double> &omegaw);
 
-    void start();
-    void end();
 
-    unsigned int Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
+    void GetOdeProfile(std::vector<double> &z,
+                       std::vector<double> &Tb,
+                       std::vector<double> &omegab);
 
-    unsigned int Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+    unsigned int DaeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
 
-    void AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& M);
+    unsigned int DaePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
 
-    #if ASALI_USE_BZZ == 1
-    void AlgebraicEquations(BzzVectorInt& M);
-    virtual void GetSystemFunctions(BzzVector &y, double t, BzzVector &dy);
-    virtual void ObjectBzzPrint(void);
-    virtual ~DAESystem(){};
-    #endif
+    unsigned int OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
+
+    unsigned int OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+
+    void AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M);
 
 
 private:
@@ -110,7 +106,8 @@ private:
     unsigned int NE_;
     unsigned int NB_;
     unsigned int NC_;
-    unsigned int iterator_;
+    unsigned int dae_iterator_;
+    unsigned int ode_iterator_;
 
     bool extHeat_;
 
@@ -175,7 +172,7 @@ private:
 };
 
 
-DAESystem::DAESystem()
+equationSystem::equationSystem()
     {
         NE_ = 0;
         NB_ = 0;
@@ -203,27 +200,27 @@ DAESystem::DAESystem()
         av_     = 0.;
     }
 
-void DAESystem::setFlowRate(const double G)
+void equationSystem::setFlowRate(const double G)
 {
     G_ = G;
 }
 
-void DAESystem::setCoolantTemperature(const double Tw)
+void equationSystem::setCoolantTemperature(const double Tw)
 {
     Tw_ = Tw;
 }
 
-void DAESystem::setPressure(const double p)
+void equationSystem::setPressure(const double p)
 {
     p_ = p;
 }
 
-void DAESystem::setHeatExchange(const bool flag)
+void equationSystem::setHeatExchange(const bool flag)
 {
     extHeat_ = flag;
 }
 
-void DAESystem::setThermodinamicsData(const std::vector<double> MW, const unsigned int NC)
+void equationSystem::setThermodinamicsData(const std::vector<double> MW, const unsigned int NC)
 {
     NC_ = NC;
     ChangeDimensions(NC_, &MW_, true);
@@ -233,7 +230,7 @@ void DAESystem::setThermodinamicsData(const std::vector<double> MW, const unsign
     }
 }
 
-void DAESystem::setGasProperties(const double cpG,
+void equationSystem::setGasProperties(const double cpG,
                                  const double kG,
                                  const double mu,
                                  const double diff)
@@ -245,7 +242,7 @@ void DAESystem::setGasProperties(const double cpG,
     Pr_   = cpG_*mu_/kG_;
 }
 
-void DAESystem::setCatalystProperties(const double cpC,
+void equationSystem::setCatalystProperties(const double cpC,
                                       const double kC,
                                       const double rhoC,
                                       const double epsiC,
@@ -258,12 +255,12 @@ void DAESystem::setCatalystProperties(const double cpC,
     tauC_  = tauC;
 }
 
-void DAESystem::setReactionType(const std::string reactionType)
+void equationSystem::setReactionType(const std::string reactionType)
 {
     reactionType_ = reactionType;
 }
 
-void DAESystem::setGeometry(const double Dt, const double Dp)
+void equationSystem::setGeometry(const double Dt, const double Dp)
 {
     double NP = Dt/Dp;
 
@@ -276,10 +273,18 @@ void DAESystem::setGeometry(const double Dt, const double Dp)
     av_   = 6.*(1. - epsi_)/Dp_;
 }
 
-void DAESystem::resize(const std::string type)
+void equationSystem::resize(const std::string type)
 {
-    reactorType_ = type;
-    iterator_    = 0.;
+    reactorType_  = type;
+    dae_iterator_ = 0;
+    ode_iterator_ = 0;
+
+    Tb_.clear();
+    omegab_.clear();
+    TW_.clear();
+    omegaw_.clear();
+    z_.clear();
+
     if ( reactorType_ == "heterogeneous" )
     {
         NE_   = (NC_ + NC_ + 1 + 1);
@@ -301,12 +306,28 @@ void DAESystem::resize(const std::string type)
     ChangeDimensions(NE_, &yOS_,  true);
 }
 
+void equationSystem::GetOdeProfile(std::vector<double> &z,
+                                   std::vector<double> &Tb,
+                                   std::vector<double> &omegab)
+{
+    Tb.resize(Tb_.size());
+    for (unsigned int k=0;k<Tb.size();k++)
+        Tb[k] = Tb_[k];
 
-void DAESystem::GetProfile(std::vector<double> &z, 
-                           std::vector<double> &Tb,
-                           std::vector<double> &Tw,
-                           std::vector<double> &omegab,
-                           std::vector<double> &omegaw)
+    omegab.resize(omegab_.size());
+    for (unsigned int k=0;k<omegab_.size();k++)
+         omegab[k] = omegab_[k];
+
+    z.resize(z_.size());
+    for (unsigned int k=0;k<z.size();k++)
+         z[k] = z_[k];
+}
+
+void equationSystem::GetDaeProfile(std::vector<double> &z, 
+                                   std::vector<double> &Tb,
+                                   std::vector<double> &Tw,
+                                   std::vector<double> &omegab,
+                                   std::vector<double> &omegaw)
 {
     Tb.resize(Tb_.size());
     for (unsigned int k=0;k<Tb.size();k++)
@@ -329,45 +350,7 @@ void DAESystem::GetProfile(std::vector<double> &z,
          z[k] = z_[k];
 }
 
-#if ASALI_USE_BZZ == 1
-void DAESystem::GetSystemFunctions(BzzVector &y, double t, BzzVector &dy)
-{
-    FromBzzToOS(y,yOS_);
-    
-    if ( reactorType_ == "heterogeneous" )
-    {
-        #include "DAEheterogeneous.H"
-        #include "DAEprint.H"
-    }
-
-    FromOSToBzz(dyOS_,dy);
-}
-
-void DAESystem::ObjectBzzPrint(void)
-{
-}
-
-void DAESystem::AlgebraicEquations(BzzVectorInt& M)
-{
-    ChangeDimensions(NE_, &M, true);
-    unsigned int counter = 1;
-    for (unsigned int s=1;s<=NC_;s++)
-    {
-        M[counter++] = 1;
-    }
-
-    for (unsigned int s=1;s<=NC_;s++)
-    {
-        M[counter++]  = 0;
-    }
-
-    M[counter++]  = 1;
-    M[counter++]  = 0;
-
-}
-#endif
-
-unsigned int DAESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+unsigned int equationSystem::DaeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
     ChangeDimensions(NE_, &yOS_,  true);
     ChangeDimensions(NE_, &dy,    true);
@@ -388,41 +371,56 @@ unsigned int DAESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVect
     return 0;
 }
 
-unsigned int DAESystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+unsigned int equationSystem::DaePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
 {
     return 0;
 }
 
-void DAESystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& M)
+unsigned int equationSystem::OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
-    ChangeDimensions(NE_, &M, true);
-    unsigned int counter = 1;
+    ChangeDimensions(NE_, &yOS_,  true);
+    ChangeDimensions(NE_, &dy,    true);
+    ChangeDimensions(NE_, &dyOS_, true);
+
+    for (unsigned int i=1;i<=NE_;i++)
+        yOS_[i] = y[i];
+
+    if ( reactorType_ == "heterogeneous" )
+    {
+        #include "ODEheterogeneous.H"
+    }
+    else if ( reactorType_ == "pseudoHomogeneous" )
+    {
+        #include "ODEpseudoHomogeneous.H"
+        #include "ODEprint.H"
+    }
+
+    for (unsigned int i=1;i<=NE_;i++)
+        dy[i] = dyOS_[i];
+    
+    return 0;
+}
+
+unsigned int equationSystem::OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+{
+    return 0;
+}
+
+void equationSystem::AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M)
+{
+    M.resize(NE_);
+    unsigned int counter = 0;
     for (unsigned int s=1;s<=NC_;s++)
     {
-        M[counter++] = false;
+        M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
     }
 
     for (unsigned int s=1;s<=NC_;s++)
     {
-        M[counter++]  = true;
+        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
     }
 
-    M[counter++]  = false;
-    M[counter++]  = true;
+    M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
 }
-
-void DAESystem::start()
-{
-    std::cout << "\n####################" << std::endl;
-    std::cout << "# DAE system START #" << std::endl;
-    std::cout << "####################\n" << std::endl;
-}
-
-void DAESystem::end()
-{
-    std::cout << "\n####################" << std::endl;
-    std::cout << "# DAE system  END #" << std::endl;
-    std::cout << "####################\n" << std::endl;
-}
-
 }
