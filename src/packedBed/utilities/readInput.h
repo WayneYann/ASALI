@@ -305,7 +305,7 @@ namespace ASALI
                 {
                     #if ASALI_USE_BZZ == 0
                         error();
-                        std::cout << "node || solver.DAE || cannot be || BzzMath || \n" << std::endl;
+                        std::cout << "node || solver || cannot be || BzzMath || \n" << std::endl;
                         exit(EXIT_FAILURE);
                     #endif
                 }
@@ -314,7 +314,7 @@ namespace ASALI
                 else
                 {
                     error();
-                    std::cout << "node || solver.DAE || could be || OpenSMOKE ||" << std::endl;
+                    std::cout << "node || solver || could be || OpenSMOKE ||" << std::endl;
                     std::cout << "\n" << std::endl;
                     exit(EXIT_FAILURE);
                 }
