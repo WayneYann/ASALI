@@ -42,117 +42,60 @@ ASALI::check(argc);
 std::string*      file = new std::string(argv[1]);
 ASALI::readInput  input(*file);
 
-ASALI::ODESystem  *ode;
+ASALI::equationSystem  *eq;
 {
-    ode = new ASALI::ODESystem();
+    eq = new ASALI::equationSystem();
 
-    ode->setGasProperties(input.getGasSpecificHeat(),input.getGasConductivity(),
-                          input.getGasViscosity(),   input.getGasDiffusivity());
-                         
-    ode->setCatalystProperties(input.getCatalystSpecificHeat(),
-                               input.getCatalystConductivity(),
-                               input.getCatalystDensity(),
-                               input.getCatalystVoidFraction(),
-                               input.getCatalystTortuosity());
+    eq->setGasProperties(input.getGasSpecificHeat(),input.getGasConductivity(),
+                         input.getGasViscosity(),   input.getGasDiffusivity());
+
+    eq->setCatalystProperties(input.getCatalystSpecificHeat(),
+                              input.getCatalystConductivity(),
+                              input.getCatalystDensity(),
+                              input.getCatalystVoidFraction(),
+                              input.getCatalystTortuosity());
                               
-    ode->setSupportProperties(input.getSupportSpecificHeat(),
+    eq->setSupportProperties(input.getSupportSpecificHeat(),
                               input.getSupportConductivity(),
                               input.getSupportDensity());
     
-    ode->setGrid(input.axialPoints(),input.radialPoints());
+    eq->setGrid(input.axialPoints(),input.radialPoints());
     
-    ode->setReactionType(input.getReactionType());
-    ode->setInertLength(input.getInertLength());
-    
-    ode->setPressure(input.getPressure());
-    ode->setCoolantTemperature(input.getCoolantTemperature());
-    ode->setFeedTemperature(input.getFeedTemperature());
-    ode->setFlowRate(input.getSpecificMassFlowRate());
-    ode->setMassFraction(input.getMassFraction());
+    eq->setReactionType(input.getReactionType());
+    eq->setInertLength(input.getInertLength());
 
-    ode->setThermodinamicsData(input.getMW(),input.numberOfSpecies());
+    eq->setPressure(input.getPressure());
+    eq->setCoolantTemperature(input.getCoolantTemperature());
+    eq->setFeedTemperature(input.getFeedTemperature());
+    eq->setFlowRate(input.getSpecificMassFlowRate());
+    eq->setMassFraction(input.getMassFraction());
+
+    eq->setThermodinamicsData(input.getMW(),input.numberOfSpecies());
 
     if ( input.getModels()[0] == true) // Honeycomb
     {
-        ode->setHoneyComb(input.getHoneyCombTubeDiameter(),
-                          input.getHoneyCombCPSI(),
-                          input.getHoneyCombWall(),         // [mills = inch*1000]
-                          input.getHoneyCombWashCoat(),
-                          input.getHoneyCombLength(),
-                          input.getHoneyCombType());
+        eq->setHoneyComb(input.getHoneyCombTubeDiameter(),
+                         input.getHoneyCombCPSI(),
+                         input.getHoneyCombWall(),         // [mills = inch*1000]
+                         input.getHoneyCombWashCoat(),
+                         input.getHoneyCombLength(),
+                         input.getHoneyCombType());
     }
 
     if ( input.getModels()[1] == true) // Packed bed
     {
-        ode->setPackedBed(input.getPackedBedTubeDiameter(),
-                          input.getPackedBedParticleDiameter(),
-                          input.getPackedBedLength());
+        eq->setPackedBed(input.getPackedBedTubeDiameter(),
+                         input.getPackedBedParticleDiameter(),
+                         input.getPackedBedLength());
     }
 
     if ( input.getModels()[2] == true) // Micro packed bed
     {
-        ode->setMicroBed(input.getMicroBedTubeDiameter(),
-                         input.getMicroBedCPSI(),
-                         input.getMicroBedParticleDiameter(),
-                         input.getMicroBedWall(),         // [mills = inch*1000]
-                         input.getMicroBedLength());
-    }
-
-}
-ASALI::BVPSystem  *bvp;
-{
-    bvp = new ASALI::BVPSystem();
-
-    bvp->setGasProperties(input.getGasSpecificHeat(),input.getGasConductivity(),
-                          input.getGasViscosity(),   input.getGasDiffusivity());
-                         
-    bvp->setCatalystProperties(input.getCatalystSpecificHeat(),
-                               input.getCatalystConductivity(),
-                               input.getCatalystDensity(),
-                               input.getCatalystVoidFraction(),
-                               input.getCatalystTortuosity());
-                              
-    bvp->setSupportProperties(input.getSupportSpecificHeat(),
-                              input.getSupportConductivity(),
-                              input.getSupportDensity());
-    
-    bvp->setGrid(input.axialPoints(),input.radialPoints());
-    
-    bvp->setReactionType(input.getReactionType());
-    bvp->setInertLength(input.getInertLength());
-
-    bvp->setPressure(input.getPressure());
-    bvp->setCoolantTemperature(input.getCoolantTemperature());
-    bvp->setFeedTemperature(input.getFeedTemperature());
-    bvp->setFlowRate(input.getSpecificMassFlowRate());
-    bvp->setMassFraction(input.getMassFraction());
-
-    bvp->setThermodinamicsData(input.getMW(),input.numberOfSpecies());
-
-    if ( input.getModels()[0] == true) // Honeycomb
-    {
-        bvp->setHoneyComb(input.getHoneyCombTubeDiameter(),
-                          input.getHoneyCombCPSI(),
-                          input.getHoneyCombWall(),         // [mills = inch*1000]
-                          input.getHoneyCombWashCoat(),
-                          input.getHoneyCombLength(),
-                          input.getHoneyCombType());
-    }
-
-    if ( input.getModels()[1] == true) // Packed bed
-    {
-        bvp->setPackedBed(input.getPackedBedTubeDiameter(),
-                          input.getPackedBedParticleDiameter(),
-                          input.getPackedBedLength());
-    }
-
-    if ( input.getModels()[2] == true) // Micro packed bed
-    {
-        bvp->setMicroBed(input.getMicroBedTubeDiameter(),
-                         input.getMicroBedCPSI(),
-                         input.getMicroBedParticleDiameter(),
-                         input.getMicroBedWall(),         // [mills = inch*1000]
-                         input.getMicroBedLength());
+        eq->setMicroBed(input.getMicroBedTubeDiameter(),
+                        input.getMicroBedCPSI(),
+                        input.getMicroBedParticleDiameter(),
+                        input.getMicroBedWall(),         // [mills = inch*1000]
+                        input.getMicroBedLength());
     }
 
 }

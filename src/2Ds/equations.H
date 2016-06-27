@@ -40,15 +40,12 @@
 
 namespace ASALI
 {
-class ODESystem
-#if ASALI_USE_BZZ == 1
- : public BzzOdeSystemObject
-#endif
+class equationSystem
 {
 
 public:
 
-    ODESystem();
+    equationSystem();
 
     unsigned int BlockDimension()       const {return NB_;};
 
@@ -106,18 +103,19 @@ public:
 
     void resize(const std::string type);
 
-    void start(const std::string type);
-    void end(const std::string type);
+    void start(const std::string type,const std::string eq);
+    void end(const std::string type,const std::string eq);
+    void cleanMemory();
 
-    unsigned int Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
+    unsigned int BvpEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
 
-    unsigned int Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+    unsigned int BvpPrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
 
-    #if ASALI_USE_BZZ == 1
-    virtual void GetSystemFunctions(BzzVector &y, double t, BzzVector &dy);
-    virtual void ObjectBzzPrint(void);
-    virtual ~ODESystem(){};
-    #endif
+    unsigned int OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
+
+    unsigned int OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+
+    void AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M);
 
 
 private:
@@ -129,7 +127,6 @@ private:
     unsigned int Nr_;
     unsigned int iteration;
 
-
     double kG_;
     double mu_;
     double diff_;
@@ -140,14 +137,13 @@ private:
     double cpS_;
     double kC_;
     double rhoC_;
-    double cpC_;
     double epsiC_;
     double tauC_;
+    double cpC_;
     double DpP_;
     double DtP_;
     double LP_;
     double epsiP_;
-    double aexP_;
     double DtH_;
     double epsiH_;
     double epsiHC_;
@@ -169,8 +165,8 @@ private:
     double kr_;
     double ka_;
     double hw_;
-    double U_;
     double Tin_;
+    double U_;
     double Lgeo_;
     double LgeoP_;
     double LgeoH_;
@@ -227,7 +223,7 @@ private:
 };
 
 
-ODESystem::ODESystem()
+equationSystem::equationSystem()
     {
         NE_ = 0;
         NB_ = 0;
@@ -252,7 +248,6 @@ ODESystem::ODESystem()
         DtP_    = 0.;
         LP_     = 0.;
         epsiP_  = 0.;
-        aexP_   = 0.;
         DtH_    = 0.;
         epsiH_  = 0.;
         epsiHS_ = 0.;
@@ -271,8 +266,8 @@ ODESystem::ODESystem()
         Tw_     = 0.;
         G_      = 0.;
         hw_     = 0.;
-        U_      = 0.;
         Tin_    = 0.;
+        U_      = 0.;
         Lgeo_   = 0.;
         LgeoP_  = 0.;
         LgeoH_  = 0.;
@@ -280,17 +275,17 @@ ODESystem::ODESystem()
         Linert_ = 0.;
     }
 
-void ODESystem::setFlowRate(const double G)
+void equationSystem::setFlowRate(const double G)
 {
     G_ = G;
 }
 
-void ODESystem::setFeedTemperature(const double Tin)
+void equationSystem::setFeedTemperature(const double Tin)
 {
     Tin_ = Tin;
 }
 
-void ODESystem::setMassFraction(const std::vector<double> IN)
+void equationSystem::setMassFraction(const std::vector<double> IN)
 {
     ChangeDimensions(IN.size(), &omegaIN_,true);
     for (unsigned int i=0;i<IN.size();i++)
@@ -299,22 +294,22 @@ void ODESystem::setMassFraction(const std::vector<double> IN)
     }
 }
 
-void ODESystem::setCoolantTemperature(const double Tw)
+void equationSystem::setCoolantTemperature(const double Tw)
 {
     Tw_ = Tw;
 }
 
-void ODESystem::setPressure(const double p)
+void equationSystem::setPressure(const double p)
 {
     p_ = p;
 }
 
-void ODESystem::setInertLength(const double L)
+void equationSystem::setInertLength(const double L)
 {
     Linert_ = L;
 }
 
-void ODESystem::setThermodinamicsData(const std::vector<double> MW, const unsigned int NC)
+void equationSystem::setThermodinamicsData(const std::vector<double> MW, const unsigned int NC)
 {
     NC_ = NC;
     ChangeDimensions(NC_, &MW_, true);
@@ -324,7 +319,7 @@ void ODESystem::setThermodinamicsData(const std::vector<double> MW, const unsign
     }
 }
 
-void ODESystem::setGasProperties(const double cpG,
+void equationSystem::setGasProperties(const double cpG,
                                  const double kG,
                                  const double mu,
                                  const double diff)
@@ -336,7 +331,7 @@ void ODESystem::setGasProperties(const double cpG,
     Pr_   = cpG_*mu_/kG_;
 }
 
-void ODESystem::setCatalystProperties(const double cpC,
+void equationSystem::setCatalystProperties(const double cpC,
                                       const double kC,
                                       const double rhoC,
                                       const double epsiC,
@@ -349,7 +344,7 @@ void ODESystem::setCatalystProperties(const double cpC,
     tauC_  = tauC;
 }
 
-void ODESystem::setSupportProperties(const double cpS,
+void equationSystem::setSupportProperties(const double cpS,
                                      const double kS,
                                      const double rhoS)
 {
@@ -358,18 +353,18 @@ void ODESystem::setSupportProperties(const double cpS,
     rhoS_ = rhoS;
 }
 
-void ODESystem::setGrid(const unsigned int Na, const unsigned int Nr)
+void equationSystem::setGrid(const unsigned int Na, const unsigned int Nr)
 {
     Na_ = Na;
     Nr_ = Nr;
 }
 
-void ODESystem::setReactionType(const std::string reactionType)
+void equationSystem::setReactionType(const std::string reactionType)
 {
     reactionType_ = reactionType;
 }
 
-void ODESystem::setPackedBed(const double Dt, const double Dp, const double L)
+void equationSystem::setPackedBed(const double Dt, const double Dp, const double L)
 {
     double NP = Dt/Dp;
 
@@ -377,9 +372,8 @@ void ODESystem::setPackedBed(const double Dt, const double Dp, const double L)
     DpP_   = Dp;
     LP_    = L + Linert_;
     LgeoP_ = DpP_/6.;
-
+    
     epsiP_ = 0.4 + 0.05/NP + 0.412/(NP*NP);
-    aexP_  = 4./Dt;
 
     ChangeDimensions(Na_, &zP_, true);
     zP_[1] = 0;
@@ -396,7 +390,7 @@ void ODESystem::setPackedBed(const double Dt, const double Dp, const double L)
     }
 }
 
-void ODESystem::setHoneyComb(const double Dt,
+void equationSystem::setHoneyComb(const double Dt,
                              const double CPSI,
                              const double w,
                              const double Sw,
@@ -443,7 +437,7 @@ void ODESystem::setHoneyComb(const double Dt,
     }
 }
 
-void ODESystem::setMicroBed(const double Dt,
+void equationSystem::setMicroBed(const double Dt,
                             const double CPSI,
                             const double Dp,
                             const double w,
@@ -477,24 +471,21 @@ void ODESystem::setMicroBed(const double Dt,
     }
 }
 
-void ODESystem::resize(const std::string type)
+void equationSystem::resize(const std::string type)
 {
     reactorType_ = type;
     iteration    = 0.;
     if ( reactorType_ == "honeyComb" )
     {
-        NB_   = NC_ + NC_ + 1 + 1;
-        Lgeo_ = LgeoH_;
+        NB_ = NC_ + NC_ + 1 + 1;
     }
     else if ( reactorType_ == "packedBed" )
     {
-        NB_   = NC_ + 1;
-        Lgeo_ = LgeoP_;
+        NB_ = NC_ + 1;
     }
     else if ( reactorType_ == "microBed" )
     {
         NB_ = NC_ + 1 + 1;
-        Lgeo_ = LgeoM_;
     }
 
     NE_      = NB_*Na_*Nr_;
@@ -559,35 +550,42 @@ void ODESystem::resize(const std::string type)
     ChangeDimensions(NE_, &yOS_, true);
 }
 
-#if ASALI_USE_BZZ == 1
-void ODESystem::GetSystemFunctions(BzzVector &y, double t, BzzVector &dy)
+unsigned int equationSystem::BvpEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
-    FromBzzToOS(y,yOS_);
-    
+    ChangeDimensions(NE_, &yOS_,  true);
+    ChangeDimensions(NE_, &dy,    true);
+    ChangeDimensions(NE_, &dyOS_, true);
+
+    for (unsigned int i=1;i<=NE_;i++)
+        yOS_[i] = y[i];
+
     if ( reactorType_ == "honeyComb" )
     {
-        #include "ODEhoneycomb.H"
+        #include "BVPhoneycomb.H"
     }
     else if ( reactorType_ == "packedBed" )
     {
-        #include "ODEpackedbed.H"
+        #include "BVPpackedbed.H"
     }
     else if ( reactorType_ == "microBed" )
     {
-        #include "ODEmicrobed.H"
+        #include "BVPmicrobed.H"
     }
 
-    ObjectBzzPrint();
-    FromOSToBzz(dyOS_,dy);
+    for (unsigned int i=1;i<=NE_;i++)
+        dy[i] = dyOS_[i];
+    
+    return 0;
 }
 
-void ODESystem::ObjectBzzPrint(void)
+unsigned int equationSystem::BvpPrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
 {
+    t_ = t;
     #include "printIntegration.H"
+    return 0;
 }
-#endif
 
-unsigned int ODESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+unsigned int equationSystem::OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
     ChangeDimensions(NE_, &yOS_,  true);
     ChangeDimensions(NE_, &dy,    true);
@@ -615,21 +613,253 @@ unsigned int ODESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVect
     return 0;
 }
 
-unsigned int ODESystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+unsigned int equationSystem::OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
 {
     t_ = t;
     #include "printIntegration.H"
     return 0;
 }
 
-void ODESystem::start(const std::string type)
+void equationSystem::AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M)
 {
-    std::cout << "\n######################################" << std::endl;
-    std::cout << "# ODE system for " << type << ":     START  " << std::endl;
-    std::cout << "######################################\n" << std::endl;
+    M.resize(NE_);
+    unsigned int counter = 0;
+    if ( reactorType_ == "honeyComb" )
+    {
+        for (unsigned int a=0;a<Na_;a++)
+        {
+            for (unsigned int r=0;r<Nr_;r++)
+            {
+                if ( a == 0 )
+                {
+                    for (unsigned int s=1;s<=NC_;s++)
+                    {
+                        M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+
+                    for (unsigned int s=1;s<=NC_;s++)
+                    {
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+                else if ( a == (Na_ - 1))
+                {
+                    for (unsigned int s=1;s<=NC_;s++)
+                    {
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    }
+
+                    for (unsigned int s=1;s<=NC_;s++)
+                    {
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+                else
+                {
+                    if ( r == 0 )
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                        }
+
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+                    else if ( r == (Nr_ - 1))
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                        }
+
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+                    else
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                        }
+
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    }
+                }
+            }
+        }
+    }
+    else if ( reactorType_ == "packedBed" )
+    {
+        for (unsigned int a=0;a<Na_;a++)
+        {
+            for (unsigned int r=0;r<Nr_;r++)
+            {
+                if ( a == 0 )
+                {
+                    for (unsigned int s=1;s<=NC_;s++)
+                    {
+                        M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+                else if ( a == (Na_ - 1))
+                {
+                    for (unsigned int s=1;s<=NC_;s++)
+                    {
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    }
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+                else
+                {
+                    if ( r == 0 )
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+                    else if ( r == (Nr_ - 1))
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+                    else
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    }
+                }
+            }
+        }
+    }
+    else if ( reactorType_ == "microBed" )
+    {
+        for (unsigned int a=0;a<Na_;a++)
+        {
+            for (unsigned int r=0;r<Nr_;r++)
+            {
+                if ( a == 0 )
+                {
+                    for (unsigned int s=1;s<=NC_;s++)
+                    {
+                        M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+                else if ( a == (Na_ - 1))
+                {
+                    for (unsigned int s=1;s<=NC_;s++)
+                    {
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    }
+
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+                else
+                {
+                    if ( r == 0 )
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+                    else if ( r == (Nr_ - 1))
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+                    else
+                    {
+                        for (unsigned int s=1;s<=NC_;s++)
+                        {
+                            M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        }
+
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                        M[counter++]  = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    }
+                }
+            }
+        }
+    }
 }
 
-void ODESystem::end(const std::string type)
+void equationSystem::start(const std::string type,const std::string eq)
+{
+    if ( eq == "bvp" )
+    {
+        std::cout << "\n######################################" << std::endl;
+        std::cout << "# BVP system for " << type << ":     START  " << std::endl;
+        std::cout << "######################################\n" << std::endl;
+    }
+    else if ( eq == "ode" )
+    {
+        std::cout << "\n######################################" << std::endl;
+        std::cout << "# ODE system for " << type << ":     START  " << std::endl;
+        std::cout << "######################################\n" << std::endl;
+    }
+}
+
+void equationSystem::end(const std::string type,const std::string eq)
+{
+    if ( eq == "bvp" )
+    {
+        std::cout << "\n######################################" << std::endl;
+        std::cout << "# BVP system for " << type << ":     END  " << std::endl;
+        std::cout << "######################################\n" << std::endl;
+    }
+    else if ( eq == "ode" )
+    {
+        std::cout << "\n######################################" << std::endl;
+        std::cout << "# ODE system for " << type << ":     END  " << std::endl;
+        std::cout << "######################################\n" << std::endl;
+    }
+}
+
+void equationSystem::cleanMemory()
 {
     delete [] omegaWall_;
     delete [] omegaBulk_;
@@ -651,10 +881,6 @@ void ODESystem::end(const std::string type)
     delete [] v_;
     delete [] kMat_;
     delete [] h_;
-
-    std::cout << "\n######################################" << std::endl;
-    std::cout << "# ODE system for " << type << ":     END  " << std::endl;
-    std::cout << "######################################\n" << std::endl;
 }
 
 }

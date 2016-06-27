@@ -13,11 +13,6 @@ echo '<mole>' >> 2Ds.xml
 echo '	<O2>0.207</O2>' >> 2Ds.xml
 echo '	<XYLENE>0.0147</XYLENE>' >> 2Ds.xml
 echo '	<N2>0.7783</N2>' >> 2Ds.xml
-echo '	<PHTHALIC>0</PHTHALIC>' >> 2Ds.xml
-echo '	<CO>0.</CO>' >> 2Ds.xml
-echo '	<CO2>0.</CO2>' >> 2Ds.xml
-echo '	<H2>0.</H2>' >> 2Ds.xml
-echo '	<H2O>0.</H2O>' >> 2Ds.xml
 echo '</mole>' >> 2Ds.xml
 echo ' ' >> 2Ds.xml
 echo '<operatingConditions>' >> 2Ds.xml
@@ -79,7 +74,4 @@ echo '	<axial>20</axial>' >> 2Ds.xml
 echo '	<radial>30</radial>' >> 2Ds.xml
 echo '</grid>' >> 2Ds.xml
 echo ' ' >> 2Ds.xml
-echo '<solver>' >> 2Ds.xml
-echo '	<ODE>BzzMath</ODE>' >> 2Ds.xml
-echo '	<BVP>BzzMath</BVP>' >> 2Ds.xml
-echo '</solver>' >> 2Ds.xml
+echo '<solver>OpenSMOKE</solver>' >> 2Ds.xml
