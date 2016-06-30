@@ -37,75 +37,65 @@
 #   along with ASALI. If not, see <http://www.gnu.org/licenses/>.                              #
 #                                                                                              #
 ##############################################################################################*/
-
-// C++
-#include <string>
-#include <iostream>
-#include <math.h>
-#include <ctime>
-#include <sstream>
-#include <fstream>
-#include <stdlib.h>
-#include <vector>
-#include <algorithm>
-
-#if ASALI_USE_BZZ == 1
-// BzzMath
-#define BZZ_COMPILER 101
-#include "BzzMath.hpp"
-#endif
-
-#if ASALI_USE_SUNDIALS == 1
-#define OPENSMOKE_USE_SUNDIALS 1
-#endif
-
-#if ASALI_USE_SUNDIALS == 0
-#define OPENSMOKE_USE_SUNDIALS 0
-#endif
-
-// OpenSMOKE++ Definitions
-#include "OpenSMOKEpp"
-
-// CHEMKIN maps
-#include "maps/Maps_CHEMKIN"
-
-// Reactor utilities
-#include "reactors/utilities/Utilities"
-
-// Eigen
-#include <Eigen/Dense>
-
-// Boost
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
-
-// RapidXML
-#include "rapidxml.hpp"
-
-// Utilities
-#include "readInput.h"
-#include "functions.h"
-#include "vector.h"
-
-// Equations
-#include "memoryAllocation.H"
-#include "ODEsystem.h"
-#if ASALI_USE_SUNDIALS == 1
-#include "odeInterfaces.h"
-#endif
-
-int main( int argc, char** argv )
+if ( input.getSolver() == "OpenSMOKE")
 {
-    double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
+    unsigned int NE = eq->NumberOfEquations();
 
-    #include "input.H"
-    #include "ODEresolution.H"
-    #include "write.H"
+    Eigen::VectorXd y0(NE);
+    Eigen::VectorXd yf(NE);
 
-    remove("BzzFile.txt");
+    y0(0) = input.getFeedPressure();
+    y0(1) = input.getFeedTemperature();
 
-    double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
-    ASALI::CPUtime(tStart,tEnd);
+    {
+        // Create the solver
+        typedef OdeSMOKE::KernelDense<OpenSMOKE::ODESystem_OpenSMOKE> denseOde;
+        typedef OdeSMOKE::MethodGear<denseOde> methodGear;
+        OdeSMOKE::MultiValueSolver<methodGear> ode_solver;
+        ode_solver.SetReactor(eq);
 
-    return 0;
+        // Set initial conditions
+        ode_solver.SetInitialConditions(0., y0);
+
+        // Set linear algebra options
+        ode_solver.SetFullPivoting(true);
+
+        // Set relative and absolute tolerances
+        ode_solver.SetAbsoluteTolerances(1e-12);
+        ode_solver.SetRelativeTolerances(1e-07);
+
+
+        // Solve the system
+        OdeSMOKE::OdeStatus status = ode_solver.Solve(input.getReactorLength());
+        ode_solver.Solution(yf);
+        ChangeDimensions(NE, &yF, true);
+        yF.CopyFrom(yf.data());
+    }
+}
+else if ( input.getSolver() == "BzzMath")
+{
+#if ASALI_USE_BZZ == 1
+    unsigned int NE = eq->NumberOfEquations();
+
+    BzzVector y0(NE);
+    BzzVector yf(NE);
+
+    y0[1] = input.getFeedPressure();
+    y0[2] = input.getFeedTemperature();
+
+    {
+        // Create the solver
+        OpenSMOKE::ODESystem_BzzOde ode(*eq);
+        BzzOdeStiffObject ode_solver(y0, 0., &ode);
+
+        // Set relative and absolute tolerances
+        ode_solver.SetTolAbs(1e-12);
+        ode_solver.SetTolRel(1e-07);
+
+        // Solve the system
+        yf = ode_solver(input.getReactorLength());
+        ChangeDimensions(NE, &yF, true);
+        yF.CopyFrom(yf.GetHandle());
+    }
+#endif
 }

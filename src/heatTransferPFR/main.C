@@ -38,63 +38,68 @@
 #                                                                                              #
 ##############################################################################################*/
 
-ASALI::check(argc);
-std::string* file;
+// C++
+#include <string>
+#include <iostream>
+#include <math.h>
+#include <ctime>
+#include <sstream>
+#include <fstream>
+#include <stdlib.h>
+#include <vector>
+#include <algorithm>
 
-file    = new std::string(argv[1]);
+#if ASALI_USE_BZZ == 1
+#define BZZ_COMPILER 101
+#define OPENSMOKE_USE_BZZMATH 1
+#include "BzzMath.hpp"
+#endif
 
-ASALI::READinput  input(*file);
-ASALI::ODESystem *ode;
+#if ASALI_USE_BZZ == 0
+#define OPENSMOKE_USE_BZZMATH 0
+#endif
+
+// OpenSMOKE++
+#include "OpenSMOKEpp"
+#include "maps/Maps_CHEMKIN"
+#include "reactors/utilities/Utilities"
+#include "math/OpenSMOKEVector.h"
+#include "math/multivalue-ode-solvers/MultiValueSolver"
+#include "math/multivalue-dae-solvers/MultiValueSolver"
+
+// Eigen
+#include <Eigen/Dense>
+
+// Boost
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
+// RapidXML
+#include "rapidxml.hpp"
+
+// Utilities
+#include "readInput.h"
+#include "functions.h"
+#include "vector.h"
+
+// Equations
+#include "memoryAllocation.H"
+#include "equations.h"
+#include "odeInterfaces.h"
+
+int main( int argc, char** argv )
 {
-    std::string folderPath = input.getKineticsPath() + "/";
-    boost::filesystem::path path_kinetics(folderPath);
-    {
-        rapidxml::xml_document<> doc;
-        std::vector<char> xml_string;
-        OpenSMOKE::OpenInputFileXML(doc, xml_string, path_kinetics / "kinetics.xml");
+    double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
 
-        thermodynamicsMapXML = new OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>(doc); 
-        transportMapXML = new OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>(doc); 
-    }
+    #include "input.H"
 
-    {
-        ASALI::logo();
-        input.recapOnScreen();
-    }
+    #include "resolution.H"
+    #include "write.H"
 
-    {
-        unsigned int WP = 6;
-        std::cout.setf(std::ios::scientific);
-        std::cout.precision(WP);
-    }
-    
-    
-    {
-        double MW;
-        thermodynamicsMapXML->SetTemperature(input.getFeedTemperature());
-        thermodynamicsMapXML->SetPressure(input.getFeedPressure());
-        MW = thermodynamicsMapXML->MW()[thermodynamicsMapXML->IndexOfSpecies(input.getSpecie())];
+    remove("BzzFile.txt");
 
-        if ( input.getReactorType() == "Monolith" )
-        {
-            epsi = input.getVoidFraction();
-            G = input.getFeedVelocity()*MW*input.getFeedPressure()/(PhysicalConstants::R_J_kmol*input.getFeedTemperature());
-        }
-        else if ( input.getReactorType() == "PackedBed" )
-        {
-            epsi = ASALI::voidFraction(input.getParticleDiameter(),input.getShellDiameter());
-            G = (input.getFeedVelocity()*MW*input.getFeedPressure()/(PhysicalConstants::R_J_kmol*input.getFeedTemperature()));
-        }
-    }
-    
-    
-    {
-        ode = new ASALI::ODESystem(*thermodynamicsMapXML, *transportMapXML);
+    double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
+    ASALI::CPUtime(tStart,tEnd);
 
-        ode->SetReactorType(input.getReactorType());
-        ode->SetFluid(input.getSpecie());
-        ode->SetTransportLaw(input.getThermophysicalProperties());
-        ode->SetReactor(G,input.getSolidTemperature(),input.getParticleDiameter(),input.getShellDiameter(),epsi);
-        ode->SetCorrelation(input.getPressureCorrelation(),input.getHeatTransferCorrelation());
-    }
+    return 0;
 }

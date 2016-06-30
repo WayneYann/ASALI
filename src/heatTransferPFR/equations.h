@@ -40,23 +40,20 @@
 
 namespace ASALI
 {
-class ODESystem
-#if ASALI_USE_BZZ == 1
- : public BzzOdeSystemObject
-#endif
+class equationSystem
 {
 public:
 
-    ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&       thermodynamicsMap, 
-              OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&  transportMap);
+    equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&       thermodynamicsMap, 
+                   OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&  transportMap);
 
     #include "vector.h"
 
     unsigned int NumberOfEquations() const { return NE_; }
 
-    unsigned int Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
+    unsigned int OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
 
-    unsigned int Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+    unsigned int OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
 
     void SetReactor(const double G, const double Tw, const double Dp, const double Dt, const double epsi);
 
@@ -69,12 +66,6 @@ public:
     void GetProfile(std::vector<double> &z, std::vector<double> &p, std::vector<double> &T);
 
     void SetTransportLaw(const std::string name);
-
-    #if ASALI_USE_BZZ == 1
-    virtual void GetSystemFunctions(BzzVector &y, double t, BzzVector &dy);
-    virtual void ObjectBzzPrint(void);
-    virtual ~ODESystem(){};
-    #endif
 
 private:
 
@@ -136,7 +127,7 @@ private:
     double termalConducitivity(const double mu, const double cv, const double MW);
 };
 
-ODESystem::ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>& thermodynamicsMap, 
+equationSystem::equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>& thermodynamicsMap, 
                      OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>& transportMap):
     thermodynamicsMap_(thermodynamicsMap), 
     transportMap_(transportMap)
@@ -177,7 +168,7 @@ ODESystem::ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>& thermodynamic
         ChangeDimensions(NE_, &dyOS_, true);
     }
 
-void ODESystem::SetReactor(const double G, const double Tw, const double Dp, const double Dt, const double epsi)
+void equationSystem::SetReactor(const double G, const double Tw, const double Dp, const double Dt, const double epsi)
 {
     G_        = G;
     Tw_        = Tw;
@@ -186,59 +177,47 @@ void ODESystem::SetReactor(const double G, const double Tw, const double Dp, con
     Dt_        = Dt;
 }
 
-void ODESystem::SetFluid(const std::string name)
+void equationSystem::SetFluid(const std::string name)
 {
     name_    = name;
 }
 
-void ODESystem::SetTransportLaw(const std::string law)
+void equationSystem::SetTransportLaw(const std::string law)
 {
     law_ = law;
 }
 
-void ODESystem::SetCorrelation(const std::string fmName, const std::string NuName)
+void equationSystem::SetCorrelation(const std::string fmName, const std::string NuName)
 {
     fmName_ = fmName;
     NuName_    = NuName;
 }
 
-void ODESystem::SetReactorType(const std::string type)
+void equationSystem::SetReactorType(const std::string type)
 {
     type_ = type;
 }
 
-#if ASALI_USE_BZZ == 1
-void ODESystem::GetSystemFunctions(BzzVector &y, double t, BzzVector &dy)
-{
-    FromBzzToOS(y,yOS_);
-    #include "ODEequations.H"
-    #include "ODEprint.H"
-    FromOSToBzz(dyOS_,dy);
-}
-
-void ODESystem::ObjectBzzPrint(void)
-{
-}
-#endif
-
-unsigned int ODESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+unsigned int equationSystem::OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
     ChangeDimensions(NE_, &dy,    true);
     for (unsigned int i=1;i<=NE_;i++)
         yOS_[i] = y[i];
+
     #include "ODEequations.H"
     #include "ODEprint.H"
+
     for (unsigned int i=1;i<=NE_;i++)
         dy[i] = dyOS_[i];
     return 0;
 }
 
-unsigned int ODESystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+unsigned int equationSystem::OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
 {
     return 0;
 }
 
-void ODESystem::GetProfile(std::vector<double> &z, std::vector<double> &p, std::vector<double> &T)
+void equationSystem::GetProfile(std::vector<double> &z, std::vector<double> &p, std::vector<double> &T)
 {
     p.resize(pprofile_.size());
     for (unsigned int k=0;k<p.size();k++)
@@ -253,7 +232,7 @@ void ODESystem::GetProfile(std::vector<double> &z, std::vector<double> &p, std::
          z[k] = z_[k];
 }
 
-void ODESystem::FrictionFactor(const double Reynolds)
+void equationSystem::FrictionFactor(const double Reynolds)
 {
     if ( type_ == "PackedBed" )
     {
@@ -349,7 +328,7 @@ void ODESystem::FrictionFactor(const double Reynolds)
     }
 }
 
-void ODESystem::Nusselt(const double Reynolds)
+void equationSystem::Nusselt(const double Reynolds)
 {
     if ( type_ == "PackedBed" )
     {
@@ -427,12 +406,12 @@ void ODESystem::Nusselt(const double Reynolds)
                 std::cout << NuName_ << " correlation out of range!\n" << std::endl;
                 exit (EXIT_FAILURE);
             }
-		}
+        }
         else if ( NuName_ == "Rebughini" )
         {
-			double jM = 0.393/(std::pow(Reynolds,0.384));
-			Nu_ = jM*Reynolds*std::pow(Pr_,(1./3.))/epsi_;
-		}
+            double jM = 0.393/(std::pow(Reynolds,0.384));
+            Nu_ = jM*Reynolds*std::pow(Pr_,(1./3.))/epsi_;
+        }
     }
     else if ( type_ == "Monolith" )
     {
@@ -441,7 +420,7 @@ void ODESystem::Nusselt(const double Reynolds)
     }
 }
 
-void ODESystem::av()
+void equationSystem::av()
 {
     if ( type_ == "Monolith" )
     {
@@ -453,7 +432,7 @@ void ODESystem::av()
     }
 }
 
-double ODESystem::ReynoldsForHeatTransfer()
+double equationSystem::ReynoldsForHeatTransfer()
 {
     double Reynolds = 0.;
     if ( type_ == "Monolith" )
@@ -468,7 +447,7 @@ double ODESystem::ReynoldsForHeatTransfer()
     return Reynolds;
 }
 
-double ODESystem::ReynoldsForFrictionFactor()
+double equationSystem::ReynoldsForFrictionFactor()
 {
     double Reynolds = 0.;
     if ( type_ == "Monolith" )
@@ -483,7 +462,7 @@ double ODESystem::ReynoldsForFrictionFactor()
     return Reynolds;
 }
 
-void ODESystem::h()
+void equationSystem::h()
 {
     if ( type_ == "Monolith" )
     {
@@ -495,7 +474,7 @@ void ODESystem::h()
     }
 }
 
-double ODESystem::specificHeatConstantPressure(const double T)
+double equationSystem::specificHeatConstantPressure(const double T)
 {
     double Tlow     = 200.;
     double Thigh    = 5000.;
@@ -533,7 +512,7 @@ double ODESystem::specificHeatConstantPressure(const double T)
 }
 
 
-double ODESystem::specificHeatConstantVolume(const double T)
+double equationSystem::specificHeatConstantVolume(const double T)
 {
     double Tlow     = 200.;
     double Thigh    = 5000.;
@@ -571,7 +550,7 @@ double ODESystem::specificHeatConstantVolume(const double T)
     return cv;
 }
 
-double ODESystem::viscosity(const double T)
+double equationSystem::viscosity(const double T)
 {
     double As = 1.67212e-06;
     double Ts = 170.672;
@@ -581,14 +560,14 @@ double ODESystem::viscosity(const double T)
     return mu;
 }
 
-double ODESystem::termalConducitivity(const double mu, const double cv, const double MW)
+double equationSystem::termalConducitivity(const double mu, const double cv, const double MW)
 {
     double k;
     k = mu*cv*(1.32 + 1.77*8314/(MW*cv));
     return k;
 }
 
-void  ODESystem::error()
+void  equationSystem::error()
 {
     std::cout << "\nASALI::HEATtransfer::ERROR\n" << std::endl;
 }

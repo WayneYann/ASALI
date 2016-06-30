@@ -38,52 +38,63 @@
 #                                                                                              #
 ##############################################################################################*/
 
+ASALI::check(argc);
+std::string* file;
+
+file    = new std::string(argv[1]);
+
+ASALI::READinput       input(*file);
+ASALI::equationSystem *eq;
 {
-    std::vector<double> p;
-    std::vector<double> T;
-    std::vector<double> z;
-    ode->GetProfile(z,p,T);
-    boost::filesystem::remove_all("results");
-    boost::filesystem::create_directory("results");
-    std::ofstream output;
-    output.setf(std::ios::scientific);
-    output.precision(6);
-    output.open("results/profile.txt",std::ios::out);
-    output << "#Length" << "\t" << "#Pressure" << "\t" << "#Temperature" << std::endl;
-    for (unsigned int k=0;k<p.size();k++)
-        output << z[k] << "\t" << p[k] << "\t" << T[k] << std::endl;
-    output.close();
-
-    std::ofstream recap;
-    recap.setf(std::ios::scientific);
-    recap.precision(6);
-    recap.open("results/information.txt",std::ios::out);
-    recap << "Input:\n" << std::endl;
-    recap << " 1/ specie name:               " << input.getSpecie() << std::endl;
-    recap << " 2/ pressure correlation:      " << input.getPressureCorrelation() << std::endl;
-    recap << " 3/ heat transfer correlation: " << input.getHeatTransferCorrelation() << std::endl;
-    recap << " 4/ feed temperature:          " << input.getFeedTemperature() << " [K]" << std::endl;
-    recap << " 5/ wall temperature:          " << input.getSolidTemperature() << " [K]" << std::endl;
-    recap << " 6/ feed pressure:             " << input.getPressureCorrelation() << " [Pa]" << std::endl;
-    recap << " 7/ feed velocity:             " << input.getFeedVelocity() << " [m/s]" << std::endl;
-
-    if ( input.getReactorType() == "Monolith" )
+    std::string folderPath = input.getKineticsPath() + "/";
+    boost::filesystem::path path_kinetics(folderPath);
     {
-        recap << " 8/ void fraction:             " << input.getVoidFraction() << " [-]" << std::endl;
-    }
-    else if ( input.getReactorType() == "PackedBed" )
-    {
-        recap << " 8/ particle diameter:         " << input.getParticleDiameter() << " [m]" << std::endl;
+        rapidxml::xml_document<> doc;
+        std::vector<char> xml_string;
+        OpenSMOKE::OpenInputFileXML(doc, xml_string, path_kinetics / "kinetics.xml");
+
+        thermodynamicsMapXML = new OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>(doc); 
+        transportMapXML = new OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>(doc); 
     }
 
-    recap << " 9/ tube diameter:             " << input.getShellDiameter() << " [m]" << std::endl;
-    recap << "10/ tube length:               " << input.getReactorLength()  << " [m]" << std::endl;
-    recap << std::endl;
-    recap << "Output:\n" << std::endl;
-    recap << " 1/ out temperature:           " << yF[2] << " [K]" << std::endl;
-    recap << " 2/ out pressure:              " << yF[1] << " [Pa]" << std::endl;
-    recap << " 3/ pressure drops:            " << input.getFeedPressure() - yF[1] << " [Pa]" << std::endl;
-    recap << " 4/ pressure drops:            " << (input.getFeedPressure() - yF[1])*1e-05/input.getReactorLength() << " [bar/m]" << std::endl;
-    recap.close();
+    {
+        ASALI::logo();
+        input.recapOnScreen();
+    }
+
+    {
+        unsigned int WP = 6;
+        std::cout.setf(std::ios::scientific);
+        std::cout.precision(WP);
+    }
+    
+    
+    {
+        double MW;
+        thermodynamicsMapXML->SetTemperature(input.getFeedTemperature());
+        thermodynamicsMapXML->SetPressure(input.getFeedPressure());
+        MW = thermodynamicsMapXML->MW()[thermodynamicsMapXML->IndexOfSpecies(input.getSpecie())];
+
+        if ( input.getReactorType() == "Monolith" )
+        {
+            epsi = input.getVoidFraction();
+            G = input.getFeedVelocity()*MW*input.getFeedPressure()/(PhysicalConstants::R_J_kmol*input.getFeedTemperature());
+        }
+        else if ( input.getReactorType() == "PackedBed" )
+        {
+            epsi = ASALI::voidFraction(input.getParticleDiameter(),input.getShellDiameter());
+            G = (input.getFeedVelocity()*MW*input.getFeedPressure()/(PhysicalConstants::R_J_kmol*input.getFeedTemperature()));
+        }
+    }
+    
+    
+    {
+        eq = new ASALI::equationSystem(*thermodynamicsMapXML, *transportMapXML);
+
+        eq->SetReactorType(input.getReactorType());
+        eq->SetFluid(input.getSpecie());
+        eq->SetTransportLaw(input.getThermophysicalProperties());
+        eq->SetReactor(G,input.getSolidTemperature(),input.getParticleDiameter(),input.getShellDiameter(),epsi);
+        eq->SetCorrelation(input.getPressureCorrelation(),input.getHeatTransferCorrelation());
+    }
 }
-

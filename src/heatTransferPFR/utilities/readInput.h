@@ -63,7 +63,7 @@ namespace ASALI
             std::string getPressureCorrelation()       const  { return pCorr_;};
             std::string getHeatTransferCorrelation()   const  { return hCorr_;};
             std::string getThermophysicalProperties()  const  { return thermo_;};
-            std::string getOdeSolver()                 const  { return odeSolver_;};
+            std::string getSolver()                    const  { return solver_;};
 
             void recapOnScreen();
 
@@ -84,7 +84,7 @@ namespace ASALI
             std::string thermo_;
             std::string hCorr_;
             std::string pCorr_;
-            std::string odeSolver_;
+            std::string solver_;
 
             unsigned int typeIndex_;
             unsigned int operatingIndex_;
@@ -672,7 +672,7 @@ namespace ASALI
         std::cout << "Feed  pressure                            = " << p_ << "\t[Pa]" << std::endl;
         std::cout << "Feed  temperature                         = " << Tin_ << "\t[K]" << std::endl;
         std::cout << "Solid temperature                         = " << Twall_ << "\t[K]" << std::endl;
-        std::cout << "Specie                                      " << name_ << std::endl;
+        std::cout << "Specie:                                     " << name_ << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                         SOLVER OPTIONS                                         \n" << std::endl;
         std::cout << "Themophysical properties law:               " << thermo_ << std::endl;
@@ -684,94 +684,34 @@ namespace ASALI
         #if ASALI_USE_BZZ == 1
         std::cout << "|| BzzMath ";
         #endif
-        #if ASALI_USE_SUNDIALS == 1
-        std::cout << "|| Sundials ";
-        #endif
+        std::cout << "|| OpenSMOKE ";
         std::cout << "||" << std::endl;
-        std::cout << "ODE:                                        " << odeSolver_ << std::endl;
-        std::cout << "\n################################################################################################" << std::endl;
+        std::cout << "Chosen solver:                              || " << solver_ << " ||" << std::endl;
+		std::cout << "\n################################################################################################" << std::endl;
     }
 
     void READinput::numerical()
     {
-        if ( inputVector_[numericalIndex_+1+1] != "{" )
+        solver_ = inputVector_[numericalIndex_+1+1];
+        if (solver_ == "BzzMath" )
         {
-            error();
-            std::cout << "The Numerical solvers sub-dictionary must start with {\n" << std::endl;
-            exit (EXIT_FAILURE);
+            #if ASALI_USE_BZZ == 0
+                error();
+                std::cout << "key word || solver || cannot be || BzzMath || \n" << std::endl;
+                exit(EXIT_FAILURE);
+            #endif
         }
+        else if ( solver_ == "OpenSMOKE" )
+        {}
         else
         {
-            unsigned int finalCount = 1e05;
-            for (unsigned int i=numericalIndex_;i<inputVector_.size();i++)
-            {
-                if (inputVector_[i] == "}")
-                {
-                    finalCount = i;
-                    break;
-                }
-            }
-            
-            if ( finalCount == 1e05 )
-            {
-                error();
-                std::cout << "The Numerical solvers sub-dictionary must finish with }\n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-
-            std::vector<std::string> dummyVector;
-            unsigned int k=0;
-            for (unsigned int i=numericalIndex_+1+1+1;i<=finalCount;i++)
-            {
-                if (inputVector_[i] == "{")
-                {
-                    error();
-                    std::cout << "The Numerical solvers sub-dictionary must finish with }\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
-                else
-                {
-                    dummyVector.resize(k+1);
-                    dummyVector[k] = inputVector_[i];
-                    k++;
-                }
-            }
-
-            std::vector<bool>        checkWord(1);
-            std::vector<std::string> words(1);
-
-            double odeIndex;
-            double daeIndex;
-
-            for (unsigned int i=0;i<checkWord.size();i++)
-                checkWord[i] = false;
-
-            words[0] = "ODE";
-
-            for (unsigned int i=0;i<dummyVector.size();i++)
-            {
-                if         (dummyVector[i] == "ODE")                 {checkWord[0] = true; odeIndex      = i;}
-            }
-
-            for (unsigned int i=0;i<checkWord.size();i++)
-            {
-                if ( checkWord[i] == false)
-                {
-                    error();
-                    std::cout << "key word || " << words[i] << " || is MISSING in Numerical solvers sub-dictionary!\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
-            }
-
-            odeSolver_ = dummyVector[odeIndex + 1];
-
-            if ( odeSolver_ != "BzzMath" && odeSolver_ != "Sundials")
-            {
-                error();
-                std::cout << "key word || " << "ODE" << " || MUST be || BzzMath || Sundials || \n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-
+            error();
+            std::cout << "key word || solver || could be || OpenSMOKE ||";
+            #if ASALI_USE_BZZ == 1
+                std::cout << " BzzMath ||";
+            #endif
+            std::cout << "\n" << std::endl;
+            exit(EXIT_FAILURE);
         }
     }
 }

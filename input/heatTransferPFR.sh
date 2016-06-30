@@ -48,7 +48,4 @@ echo '  pressure drops               Ergun' >> heatTransfer.txt
 echo '  heat transfer                Yoshida' >> heatTransfer.txt
 echo '}' >> heatTransfer.txt
 echo ' ' >> heatTransfer.txt
-echo 'Numerical solvers' >> heatTransfer.txt
-echo '{' >> heatTransfer.txt
-echo '  ODE       BzzMath' >> heatTransfer.txt
-echo '}' >> heatTransfer.txt
+echo 'Numerical solvers              OpenSMOKE' >> heatTransfer.txt
