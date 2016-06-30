@@ -394,6 +394,7 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
     bvp->setSolid(input.getSolidDensity(),input.getSolidConductivity(),input.getSolidSpecificHeat());
     bvp->setHomogeneusReactions(input.getHomogeneousReactions());
     bvp->setHeterogeneusReactions(input.getHeterogenousReactions());
+    bvp->setExternalHeatExchange(input.getHeatExchange(),input.getExternalTemperature());
     bvp->setEnergyEquation(input.getEnergy());
     bvp->setReactorType(input.getReactorType());
     if ( input.getReactorType() == "honeyComb" )
@@ -406,7 +407,8 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
         bvp->setCorrelation(input.getCorrelation());
     }
     bvp->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
-                            input.getInertLength(), input.getSpecificArea(), G);
+                            input.getInertLength(), input.getSpecificArea(), input.getExternalArea(),
+                            G);
     bvp->setFeedValue(input.getPressure(),T0,x0bulk);
     bvp->setInert(input.getInert());
     bvp->setDiffusion(input.getDiffusion());

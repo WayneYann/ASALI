@@ -72,6 +72,8 @@ namespace ASALI
             inline double getSolidConductivity()   const  { return condSolid_;};
             inline double getSolidSpecificHeat()   const  { return cpSolid_;};
             inline double getSpecificArea()        const  { return av_;};
+            inline double getExternalArea()        const  { return aex_;};
+            inline double getExternalTemperature() const  { return Twall_;};
 
             inline unsigned int getRestartPoints()         const  { return int(restartN_);};
             inline unsigned int getMaxPointsNumber()       const  { return int(maxN_);};
@@ -99,6 +101,7 @@ namespace ASALI
             inline bool getGridType()              const  { return grow_;};
             inline bool getConstraints()           const  { return constraints_;};
             inline bool getDiffusion()             const  { return gasDiffusion_;};
+            inline bool getHeatExchange()          const  { return exheat_;};
 
             inline std::vector<double> getFraction()                const { return inletValue_;};
             inline std::vector<double> getRestartBulk()             const { return restartBulk_;};
@@ -138,8 +141,10 @@ namespace ASALI
             double p_;
             double Tgas_;
             double Tsolid_;
+            double Twall_;
             double v_;
             double av_;
+            double aex_;
             double rhoSolid_;
             double cpSolid_;
             double condSolid_;
@@ -164,6 +169,7 @@ namespace ASALI
             bool het_;
             bool grow_;
             bool gasDiffusion_;
+            bool exheat_;
 
             const std::string& file_;
             const std::string& options_;
@@ -223,6 +229,7 @@ namespace ASALI
     {
         NS_                = 0;
         av_                = 0;
+        aex_               = 0;
         minN_              = 0;
         maxN_              = 0;
         addN_              = 0;
@@ -245,6 +252,7 @@ namespace ASALI
         p_                 = 0;
         Tgas_              = 0;
         Tsolid_            = 0;
+        Twall_             = 0;
         v_                 = 0;
         rhoSolid_          = 0;
         cpSolid_           = 0;
@@ -256,6 +264,7 @@ namespace ASALI
         het_               = false;
         grow_              = false;
         gasDiffusion_      = false;
+        exheat_            = false;
 
         reactorIndex_      = 0;
         solverIndex_       = 0;
@@ -446,32 +455,34 @@ namespace ASALI
                 }
             }
 
-            std::vector<bool>        checkWord(10);
-            std::vector<std::string> words(10);
+            std::vector<bool>        checkWord(11);
+            std::vector<std::string> words(11);
 
-            double absIndex;
-            double relIndex;
-            double tIndex;
-            double energyIndex;
-            double resultsIndex;
-            double reactionIndex;
-            double constraintIndex;
-            double errorIndex;
-            double diffIndex;
+            unsigned int absIndex;
+            unsigned int relIndex;
+            unsigned int tIndex;
+            unsigned int energyIndex;
+            unsigned int resultsIndex;
+            unsigned int reactionIndex;
+            unsigned int constraintIndex;
+            unsigned int errorIndex;
+            unsigned int diffIndex;
+            unsigned int exIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
 
-            words[0] = "Absolute tollerance";
-            words[1] = "Relative tollerance";
-            words[2] = "Energy equation";
-            words[3] = "Reactions";
-            words[4] = "Grid";
-            words[5] = "Integration time";
-            words[6] = "Results";
-            words[7] = "Constraints";
-            words[8] = "Accepted errors";
-            words[9] = "Diffusion in gas";
+            words[0]  = "Absolute tollerance";
+            words[1]  = "Relative tollerance";
+            words[2]  = "Energy equation";
+            words[3]  = "Reactions";
+            words[4]  = "Grid";
+            words[5]  = "Integration time";
+            words[6]  = "Results";
+            words[7]  = "Constraints";
+            words[8]  = "Accepted errors";
+            words[9]  = "Diffusion in gas";
+            words[10] = "External heat exchange";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
@@ -492,6 +503,9 @@ namespace ASALI
                 else if (dummyVector[i] == "Diffusion" &&
                          dummyVector[i+1] == "in" &&
                          dummyVector[i+2] == "gas")                {checkWord[9] = true; diffIndex         = i;}
+                else if (dummyVector[i] == "External" &&
+                         dummyVector[i+1] == "heat" &&
+                         dummyVector[i+2] == "exchange")           {checkWord[10] = true; exIndex           = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -503,6 +517,17 @@ namespace ASALI
                     exit (EXIT_FAILURE);
                 }
             }
+
+            if ( dummyVector[exIndex+3] == "on" )
+                exheat_ = true;
+            else if ( dummyVector[exIndex+3] == "true" )
+                exheat_ = true;
+            else if ( dummyVector[exIndex+3] == "yes" )
+                exheat_ = true;
+            else if ( dummyVector[exIndex+3] == "1" )
+                exheat_ = true;
+            else
+                exheat_ = false;
 
             if ( dummyVector[diffIndex+3] == "on" )
                 gasDiffusion_ = true;
@@ -1130,6 +1155,7 @@ namespace ASALI
                 epsi_ = boost::lexical_cast<double>(dummyVector[epsiIndex+2]);
                 
                 av_   = 4.*epsi_/Dchannel_;
+                aex_  = 4./Dmatrix_;
 
                 shape_ = dummyVector[shapeIndex+1+1];
                 if ( shape_ != "circle" && shape_ != "triangle" && shape_ != "square")
@@ -1156,6 +1182,7 @@ namespace ASALI
                 epsi_ = 0.4 + 0.05*Dp_/Dmatrix_ + 0.4*std::pow((Dp_/Dmatrix_),2.);
                 
                 av_   = 6.*(1. - epsi_)/Dp_;
+                aex_  = 4./Dmatrix_;
 
                 limitations_ = dummyVector[limitationIndex+1+1];
                 if ( limitations_ != "Yoshida" && limitations_ != "Wakao" && limitations_ != "Petrovic" )
@@ -1456,23 +1483,31 @@ namespace ASALI
                 }
             }
 
-            std::vector<bool>        checkWord(2);
-            std::vector<std::string> words(2);
+            std::vector<bool>        checkWord(3);
+            std::vector<std::string> words(3);
 
-            double gasIndex;
-            double solidIndex;
+            unsigned int gasIndex;
+            unsigned int solidIndex;
+            unsigned int wallIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
 
             words[0] = "gas";
             words[1] = "solid";
+            words[2] = "external";
 
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "gas")                 {checkWord[0] = true; gasIndex       = i;}
+                if         (dummyVector[i] == "gas")               {checkWord[0] = true; gasIndex       = i;}
                 else if (dummyVector[i] == "solid")                {checkWord[1] = true; solidIndex     = i;}
+                else if (dummyVector[i] == "external")             {checkWord[2] = true; wallIndex     = i;}
+            }
+
+            if ( checkWord[2] == false && exheat_ == false )
+            {
+                checkWord[2] = true;
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -1492,8 +1527,17 @@ namespace ASALI
 
             Tsolid_ = boost::lexical_cast<double>(dummyVector[solidIndex+1]);
             std::string dimSolid = dummyVector[solidIndex+2];
-            if ( dimGas == "°C")
+            if ( dimSolid == "°C")
                 FromCelsiusToKelvin(Tsolid_,dimSolid);
+            
+            if (exheat_ == true)
+            {
+                Twall_ = boost::lexical_cast<double>(dummyVector[wallIndex+1]);
+                std::string dimWall = dummyVector[wallIndex+2];
+                if ( dimWall == "°C")
+                    FromCelsiusToKelvin(Twall_,dimWall);
+            }
+            
         }
     }
 
