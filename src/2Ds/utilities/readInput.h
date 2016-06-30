@@ -397,7 +397,11 @@ namespace ASALI
                 else
                 {
                     error();
-                    std::cout << "node || solver || could be || OpenSMOKE ||" << std::endl;
+                    std::cout << "node || solver || could be || OpenSMOKE ||";
+				    #if ASALI_USE_BZZ == 1
+				    std::cout << " BzzMath ||";
+				    #endif
+				    std::cout << std::endl;
                     std::cout << "\n" << std::endl;
                     exit(EXIT_FAILURE);
                 }
