@@ -57,6 +57,7 @@ namespace ASALI
             inline unsigned int             numberOfSpecies()               const {return NC_;};
 
             inline bool                     externalExchange()              const {return extHeat_;};
+            inline bool                     energy()                        const {return energy_;};
 
             inline std::string              getReactionType()               const {return reactionType_;};
             inline std::string              getSolver()                     const {return solver_;};
@@ -115,6 +116,7 @@ namespace ASALI
             double epsiC_;
 
             bool   extHeat_;
+            bool   energy_;
 
             void error() { remove("BzzFile.txt"); std::cout << "\nASALI::readInput::ERROR\n" << std::endl;};
             
@@ -269,7 +271,8 @@ namespace ASALI
                 Tin_      = tree.get<double>("operatingConditions.temperauture.feed");
                 p_        = tree.get<double>("operatingConditions.pressure");
                 G_        = tree.get<double>("operatingConditions.specificMassFlowRate");
-                extHeat_  = tree.get<bool>("operatingConditions.externalExchange");  
+                extHeat_  = tree.get<bool>("operatingConditions.externalExchange");
+                energy_   = tree.get<bool>("operatingConditions.energy");  
             }
             
             // reactor dimensions

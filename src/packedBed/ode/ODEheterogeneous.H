@@ -84,7 +84,14 @@
 
         dTBulk_ = 0.;
         
-        dTWall_ = h_*av_*(TBulk_ - TWall_) - Q_*(1. - epsi_);
+        if ( energy_ == true )
+        {
+            dTWall_ = h_*av_*(TBulk_ - TWall_) - Q_*(1. - epsi_);
+        }
+        else
+        {
+            dTWall_ = TBulk_ - TWall_;
+        }
     }
 
     //-Assigned residuals

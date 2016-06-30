@@ -82,9 +82,18 @@
             domegaWall_[s] = kMat_*av_*(omegaBulk_[s] - omegaWall_[s])*rho_  + R_[s]*(1. - epsi_);
         }
 
-        dTBulk_ = (-h_*av_*(TBulk_ - TWall_)- U_*aex_*(TBulk_ - Tw_))/(rho_*cpG_*v_);
-        
-        dTWall_ = h_*av_*(TBulk_ - TWall_) - Q_*(1. - epsi_);
+        if ( energy_ == true )
+        {
+            dTBulk_ = (-h_*av_*(TBulk_ - TWall_)- U_*aex_*(TBulk_ - Tw_))/(rho_*cpG_*v_);
+            
+            dTWall_ = h_*av_*(TBulk_ - TWall_) - Q_*(1. - epsi_);
+        }
+        else
+        {
+            dTBulk_ = 0.;
+            
+            dTWall_ = TBulk_ - TWall_;
+        }
     }
 
     //-Assigned residuals

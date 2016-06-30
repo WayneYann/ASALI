@@ -67,6 +67,7 @@ ASALI::equationSystem  *eq;
                     input.getParticleDiameter());
 
     eq->setHeatExchange(input.externalExchange());
+    eq->setEnergy(input.energy());
 }
 
 {

@@ -22,6 +22,7 @@ echo '		<feed>625</feed>' >> packedBed.xml
 echo '	</temperauture>' >> packedBed.xml
 echo '	<specificMassFlowRate>1.3</specificMassFlowRate>' >> packedBed.xml
 echo '	<externalExchange>true</externalExchange>' >> packedBed.xml
+echo '	<energy>true</energy>' >> packedBed.xml
 echo '</operatingConditions>' >> packedBed.xml
 echo ' ' >> packedBed.xml
 echo '<reactorDimensions>' >> packedBed.xml

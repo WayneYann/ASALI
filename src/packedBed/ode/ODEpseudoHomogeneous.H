@@ -66,7 +66,14 @@
             domegaBulk_[s] = R_[s]*(1. - epsi_)/(rho_*v_);
         }
         
-        dTBulk_ = (-Q_*(1. - epsi_) - U_*aex_*(TBulk_ - Tw_))/(rho_*cpG_*v_);
+        if ( energy_ == true )
+        {
+            dTBulk_ = (-Q_*(1. - epsi_) - U_*aex_*(TBulk_ - Tw_))/(rho_*cpG_*v_);
+        }
+        else
+        {
+            dTBulk_ = 0.;
+        }
     }
 
     //-Assigned residuals

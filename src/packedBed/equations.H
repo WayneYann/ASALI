@@ -69,6 +69,8 @@ public:
     void setFlowRate(const double G);
     
     void setCoolantTemperature(const double Tw);
+    
+    void setEnergy(const bool energy);
 
     void setThermodinamicsData(const std::vector<double> MW, const unsigned int NC);
     
@@ -110,6 +112,7 @@ private:
     unsigned int ode_iterator_;
 
     bool extHeat_;
+    bool energy_;
 
     double kG_;
     double mu_;
@@ -218,6 +221,11 @@ void equationSystem::setPressure(const double p)
 void equationSystem::setHeatExchange(const bool flag)
 {
     extHeat_ = flag;
+}
+
+void equationSystem::setEnergy(const bool energy)
+{
+    energy_ = energy;
 }
 
 void equationSystem::setThermodinamicsData(const std::vector<double> MW, const unsigned int NC)
