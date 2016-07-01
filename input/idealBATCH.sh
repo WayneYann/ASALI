@@ -54,17 +54,8 @@ echo '  Constraints          false' >> idealBATCH.txt
 echo ' ' >> idealBATCH.txt
 echo '  Constant             pressure' >> idealBATCH.txt
 echo ' ' >> idealBATCH.txt
-echo '  Absolute tollerance' >> idealBATCH.txt
-echo '  (' >> idealBATCH.txt
-echo '    specie           1e-15' >> idealBATCH.txt
-echo '    temperature      1e-08' >> idealBATCH.txt
-echo '  )' >> idealBATCH.txt
-echo ' ' >> idealBATCH.txt
-echo '  Relative tollerance' >> idealBATCH.txt
-echo '  (' >> idealBATCH.txt
-echo '    specie           1e-08' >> idealBATCH.txt
-echo '    temperature      1e-08' >> idealBATCH.txt
-echo '  )' >> idealBATCH.txt
+echo '  Absolute tollerance  1e-12' >> idealBATCH.txt
+echo '  Relative tollerance  1e-07' >> idealBATCH.txt
 echo ' ' >> idealBATCH.txt
 echo '  Energy equation    on' >> idealBATCH.txt
 echo ' ' >> idealBATCH.txt
@@ -75,9 +66,6 @@ echo '    Heterogeneous    on' >> idealBATCH.txt
 echo '  )' >> idealBATCH.txt
 echo ' ' >> idealBATCH.txt
 echo '  Integration time            100 s' >> idealBATCH.txt
-echo '}' >> idealBATCH.txt
 echo ' ' >> idealBATCH.txt
-echo 'Numerical solvers' >> idealBATCH.txt
-echo '{' >> idealBATCH.txt
-echo '     ODE OpenSMOKE' >> idealBATCH.txt
+echo '  Numerical solvers           OpenSMOKE' >> idealBATCH.txt
 echo '}' >> idealBATCH.txt

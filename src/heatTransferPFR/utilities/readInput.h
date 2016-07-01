@@ -687,7 +687,7 @@ namespace ASALI
         std::cout << "|| OpenSMOKE ";
         std::cout << "||" << std::endl;
         std::cout << "Chosen solver:                              || " << solver_ << " ||" << std::endl;
-		std::cout << "\n################################################################################################" << std::endl;
+        std::cout << "\n################################################################################################" << std::endl;
     }
 
     void READinput::numerical()

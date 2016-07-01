@@ -42,8 +42,8 @@ ASALI::check(argc);
 std::string* file;
 file    = new std::string(argv[1]);
 
-ASALI::READinput  input(*file);
-ASALI::ODESystem *ode;
+ASALI::READinput       input(*file);
+ASALI::equationSystem *eq;
 
 {
     std::string folderPath = input.getKineticsPath() + "/";
@@ -177,17 +177,17 @@ ASALI::ODESystem *ode;
 }
 
 {
-    ode = new ASALI::ODESystem(*thermodynamicsMapXML,        *kineticsMapXML,
-                               *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
-                               *transportMapXML);
+    eq = new ASALI::equationSystem(*thermodynamicsMapXML,        *kineticsMapXML,
+                                   *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
+                                   *transportMapXML);
 
-    ode->setTemperature(input.getTemperature());
-    ode->setPressure(input.getPressure());
-    ode->setVolume(input.getVolume());
-    ode->setArea(input.getCatalyticArea());
-    ode->setCatalystLoad(input.getAlfa());
-    ode->setHomogeneusReactions(input.getHomogeneousReactions());
-    ode->setHeterogeneusReactions(input.getHeterogenousReactions());
-    ode->setEnergy(input.getEnergy());
-    ode->setResolutionType(input.getResolutionType());
+    eq->setTemperature(input.getTemperature());
+    eq->setPressure(input.getPressure());
+    eq->setVolume(input.getVolume());
+    eq->setArea(input.getCatalyticArea());
+    eq->setCatalystLoad(input.getAlfa());
+    eq->setHomogeneusReactions(input.getHomogeneousReactions());
+    eq->setHeterogeneusReactions(input.getHeterogenousReactions());
+    eq->setEnergy(input.getEnergy());
+    eq->setResolutionType(input.getResolutionType());
 }

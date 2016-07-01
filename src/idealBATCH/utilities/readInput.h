@@ -48,10 +48,8 @@ namespace ASALI
 
             #include "convert.h"
 
-            inline double getSpecieAbsTol()        const  { return absSpecieTol_;};
-            inline double getSpecieRelTol()        const  { return relSpecieTol_;};
-            inline double getTemperatureAbsTol()   const  { return absTemperatureTol_;};
-            inline double getTemperatureRelTol()   const  { return relTemperatureTol_;};
+            inline double getAbsTol()              const  { return absTol_;};
+            inline double getRelTol()              const  { return relTol_;};
             inline double getIntegrationTime()     const  { return tMax_;};
             inline double getAlfa()                const  { return alfa_;};
             inline double getPressure()            const  { return p_;};
@@ -60,7 +58,7 @@ namespace ASALI
             inline double getCatalyticArea()       const  { return A_;};
 
             inline std::string getFeed()           const  { return feed_;};
-            inline std::string getOdeSolver()      const  { return odeSolver_;};
+            inline std::string getSolver()         const  { return solver_;};
             inline std::string getKineticsPath()   const  { return kineticsPath_;};
             inline std::string getResolutionType() const  { return resolution_;};
 
@@ -79,10 +77,8 @@ namespace ASALI
 
         private:
 
-            double absSpecieTol_;
-            double relSpecieTol_;
-            double absTemperatureTol_;
-            double relTemperatureTol_;
+            double absTol_;
+            double relTol_;
             double alfa_;
             double p_;
             double T_;
@@ -93,7 +89,7 @@ namespace ASALI
             std::string feed_;
             std::string type_;
             std::string inert_;
-            std::string odeSolver_;
+            std::string solver_;
             std::string kineticsPath_;
             std::string resolution_;
 
@@ -114,7 +110,6 @@ namespace ASALI
             unsigned int solverIndex_;
             unsigned int catalystIndex_;
             unsigned int fractionIndex_;
-            unsigned int numericalIndex_;
             unsigned int kineticsIndex_;
             unsigned int coverageIndex_;
 
@@ -130,7 +125,6 @@ namespace ASALI
             void pressure();
             void temperature();
             void volume();
-            void numerical();
 
             std::string boolOnScreen(bool value);
 
@@ -144,10 +138,8 @@ namespace ASALI
     READinput::READinput(std::string& file):
     file_(file)
     {
-        absSpecieTol_      = 0;
-        relSpecieTol_      = 0;
-        absTemperatureTol_ = 0;
-        relTemperatureTol_ = 0;
+        absTol_            = 0;
+        relTol_            = 0;
         alfa_              = 0;
         p_                 = 0;
         T_                 = 0;
@@ -163,7 +155,6 @@ namespace ASALI
         solverIndex_       = 0;
         catalystIndex_     = 0;
         fractionIndex_     = 0;
-        numericalIndex_    = 0;
         kineticsIndex_     = 0;
 
         //- Check input
@@ -189,7 +180,6 @@ namespace ASALI
         coverage();
         pressure();
         temperature();
-        numerical();
     }
 
     void READinput::save()
@@ -215,8 +205,8 @@ namespace ASALI
 
     void READinput::check()
     {
-        std::vector<bool>         checkWord(9);
-        std::vector<std::string>  words(9);
+        std::vector<bool>         checkWord(8);
+        std::vector<std::string>  words(8);
 
         for (unsigned int i=0;i<checkWord.size();i++)
             checkWord[i] = false;
@@ -227,9 +217,8 @@ namespace ASALI
         words[3] = "Catalyst";
         words[4] = "Mole fractions || Mass fractions";
         words[5] = "Solver options";
-        words[6] = "Numerical solvers";
-        words[7] = "Kinetics path";
-        words[8] = "Coverage";
+        words[6] = "Kinetics path";
+        words[7] = "Coverage";
 
         for (unsigned int i=0;i<inputVector_.size();i++)
         {
@@ -243,11 +232,9 @@ namespace ASALI
                      inputVector_[i+1] == "fractions" )         {checkWord[4]  = true; fractionIndex_     = i;}
             else if (inputVector_[i]   == "Solver" &&
                      inputVector_[i+1] == "options" )           {checkWord[5]  = true; solverIndex_       = i;}
-            else if (inputVector_[i]   == "Numerical" &&
-                     inputVector_[i+1] == "solvers" )           {checkWord[6]  = true; numericalIndex_    = i;}
             else if (inputVector_[i]   == "Kinetics" &&
-                     inputVector_[i+1] == "path" )              {checkWord[7]  = true; kineticsIndex_     = i;}
-            else if (inputVector_[i]   == "Coverage")           {checkWord[8]  = true; coverageIndex_     = i;}
+                     inputVector_[i+1] == "path" )              {checkWord[6]  = true; kineticsIndex_     = i;}
+            else if (inputVector_[i]   == "Coverage")           {checkWord[7]  = true; coverageIndex_     = i;}
         }
         
         for (unsigned int i=0;i<checkWord.size();i++)
@@ -306,16 +293,17 @@ namespace ASALI
                 }
             }
 
-            std::vector<bool>        checkWord(7);
-            std::vector<std::string> words(7);
+            std::vector<bool>        checkWord(8);
+            std::vector<std::string> words(8);
 
-            double absIndex;
-            double relIndex;
-            double reactionIndex;
-            double constraintIndex;
-            double constantIndex;
-            double energyIndex;
-            double tIndex;
+            unsigned int absIndex;
+            unsigned int relIndex;
+            unsigned int reactionIndex;
+            unsigned int constraintIndex;
+            unsigned int constantIndex;
+            unsigned int energyIndex;
+            unsigned int tIndex;
+            unsigned int numericalIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
@@ -327,6 +315,7 @@ namespace ASALI
             words[4] = "Constant";
             words[5] = "Energy equation";
             words[6] = "Integration time";
+            words[7] = "Numerical solver";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
@@ -341,6 +330,8 @@ namespace ASALI
                          dummyVector[i+1] == "equation")           {checkWord[5] = true; energyIndex     = i;}
                 else if (dummyVector[i] == "Integration" &&
                          dummyVector[i+1] == "time")               {checkWord[6] = true; tIndex           = i;}
+                else if (dummyVector[i] == "Numerical" &&
+                         dummyVector[i+1] == "solver")             {checkWord[7] = true; numericalIndex   = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -392,6 +383,32 @@ namespace ASALI
             tMax_ = boost::lexical_cast<double>(dummyVector[tIndex+2]);
             std::string tdim = dummyVector[tIndex+3];
             ConvertsToSecond(tMax_, tdim);
+
+            absTol_ = boost::lexical_cast<double>(dummyVector[absIndex+1+1]);
+            relTol_ = boost::lexical_cast<double>(dummyVector[relIndex+1+1]);
+
+            solver_ = dummyVector[numericalIndex+1+1];
+            if (solver_ == "BzzMath" )
+            {
+                #if ASALI_USE_BZZ == 0
+                    error();
+                    std::cout << "key word || solver || cannot be || BzzMath || \n" << std::endl;
+                    exit(EXIT_FAILURE);
+                #endif
+            }
+            else if ( solver_ == "OpenSMOKE" )
+            {}
+            else
+            {
+                error();
+                std::cout << "key word || solver || could be || OpenSMOKE ||";
+                #if ASALI_USE_BZZ == 1
+                    std::cout << " BzzMath ||";
+                #endif
+                std::cout << "\n" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+
 
             if ( dummyVector[reactionIndex+1] != "(" )
             {
@@ -464,123 +481,6 @@ namespace ASALI
                             {
                                 error();
                                 std::cout << "key word || Homogeneous || Heterogeneous || is MISSING in Solver options/Reactions sub-dictionary!\n" << std::endl;
-                                exit (EXIT_FAILURE);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if ( dummyVector[absIndex+1+1] != "(" )
-            {
-                error();
-                std::cout << "The Solver options/Absolute tollerance sub-dictionary must start with (\n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-            else
-            {
-                unsigned int finalCount = 1e05;
-                for (unsigned int i=absIndex;i<dummyVector.size();i++)
-                {
-                    if (dummyVector[i] == ")")
-                    {
-                        finalCount = i;
-                        break;
-                    }
-                }
-                
-                if ( finalCount == 1e05 )
-                {
-                    error();
-                    std::cout << "The Solver options/Absolute tollerance sub-dictionary must finish with )\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
-                else
-                {
-                    unsigned int k=0;
-                    for (unsigned int i=absIndex+1+1+1;i<finalCount;i++)
-                    {
-                        if (dummyVector[i] == "(")
-                        {
-                            error();
-                            std::cout << "The Solver options/Absolute tollerance sub-dictionary must finish with )\n" << std::endl;
-                            exit (EXIT_FAILURE);
-                        }
-                        else
-                        {
-                            if ( dummyVector[i] == "specie" )
-                            {
-                                absSpecieTol_ = boost::lexical_cast<double>(dummyVector[i+1]);
-                                i++;
-                            }
-                            else if ( dummyVector[i] == "temperature" )
-                            {
-                                absTemperatureTol_ = boost::lexical_cast<double>(dummyVector[i+1]);
-                                i++;
-                            }
-                            else
-                            {
-                                error();
-                                std::cout << "key word || specie || temperature || is MISSING in Solver options/Absolute tollerance sub-dictionary!\n" << std::endl;
-                                exit (EXIT_FAILURE);
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            if ( dummyVector[relIndex+1+1] != "(" )
-            {
-                error();
-                std::cout << "The Solver options/Relative tollerance sub-dictionary must start with (\n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-            else
-            {
-                unsigned int finalCount = 1e05;
-                for (unsigned int i=relIndex;i<dummyVector.size();i++)
-                {
-                    if (dummyVector[i] == ")")
-                    {
-                        finalCount = i;
-                        break;
-                    }
-                }
-                
-                if ( finalCount == 1e05 )
-                {
-                    error();
-                    std::cout << "The Solver options/Relative tollerance sub-dictionary must finish with )\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
-                else
-                {
-                    unsigned int k=0;
-                    for (unsigned int i=relIndex+1+1+1;i<finalCount;i++)
-                    {
-                        if (dummyVector[i] == "(")
-                        {
-                            error();
-                            std::cout << "The Solver options/Relative tollerance sub-dictionary must finish with )\n" << std::endl;
-                            exit (EXIT_FAILURE);
-                        }
-                        else
-                        {
-                            if ( dummyVector[i] == "specie" )
-                            {
-                                relSpecieTol_ = boost::lexical_cast<double>(dummyVector[i+1]);
-                                i++;
-                            }
-                            else if ( dummyVector[i] == "temperature" )
-                            {
-                                relTemperatureTol_ = boost::lexical_cast<double>(dummyVector[i+1]);
-                                i++;
-                            }
-                            else
-                            {
-                                error();
-                                std::cout << "key word || specie || temperature || is MISSING in Solver options/Relative tollerance sub-dictionary!\n" << std::endl;
                                 exit (EXIT_FAILURE);
                             }
                         }
@@ -824,13 +724,11 @@ namespace ASALI
         std::cout << "                                        NUMERICAL SOLVER                                        \n" << std::endl;
         std::cout << "Solver compiled with                        ";
         #if ASALI_USE_BZZ == 1
-        std::cout << "|| BzzMath || OpenSMOKE ";
+        std::cout << "|| BzzMath ";
         #endif
-        #if ASALI_USE_SUNDIALS == 1
-        std::cout << "|| Sundials || OpenSMOKE ";
-        #endif
+        std::cout << "|| OpenSMOKE ";
         std::cout << "||" << std::endl;
-        std::cout << "ODE:                                        " << odeSolver_ << std::endl;
+        std::cout << "Chosen solver:                              || " << solver_ << " ||" << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
     }
     
@@ -843,88 +741,6 @@ namespace ASALI
             value_ = "off";
         
         return value_;
-    }
-
-    void READinput::numerical()
-    {
-        if ( inputVector_[numericalIndex_+1+1] != "{" )
-        {
-            error();
-            std::cout << "The Numerical solvers sub-dictionary must start with {\n" << std::endl;
-            exit (EXIT_FAILURE);
-        }
-        else
-        {
-            unsigned int finalCount = 1e05;
-            for (unsigned int i=numericalIndex_;i<inputVector_.size();i++)
-            {
-                if (inputVector_[i] == "}")
-                {
-                    finalCount = i;
-                    break;
-                }
-            }
-            
-            if ( finalCount == 1e05 )
-            {
-                error();
-                std::cout << "The Numerical solvers sub-dictionary must finish with }\n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-
-            std::vector<std::string> dummyVector;
-            unsigned int k=0;
-            for (unsigned int i=numericalIndex_+1+1+1;i<=finalCount;i++)
-            {
-                if (inputVector_[i] == "{")
-                {
-                    error();
-                    std::cout << "The Numerical solvers sub-dictionary must finish with }\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
-                else
-                {
-                    dummyVector.resize(k+1);
-                    dummyVector[k] = inputVector_[i];
-                    k++;
-                }
-            }
-
-            std::vector<bool>        checkWord(1);
-            std::vector<std::string> words(1);
-
-            double odeIndex;
-            double daeIndex;
-
-            for (unsigned int i=0;i<checkWord.size();i++)
-                checkWord[i] = false;
-
-            words[0] = "ODE";
-
-            for (unsigned int i=0;i<dummyVector.size();i++)
-            {
-                if(dummyVector[i] == "ODE")                 {checkWord[0] = true; odeIndex      = i;};
-            }
-
-            for (unsigned int i=0;i<checkWord.size();i++)
-            {
-                if ( checkWord[i] == false)
-                {
-                    error();
-                    std::cout << "key word || " << words[i] << " || is MISSING in Numerical solvers sub-dictionary!\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
-            }
-
-            odeSolver_ = dummyVector[odeIndex + 1];
-
-            if ( odeSolver_ != "BzzMath" && odeSolver_ != "Sundials" && odeSolver_ != "OpenSMOKE" )
-            {
-                error();
-                std::cout << "key word || " << "ODE" << " || MUST be || BzzMath || Sundials || OpenSMOKE ||\n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-        }
     }
 
     void READinput::coverage()

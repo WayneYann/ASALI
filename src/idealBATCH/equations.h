@@ -40,19 +40,16 @@
 
 namespace ASALI
 {
-class ODESystem
-#if ASALI_USE_BZZ == 1
- : public BzzOdeSystemObject
-#endif
+class equationSystem
 {
 
 public:
 
-    ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
-              OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
-              OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
-              OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
-              OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap);
+    equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+                   OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
+                   OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
+                   OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
+                   OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap);
 
     #include "vector.h"
 
@@ -85,19 +82,9 @@ public:
 
     unsigned int NumberOfEquations()     const {return NE_;};
 
-    void start();
-    void end();
+    unsigned int OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
 
-    unsigned int Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
-
-    unsigned int Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
-
-    #if ASALI_USE_BZZ == 1
-    virtual void GetSystemFunctions(BzzVector &y, double t, BzzVector &dy);
-    virtual void ObjectBzzPrint(void);
-    virtual ~ODESystem(){};
-    #endif
-
+    unsigned int OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
 
 private:
 
@@ -159,11 +146,11 @@ private:
 };
 
 
-ODESystem::ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
-                     OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
-                     OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
-                     OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
-                     OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap):
+equationSystem::equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+                               OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
+                               OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
+                               OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
+                               OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap):
     thermodynamicsMap_(thermodynamicsMap), 
     kineticsMap_(kineticsMap),
     thermodynamicsSurfaceMap_(thermodynamicsSurfaceMap), 
@@ -208,52 +195,37 @@ ODESystem::ODESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          ther
     }
 
 
-void ODESystem::setPressure(const double P)
+void equationSystem::setPressure(const double P)
 {
     P_ = P;
 }
 
-void ODESystem::setTemperature (const double T)
+void equationSystem::setTemperature (const double T)
 {
     T_ = T;
 }
 
-void ODESystem::setVolume (const double V)
+void equationSystem::setVolume (const double V)
 {
     V_ = V;
 }
 
-void ODESystem::setArea (const double A)
+void equationSystem::setArea (const double A)
 {
     A_ = A;
 }
 
-void ODESystem::setCatalystLoad(const double alfa)
+void equationSystem::setCatalystLoad(const double alfa)
 {
     alfa_ = alfa;
 }
 
-void ODESystem::setResolutionType(const std::string resolution)
+void equationSystem::setResolutionType(const std::string resolution)
 {
     resolution_ = resolution;
 }
 
-#if ASALI_USE_BZZ == 1
-void ODESystem::GetSystemFunctions(BzzVector &y, double t, BzzVector &dy)
-{
-    FromBzzToOS(y,yOS_);
-    #include "ODEequations.H"
-    ObjectBzzPrint();
-    FromOSToBzz(dyOS_,dy);
-}
-
-void ODESystem::ObjectBzzPrint(void)
-{
-    #include "printIntegration.H"
-}
-#endif
-
-unsigned int ODESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+unsigned int equationSystem::OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
     ChangeDimensions(NE_, &yOS_,  true);
     ChangeDimensions(NE_, &dy,    true);
@@ -270,25 +242,11 @@ unsigned int ODESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVect
     return 0;
 }
 
-unsigned int ODESystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+unsigned int equationSystem::OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
 {
     t_ = t;
     #include "printIntegration.H"
     return 0;
-}
-
-void ODESystem::start()
-{
-    std::cout << "\n######################################" << std::endl;
-    std::cout << "# ODE system:                 START  #" << std::endl;
-    std::cout << "######################################\n" << std::endl;
-}
-
-void ODESystem::end()
-{
-    std::cout << "\n######################################" << std::endl;
-    std::cout << "# ODE system:                 END    #" << std::endl;
-    std::cout << "######################################\n" << std::endl;
 }
 
 }

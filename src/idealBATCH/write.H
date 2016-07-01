@@ -40,25 +40,25 @@
 
 //- On Screen
 {
-    unsigned int N = ode->getTime().size();
+    unsigned int N = eq->getTime().size();
     OpenSMOKE::OpenSMOKEVectorDouble omega0(NC);
     OpenSMOKE::OpenSMOKEVectorDouble omegaf(NC);
 
     for (unsigned int k=0;k<NC;k++)
     {
-        omega0[k+1] = ode->getSpecie()[k];
+        omega0[k+1] = eq->getSpecie()[k];
     }
 
     for (unsigned int k=0;k<NC;k++)
     {
-        omegaf[k+1] = ode->getSpecie()[NC*(N-1) + k];
+        omegaf[k+1] = eq->getSpecie()[NC*(N-1) + k];
     }
 
     double h0 = 0.;
     {
         OpenSMOKE::OpenSMOKEVectorDouble h(NC);
-        thermodynamicsMapXML->SetPressure(ode->getPressure()[0]);
-        thermodynamicsMapXML->SetTemperature(ode->getTemperature()[0]);
+        thermodynamicsMapXML->SetPressure(eq->getPressure()[0]);
+        thermodynamicsMapXML->SetTemperature(eq->getTemperature()[0]);
         thermodynamicsMapXML->hMolar_Species(h);
         for (unsigned int j=1;j<=NC;j++)
         {
@@ -69,8 +69,8 @@
     double hf = 0.;
     {
         OpenSMOKE::OpenSMOKEVectorDouble h(NC);
-        thermodynamicsMapXML->SetPressure(ode->getPressure()[N-1]);
-        thermodynamicsMapXML->SetTemperature(ode->getTemperature()[N-1]);
+        thermodynamicsMapXML->SetPressure(eq->getPressure()[N-1]);
+        thermodynamicsMapXML->SetTemperature(eq->getTemperature()[N-1]);
         thermodynamicsMapXML->hMolar_Species(h);
         for (unsigned int j=1;j<=NC;j++)
         {
@@ -99,9 +99,9 @@
         output.open("results/mass.txt",std::ios::out);
         output << "time\tmass" << std::endl;
         
-        for (unsigned int i=0;i<ode->getTime().size();i++)
+        for (unsigned int i=0;i<eq->getTime().size();i++)
         {
-            output << ode->getTime()[i] << "\t" << ode->getMass()[i] << std::endl;
+            output << eq->getTime()[i] << "\t" << eq->getMass()[i] << std::endl;
         }
         output.close();
     }
@@ -114,9 +114,9 @@
         output.open("results/volume.txt",std::ios::out);
         output << "time\tvolume" << std::endl;
 
-        for (unsigned int i=0;i<ode->getTime().size();i++)
+        for (unsigned int i=0;i<eq->getTime().size();i++)
         {
-            output << ode->getTime()[i] << "\t" << ode->getVolume()[i] << std::endl;
+            output << eq->getTime()[i] << "\t" << eq->getVolume()[i] << std::endl;
         }
         output.close();
     }
@@ -129,9 +129,9 @@
         output.open("results/pressure.txt",std::ios::out);
         output << "time\tpressure" << std::endl;
         
-        for (unsigned int i=0;i<ode->getTime().size();i++)
+        for (unsigned int i=0;i<eq->getTime().size();i++)
         {
-            output << ode->getTime()[i] << "\t" << ode->getPressure()[i] << std::endl;
+            output << eq->getTime()[i] << "\t" << eq->getPressure()[i] << std::endl;
         }
         output.close();
     }
@@ -144,9 +144,9 @@
         output.open("results/temperature.txt",std::ios::out);
         output << "time\ttemperature" << std::endl;
         
-        for (unsigned int i=0;i<ode->getTime().size();i++)
+        for (unsigned int i=0;i<eq->getTime().size();i++)
         {
-            output << ode->getTime()[i] << "\t" << ode->getTemperature()[i] << std::endl;
+            output << eq->getTime()[i] << "\t" << eq->getTemperature()[i] << std::endl;
         }
         output.close();
     }
@@ -166,12 +166,12 @@
         output << std::endl;
 
         unsigned int h = 0;
-        for (unsigned int i=0;i<ode->getTime().size();i++)
+        for (unsigned int i=0;i<eq->getTime().size();i++)
         {
-            output << ode->getTime()[i];
+            output << eq->getTime()[i];
             for (unsigned int k=0;k<NC;k++)
             {
-                output << "\t" << ode->getSpecie()[h++];
+                output << "\t" << eq->getSpecie()[h++];
             }
             output << std::endl;
         }
@@ -193,12 +193,12 @@
         output << std::endl;
 
         unsigned int h = 0;
-        for (unsigned int i=0;i<ode->getTime().size();i++)
+        for (unsigned int i=0;i<eq->getTime().size();i++)
         {
-            output << ode->getTime()[i];
+            output << eq->getTime()[i];
             for (unsigned int k=0;k<SURF_NC;k++)
             {
-                output << "\t" << ode->getSite()[h++];
+                output << "\t" << eq->getSite()[h++];
             }
             output << std::endl;
         }

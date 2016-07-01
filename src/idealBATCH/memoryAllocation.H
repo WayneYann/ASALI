@@ -40,9 +40,9 @@
 
 OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>*        thermodynamicsSurfaceMapXML;
 OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>*                thermodynamicsMapXML;
-OpenSMOKE::KineticsMap_CHEMKIN<double>*                        kineticsMapXML;
-OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>*        kineticsSurfaceMapXML;
-OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>*            transportMapXML;
+OpenSMOKE::KineticsMap_CHEMKIN<double>*                      kineticsMapXML;
+OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>*       kineticsSurfaceMapXML;
+OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>*           transportMapXML;
 OpenSMOKE::StoichiometricMap*                                stoichiometricMapXML;
 
 OpenSMOKE::OpenSMOKEVectorDouble yF;
