@@ -183,9 +183,16 @@
                         domegaBulk_[a][r][s] = -v_[a][r+1]*rho_[a][r+1]*d1stomegaBulk_[a][r][s] + R_[a][r][s]*(1.-epsiMp_)*epsiMh_;
                     }
 
-                    dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
-                                      -Q_[a][r+1]*(1.-epsiMp_)*epsiMh_/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_)
-                                      -aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_);
+                    if ( energy_ == true )
+                    {
+                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
+                                          -Q_[a][r+1]*(1.-epsiMp_)*epsiMh_/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_)
+                                          -aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_);
+                    }
+                    else
+                    {
+                        dTBulk_[a][r+1] = 0.;
+                    }
                                       
                     dTWall_[a][r+1] = TWall_[a][r+1] - TWall_[a-1][r+1];
                 }
@@ -199,29 +206,52 @@
 
                     if ( r == 0 )
                     {
-                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
-                                          -Q_[a][r+1]*(1.-epsiMp_)*epsiMh_/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_)
-                                          -aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_);
-                                          
+                        if ( energy_ == true )
+                        {
+                            dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
+                                              -Q_[a][r+1]*(1.-epsiMp_)*epsiMh_/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_)
+                                              -aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_);
+                        }
+                        else
+                        {
+                            dTBulk_[a][r+1] = 0.;
+                        }
+
                         dTWall_[a][r+1] = TWall_[a][r+1+1] - TWall_[a][r+1];
                     }
                     else if ( r == (Nr_ - 1))
                     {
-                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
-                                          -Q_[a][r+1]*(1.-epsiMp_)*epsiMh_/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_)
-                                          -aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_);
-                                          
-                        dTWall_[a][r+1] = (kr_/hw_)*(TWall_[a][r+1] - TWall_[a][r+1-1])/(rM_[r+1] - rM_[r+1-1]) + (TWall_[a][r+1] - Tw_);
+                        if ( energy_ == true )
+                        {
+                            dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
+                                              -Q_[a][r+1]*(1.-epsiMp_)*epsiMh_/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_)
+                                              -aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_);
+                                              
+                            dTWall_[a][r+1] = (kr_/hw_)*(TWall_[a][r+1] - TWall_[a][r+1-1])/(rM_[r+1] - rM_[r+1-1]) + (TWall_[a][r+1] - Tw_);
+                        }
+                        else
+                        {
+                            dTBulk_[a][r+1] = 0.;
+                            dTWall_[a][r+1] = (TWall_[a][r+1] - TWall_[a][r+1-1]);
+                        }
                     }
                     else
                     {
-                        dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
-                                          -Q_[a][r+1]*(1.-epsiMp_)*epsiMh_/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_)
-                                          -aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_);
-                                          
-                        dTWall_[a][r+1] =  d2ndTWallaxial_[a][r+1]/(rhoS_*cpS_*(1. - epsiMh_))
-                                          +d2ndTWallradial_[a][r+1]/(rhoS_*cpS_*(1. - epsiMh_))
-                                          +aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rhoS_*cpS_*(1. - epsiMh_));
+                        if ( energy_ == true )
+                        {
+                            dTBulk_[a][r+1] = -v_[a][r+1]*d1stTBulk_[a][r+1]
+                                              -Q_[a][r+1]*(1.-epsiMp_)*epsiMh_/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_)
+                                              -aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rho_[a][r+1]*cpG_*epsiMh_*epsiMp_);
+                                              
+                            dTWall_[a][r+1] =  d2ndTWallaxial_[a][r+1]/(rhoS_*cpS_*(1. - epsiMh_))
+                                              +d2ndTWallradial_[a][r+1]/(rhoS_*cpS_*(1. - epsiMh_))
+                                              +aexM_*U_*(TBulk_[a][r+1] - TWall_[a][r+1])/(rhoS_*cpS_*(1. - epsiMh_));
+                        }
+                        else
+                        {
+                            dTBulk_[a][r+1] = 0.;
+                            dTWall_[a][r+1] = 0.;
+                        }
                     }
                 }
             }

@@ -199,8 +199,16 @@
                     }
                     else if ( r == (Nr_ - 1))
                     {
-                        dTBulk_[a][r+1] = 0.;
-                        dTWall_[a][r+1] = (kr_/hw_)*(TWall_[a][r+1] - TWall_[a][r+1-1])/(rM_[r+1] - rM_[r+1-1]) + (TWall_[a][r+1] - Tw_);
+                        if ( energy_ == true )
+                        {
+                            dTBulk_[a][r+1] = 0.;
+                            dTWall_[a][r+1] = (kr_/hw_)*(TWall_[a][r+1] - TWall_[a][r+1-1])/(rM_[r+1] - rM_[r+1-1]) + (TWall_[a][r+1] - Tw_);
+                        }
+                        else
+                        {
+                            dTBulk_[a][r+1] = 0.;
+                            dTWall_[a][r+1] = (TWall_[a][r+1] - TWall_[a][r+1-1]);
+                        }
                     }
                     else
                     {

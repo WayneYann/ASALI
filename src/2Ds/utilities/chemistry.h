@@ -150,7 +150,102 @@ OpenSMOKE::OpenSMOKEVectorDouble ReactionRate(const OpenSMOKE::OpenSMOKEVectorDo
         }
         delete [] s;
     }
-    
+    else if ( "ethylene-partial-oxidation" )
+    {
+        unsigned int NR = 2;
+        OpenSMOKE::OpenSMOKEVectorDouble r(NR);
+        OpenSMOKE::OpenSMOKEVectorDouble k(NR);
+        OpenSMOKE::OpenSMOKEVectorDouble K(NR);
+        OpenSMOKE::OpenSMOKEVectorDouble p(NC_);
+        OpenSMOKE::OpenSMOKEVectorDouble *c;
+        c = new OpenSMOKE::OpenSMOKEVectorDouble[NC_];
+        {
+            double MWmix = mixtureMolecularWeight(omega);
+
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                p[i] = omega[i]*MWmix*p_/MW_[i];
+                
+                ChangeDimensions(NR, &c[i-1], true);
+                
+                for (unsigned int j=1;j<=NR;j++)
+                {
+                    c[i-1][j] = 0.;
+                }
+            }
+
+            unsigned int iO2  = 1;
+            unsigned int iE   = 0;
+            unsigned int iCO2 = 3;
+
+            //- Reaction 1
+            {
+                c[iO2][1] = 0.5;
+                c[iE][1]  = 0.6;
+
+                k[1]      = 6.275*1e06*std::exp(-74.9*1e03/(8.314*T));
+                
+                K[1]      = 1.985*1e02*std::exp(2400./T);
+            }
+
+            //- Reaction 2
+            {
+                c[iO2][2] = 0.5;
+                c[iE][2]  = 0.5;
+
+                k[2]      = 1.206*1e07*std::exp(-89.8*1e03/(8.314*T));
+                
+                K[2]      = 1.080*1e02*std::exp(1530./T);
+            }
+
+            r[1] = k[1]*std::pow(p[iO2+1],c[iO2][1])*std::pow(p[iE+1],c[iE][1])/(1. + K[1]*p[iCO2+1]);                //[mol/Kgcat/s]
+            r[2] = k[2]*std::pow(p[iO2+1],c[iO2][2])*std::pow(p[iE+1],c[iE][2])/(1. + K[1]*p[iCO2+1]);                //[mol/Kgcat/s]
+            
+            r[1] = r[1]*1e-03;                //[mol/Kgcat/s] --> [Kmol/Kgcat/s]
+            r[2] = r[2]*1e-03;                //[mol/Kgcat/s] --> [Kmol/Kgcat/s]
+        }
+        delete [] c;
+
+        OpenSMOKE::OpenSMOKEVectorDouble *s;
+        s = new OpenSMOKE::OpenSMOKEVectorDouble[NC_];
+        {
+            for (unsigned int i=0;i<NC_;i++)
+            {
+                ChangeDimensions(NR, &s[i], true);
+                
+                for (unsigned int j=1;j<=NR;j++)
+                {
+                    s[i][j] = 0.;
+                }
+            }
+
+            // C2H4 + 0.5O2 -> C2H4O [0 + 1 -> 2]
+            {
+                s[0][1] = -1.0;
+                s[1][1] = -0.5;
+                s[2][1] =  1.0;
+            }
+
+            // C2H4 + 3O2 -> 2CO2 + 2H2O [0 + 1 -> 3 + 5]
+            {
+                s[0][2] = -1.;
+                s[1][2] = -3.;
+                s[3][2] =  2.;
+                s[5][2] =  2.;
+            }
+
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                R[i] = 0.;
+                for (unsigned int j=1;j<=NR;j++)
+                {
+                    R[i] = R[i] + s[i-1][j]*r[j]*rhoC_*MW_[i];    //[Kmol/Kgcat/s] --> [Kg/m3cat/s]
+                }
+            }
+        }
+        delete [] s;
+    }
+
     return R;
 }
 
@@ -190,7 +285,7 @@ double ReactionHeat(const OpenSMOKE::OpenSMOKEVectorDouble omega,const double T)
 
             for (unsigned int i=1;i<=NC_;i++)
             {
-                p[i] = omega[i]*MWmix*p_/(1.e05*MW_[i]);
+                p[i] = omega[i]*MWmix*p_/(1e05*MW_[i]);
             }
 
             unsigned int iO2 = 1;
@@ -221,6 +316,73 @@ double ReactionHeat(const OpenSMOKE::OpenSMOKEVectorDouble omega,const double T)
             Q = Q + DHr[i]*r[i]*eff[i]*rhoC_/3600.;                //[J/Kgcat/h] --> [W/m3cat]
         }
     }
+    else if ( "ethylene-partial-oxidation" )
+    {
+        unsigned int NR = 2;
+        OpenSMOKE::OpenSMOKEVectorDouble r(NR);
+        OpenSMOKE::OpenSMOKEVectorDouble k(NR);
+        OpenSMOKE::OpenSMOKEVectorDouble K(NR);
+        OpenSMOKE::OpenSMOKEVectorDouble p(NC_);
+        OpenSMOKE::OpenSMOKEVectorDouble *c;
+        c = new OpenSMOKE::OpenSMOKEVectorDouble[NC_];
+        {
+            double MWmix = mixtureMolecularWeight(omega);
+
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                p[i] = omega[i]*MWmix*p_/MW_[i];
+
+                ChangeDimensions(NR, &c[i-1], true);
+
+                for (unsigned int j=1;j<=NR;j++)
+                {
+                    c[i-1][j] = 0.;
+                }
+            }
+
+            unsigned int iO2  = 1;
+            unsigned int iE   = 0;
+            unsigned int iCO2 = 3;
+
+            //- Reaction 1
+            {
+                c[iO2][1] = 0.5;
+                c[iE][1]  = 0.6;
+
+                k[1]      = 6.275*1e06*std::exp(-74.9*1e03/(8.314*T));
+                
+                K[1]      = 1.985*1e02*std::exp(2400./T);
+            }
+
+            //- Reaction 2
+            {
+                c[iO2][2] = 0.5;
+                c[iE][2]  = 0.5;
+
+                k[2]      = 1.206*1e07*std::exp(-89.8*1e03/(8.314*T));
+                
+                K[2]      = 1.080*1e02*std::exp(1530./T);
+            }
+
+            r[1] = k[1]*std::pow(p[iO2+1],c[iO2][1])*std::pow(p[iE+1],c[iE][1])/(1. + K[1]*p[iCO2+1]);                //[mol/Kgcat/s]
+            r[2] = k[2]*std::pow(p[iO2+1],c[iO2][2])*std::pow(p[iE+1],c[iE][2])/(1. + K[1]*p[iCO2+1]);                //[mol/Kgcat/s]
+            
+            r[1] = r[1]*1e-03;                //[mol/Kgcat/s] --> [Kmol/Kgcat/s]
+            r[2] = r[2]*1e-03;                //[mol/Kgcat/s] --> [Kmol/Kgcat/s]
+        }
+        delete [] c;
+        
+        OpenSMOKE::OpenSMOKEVectorDouble DHr(NR);
+        {
+            DHr[1] = -106.7*1e03/1e-03;               //[J/Kmol]
+            DHr[2] = -1323.*1e03/1e-03;               //[J/Kmol]
+        }
+
+        for (unsigned int i=1;i<=NR;i++)
+        {
+            Q = Q + DHr[i]*r[i]*rhoC_;                //[J/Kgcat/s] --> [W/m3cat]
+        }
+    }
 
     return Q;
 }
@@ -229,7 +391,7 @@ void runAway(const double T)
 {
     if ( reactionType_ == "O-xylene-to-phthalic" )
     {
-        if ( T > (450. + 273.14) )
+        if ( T > (750. + 273.15) )
         {
             std::cout << "\n######################################" << std::endl;
             std::cout << "#                                    #" << std::endl;
@@ -251,7 +413,29 @@ void runAway(const double T)
     }
     else if ( reactionType_ == "O-xylene-to-phthalic-complex" )
     {
-        if ( T > (450. + 273.14) )
+        if ( T > (750. + 273.15) )
+        {
+            std::cout << "\n######################################" << std::endl;
+            std::cout << "#                                    #" << std::endl;
+            std::cout << "#           ##############           #" << std::endl;
+            std::cout << "#          #              #          #" << std::endl;
+            std::cout << "#         #    ##    ##    #         #" << std::endl;
+            std::cout << "#         #    ##    ##    #         #" << std::endl;
+            std::cout << "#         #                #         #" << std::endl;
+            std::cout << "#          #              #          #" << std::endl;
+            std::cout << "#            #   #   #   #           #" << std::endl;
+            std::cout << "#            #   #   #   #           #" << std::endl;
+            std::cout << "#            #############           #" << std::endl;
+            std::cout << "#                                    #" << std::endl;
+            std::cout << "#              RUN-AWAY              #" << std::endl;
+            std::cout << "#                                    #" << std::endl;
+            std::cout << "######################################\n" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    else if ( "ethylene-partial-oxidation" )
+    {
+        if ( T > (750. + 273.15) )
         {
             std::cout << "\n######################################" << std::endl;
             std::cout << "#                                    #" << std::endl;

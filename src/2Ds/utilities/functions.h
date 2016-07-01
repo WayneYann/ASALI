@@ -112,4 +112,25 @@ namespace ASALI
     {
         std::cout << "\nASALI::READinput::ERROR\n" << std::endl;
     }
+
+    OpenSMOKE::OpenSMOKEVectorDouble fromMassFractionToMoleFraction(const OpenSMOKE::OpenSMOKEVectorDouble omega,const OpenSMOKE::OpenSMOKEVectorDouble MW)
+    {
+        double MWmix = 0.;
+        OpenSMOKE::OpenSMOKEVectorDouble x(omega.Size());
+        for (unsigned int i=1;i<=omega.Size();i++)
+        {
+            MWmix = MWmix + omega[i]/MW[i];
+        }
+
+        MWmix = 1./MWmix;
+
+        for (unsigned int i=1;i<=omega.Size();i++)
+        {
+            x[i] = omega[i]*MWmix/MW[i];
+        }
+
+        return x;
+    }
+
+
 }

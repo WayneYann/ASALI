@@ -23,6 +23,7 @@ echo '		<feed>625.15</feed>' >> 2Ds.xml
 echo '	</temperauture>' >> 2Ds.xml
 echo '	<specificMassFlowRate>0.867904008</specificMassFlowRate>' >> 2Ds.xml
 echo '	<inertLength>0.3</inertLength>' >> 2Ds.xml
+echo '	<energy>true</energy>' >> 2Ds.xml
 echo '</operatingConditions>' >> 2Ds.xml
 echo ' ' >> 2Ds.xml
 echo '<packedBed>' >> 2Ds.xml

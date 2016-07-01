@@ -103,6 +103,8 @@ public:
 
     void resize(const std::string type);
 
+    void setEnergy(const bool energy);
+
     void start(const std::string type,const std::string eq);
     void end(const std::string type,const std::string eq);
     void cleanMemory();
@@ -172,6 +174,8 @@ private:
     double LgeoH_;
     double LgeoM_;
     double Linert_;
+    
+    bool   energy_;
 
     std::string reactionType_;
     std::string reactorType_;
@@ -283,6 +287,11 @@ void equationSystem::setFlowRate(const double G)
 void equationSystem::setFeedTemperature(const double Tin)
 {
     Tin_ = Tin;
+}
+
+void equationSystem::setEnergy(const bool energy)
+{
+    energy_ = energy;
 }
 
 void equationSystem::setMassFraction(const std::vector<double> IN)

@@ -46,6 +46,7 @@ ASALI::equationSystem  *eq;
 {
     eq = new ASALI::equationSystem();
 
+    eq->setEnergy(input.getEnergy());
     eq->setGasProperties(input.getGasSpecificHeat(),input.getGasConductivity(),
                          input.getGasViscosity(),   input.getGasDiffusivity());
 

@@ -173,7 +173,14 @@
                         domegaBulk_[a][r][s] = omegaIN_[s] - omegaBulk_[a][r][s];
                     }
 
-                    dTBulk_[a][r+1] = Tin_ - TBulk_[a][r+1] + (ka_/(rho_[a][r+1]*cpG_))*d1stTBulk_[a][r+1];
+                    if ( energy_ == true )
+                    {
+                        dTBulk_[a][r+1] = Tin_ - TBulk_[a][r+1] + (ka_/(rho_[a][r+1]*cpG_))*d1stTBulk_[a][r+1];
+                    }
+                    else
+                    {
+                        dTBulk_[a][r+1] = Tin_ - TBulk_[a][r+1];
+                    }
                 }
                 else if ( a == (Na_ - 1))
                 {
@@ -197,14 +204,28 @@
                     }
                     else if ( r == (Nr_ - 1))
                     {
-                        dTBulk_[a][r+1] = (TBulk_[a][r+1] - TBulk_[a][r+1-1])/(rP_[r+1] - rP_[r+1-1]) + (hw_/kr_)*(TBulk_[a][r+1] - Tw_);
+                        if ( energy_ == true )
+                        {
+                            dTBulk_[a][r+1] = (TBulk_[a][r+1] - TBulk_[a][r+1-1])/(rP_[r+1] - rP_[r+1-1]) + (hw_/kr_)*(TBulk_[a][r+1] - Tw_);
+                        }
+                        else
+                        {
+                            dTBulk_[a][r+1] = (TBulk_[a][r+1] - TBulk_[a][r+1-1]);
+                        }
                     }
                     else
                     {
-                        dTBulk_[a][r+1] = - v_[a][r+1]*d1stTBulk_[a][r+1]
-                                          + d2ndTBulkaxial_[a][r+1]/(cpG_*rho_[a][r+1])
-                                          + d2ndTBulkradial_[a][r+1]/(cpG_*rho_[a][r+1])
-                                          - Q_[a][r+1]*(1.-epsiP_)/(cpG_*rho_[a][r+1]);
+                        if ( energy_ == true )
+                        {
+                            dTBulk_[a][r+1] = - v_[a][r+1]*d1stTBulk_[a][r+1]
+                                              + d2ndTBulkaxial_[a][r+1]/(cpG_*rho_[a][r+1])
+                                              + d2ndTBulkradial_[a][r+1]/(cpG_*rho_[a][r+1])
+                                              - Q_[a][r+1]*(1.-epsiP_)/(cpG_*rho_[a][r+1]);
+                        }
+                        else
+                        {
+                            dTBulk_[a][r+1] = 0.;
+                        }
                     }
                 }
             }

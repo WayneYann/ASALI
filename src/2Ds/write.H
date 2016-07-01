@@ -43,11 +43,17 @@
     std::string folderName = "results/" + input.getModelName()[j];
     boost::filesystem::create_directory(folderName);
 
-    std::ofstream spe;
-    std::string fileNameBulk = folderName + "/species.txt";
-    const char *pathBulk = fileNameBulk.c_str();
-    remove(pathBulk);
-    spe.open(pathBulk,std::ios::out);
+    std::ofstream mass;
+    std::string fileNameMass = folderName + "/mass-fraction.txt";
+    const char *pathMass = fileNameMass.c_str();
+    remove(pathMass);
+    mass.open(pathMass,std::ios::out);
+
+    std::ofstream mole;
+    std::string fileNameMole = folderName + "/mole-fraction.txt";
+    const char *pathMole = fileNameMole.c_str();
+    remove(pathMole);
+    mole.open(pathMole,std::ios::out);
 
     std::ofstream temp;
     std::string fileNameWall = folderName + "/temperature.txt";
@@ -76,12 +82,14 @@
 
     {
         unsigned int WP = 6;
-        spe.setf(std::ios::scientific);
+        mass.setf(std::ios::scientific);
+        mole.setf(std::ios::scientific);
         temp.setf(std::ios::scientific);
         twoD.setf(std::ios::scientific);
         grid.setf(std::ios::scientific);
         rad.setf(std::ios::scientific);
-        spe.precision(WP);
+        mass.precision(WP);
+        mole.precision(WP);
         temp.precision(WP);
         twoD.precision(WP);
         grid.precision(WP);
@@ -174,14 +182,24 @@
         }
 
         for (unsigned int s=1;s<=NC;s++)
-            spe << input.getSpecieName()[s-1] << "\t";
-        spe << std::endl;
+            mass << input.getSpecieName()[s-1] << "\t";
+        mass << std::endl;
+
+        for (unsigned int s=1;s<=NC;s++)
+            mole << input.getSpecieName()[s-1] << "\t";
+        mole << std::endl;
 
         for (unsigned int a=0;a<Na;a++)
         {
             for (unsigned int s=1;s<=NC;s++)
-                spe << omega[a][s] << "\t";
-            spe << std::endl;
+                mass << omega[a][s] << "\t";
+            mass << std::endl;
+
+            OpenSMOKE::OpenSMOKEVectorDouble x(NC);
+            x = ASALI::fromMassFractionToMoleFraction(omega[a],input.getMW());
+            for (unsigned int s=1;s<=NC;s++)
+                mole << x[s] << "\t";
+            mole << std::endl;
 
             temp << Tg[a+1] << std::endl;
             
@@ -280,14 +298,24 @@
         }
 
         for (unsigned int s=1;s<=NC;s++)
-            spe << input.getSpecieName()[s-1] << "\t";
-        spe << std::endl;
+            mass << input.getSpecieName()[s-1] << "\t";
+        mass << std::endl;
+
+        for (unsigned int s=1;s<=NC;s++)
+            mole << input.getSpecieName()[s-1] << "\t";
+        mole << std::endl;
 
         for (unsigned int a=0;a<Na;a++)
         {
             for (unsigned int s=1;s<=NC;s++)
-                spe << omega[a][s] << "\t";
-            spe << std::endl;
+                mass << omega[a][s] << "\t";
+            mass << std::endl;
+
+            OpenSMOKE::OpenSMOKEVectorDouble x(NC);
+            x = ASALI::fromMassFractionToMoleFraction(omega[a],input.getMW());
+            for (unsigned int s=1;s<=NC;s++)
+                mole << x[s] << "\t";
+            mole << std::endl;
 
             temp << Tg[a+1] << std::endl;
             
@@ -387,14 +415,24 @@
         }
 
         for (unsigned int s=1;s<=NC;s++)
-            spe << input.getSpecieName()[s-1] << "\t";
-        spe << std::endl;
+            mass << input.getSpecieName()[s-1] << "\t";
+        mass << std::endl;
+
+        for (unsigned int s=1;s<=NC;s++)
+            mole << input.getSpecieName()[s-1] << "\t";
+        mole << std::endl;
 
         for (unsigned int a=0;a<Na;a++)
         {
             for (unsigned int s=1;s<=NC;s++)
-                spe << omega[a][s] << "\t";
-            spe << std::endl;
+                mass << omega[a][s] << "\t";
+            mass << std::endl;
+
+            OpenSMOKE::OpenSMOKEVectorDouble x(NC);
+            x = ASALI::fromMassFractionToMoleFraction(omega[a],input.getMW());
+            for (unsigned int s=1;s<=NC;s++)
+                mole << x[s] << "\t";
+            mole << std::endl;
 
             temp << Tg[a+1] << std::endl;
             
@@ -409,7 +447,8 @@
             rad << d[r+1] << std::endl;
         }
     }
-    spe.close();
+    mass.close();
+    mole.close();
     temp.close();
     grid.close();
     twoD.close();

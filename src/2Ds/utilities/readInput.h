@@ -46,6 +46,8 @@ namespace ASALI
 
             readInput(std::string& file);
 
+            inline bool                     getEnergy()                     const {return energy_;};
+
             inline std::vector<bool>        getModels()                     const {return models_;};
 
             inline std::vector<double>      getMW()                         const {return MW_;};
@@ -113,6 +115,8 @@ namespace ASALI
             unsigned int NC_;
             unsigned int Na_;
             unsigned int Nr_;
+
+            bool energy_;
 
             double Tw_;
             double Tin_;
@@ -231,10 +235,30 @@ namespace ASALI
                     name_[4] = "N2";
                     name_[5] = "H2O";
                 }
+                else if ( "ethylene-partial-oxidation" )
+                {
+                    NC_    = 6;
+
+                    MW_.resize(NC_);
+                    MW_[0] = 12.01*2. + 4.;
+                    MW_[1] = 32.;
+                    MW_[2] = 12.01*2. + 4. + 16.;
+                    MW_[3] = 44.;
+                    MW_[4] = 12.01 + 4.;
+                    MW_[5] = 18.;
+
+                    name_.resize(NC_);
+                    name_[0] = "C2H4";
+                    name_[1] = "O2";
+                    name_[2] = "C2H4O";
+                    name_[3] = "CO2";
+                    name_[4] = "CH4";
+                    name_[5] = "H2O";
+                }
                 else
                 {
                     error();
-                    std::cout << "node || reaction || could be only || O-xylene-to-phthalic || O-xylene-to-phthalic-complex ||\n" << std::endl;
+                    std::cout << "node || reaction || could be only || O-xylene-to-phthalic || O-xylene-to-phthalic-complex || ethylene-partial-oxidation ||\n" << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }
@@ -266,6 +290,18 @@ namespace ASALI
                     x[0]     = tree.get<double>("mole.O2");
                     x[1]     = tree.get<double>("mole.XYLENE");
                     x[4]     = tree.get<double>("mole.N2");
+                }
+                else if ( "ethylene-partial-oxidation" )
+                {
+                    for (unsigned int i=0;i<NC_;i++)
+                    {
+                       x[i] = 0.;
+                    }
+
+                    x[1] = tree.get<double>("mole.O2");
+                    x[0] = tree.get<double>("mole.C2H4");
+                    x[3] = tree.get<double>("mole.CO2");
+                    x[4] = tree.get<double>("mole.CH4");
                 }
 
                 for (unsigned int i=0;i<NC_;i++)
@@ -299,6 +335,7 @@ namespace ASALI
                 p_      = tree.get<double>("operatingConditions.pressure");
                 G_      = tree.get<double>("operatingConditions.specificMassFlowRate");
                 Linert_ = tree.get<double>("operatingConditions.inertLength");
+                energy_ = tree.get<bool>("operatingConditions.energy");
             }
             
             // packed bed
@@ -397,11 +434,7 @@ namespace ASALI
                 else
                 {
                     error();
-                    std::cout << "node || solver || could be || OpenSMOKE ||";
-				    #if ASALI_USE_BZZ == 1
-				    std::cout << " BzzMath ||";
-				    #endif
-				    std::cout << std::endl;
+                    std::cout << "node || solver || could be || OpenSMOKE ||" << std::endl;
                     std::cout << "\n" << std::endl;
                     exit(EXIT_FAILURE);
                 }
@@ -488,8 +521,15 @@ namespace ASALI
         std::cout << "                                      OPERATING CONDITIONS                                      \n" << std::endl;
         std::cout << "Specific mass flow rate                  = " << G_ << "\t[Kg/m2/s]" << std::endl;
         std::cout << "Pressure                                 = " << p_ << "\t[Pa]" << std::endl;
-        std::cout << "Feed  temperature                        = " << Tin_ << "\t[K]" << std::endl;
-        std::cout << "Shell temperature                        = " << Tw_ << "\t[K]" << std::endl;
+        if (energy_ == true)
+        {
+            std::cout << "Feed  temperature                        = " << Tin_ << "\t[K]" << std::endl;
+            std::cout << "Shell temperature                        = " << Tw_ << "\t[K]" << std::endl;
+        }
+        else
+        {
+            std::cout << "Energy:                                    " << "off" << std::endl;
+        }
         std::cout << "\n################################################################################################" << std::endl;
         std::cout << "                                         SOLVER OPTIONS                                         \n" << std::endl;
         std::cout << "Axial  number of points:                   " << Na_ << std::endl;
