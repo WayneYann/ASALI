@@ -127,7 +127,7 @@
         FrictionFactor(ReynoldsForFrictionFactor());
 
         //- Sherwood number
-        Sherwood(ReynoldsForHeatTransfer());
+        Sherwood(ReynoldsForMassTransfer());
 
         //- Mass transfer coefficient [W/m2/K]
         kMat();

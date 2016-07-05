@@ -131,4 +131,33 @@ namespace ASALI
         }
         return epsi;
     }
+
+    void ODEstart()
+    {
+        std::cout << "\n#################" << std::endl;
+        std::cout << "# ODE:    START #" << std::endl;
+        std::cout << "#################\n" << std::endl;
+    }
+    
+    void ODEend()
+    {
+        std::cout << "\n#################" << std::endl;
+        std::cout << "# ODE:     END  #" << std::endl;
+        std::cout << "#################\n" << std::endl;
+    }
+
+    void DAEstart()
+    {
+        std::cout << "\n#################" << std::endl;
+        std::cout << "# DAE:    START #" << std::endl;
+        std::cout << "#################\n" << std::endl;
+    }
+    
+    void DAEend()
+    {
+        std::cout << "\n#################" << std::endl;
+        std::cout << "# DAE:     END  #" << std::endl;
+        std::cout << "#################\n" << std::endl;
+	}
+
 }

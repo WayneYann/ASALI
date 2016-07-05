@@ -40,18 +40,15 @@
 
 namespace ASALI
 {
-class DAESystem
-#if ASALI_USE_BZZ == 1
- : public BzzDaeSystemObject
-#endif
+class equationSystem
 {
 public:
 
-    DAESystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
-              OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
-              OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
-              OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
-              OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap);
+    equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+                   OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
+                   OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
+                   OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
+                   OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap);
 
     #include "vector.h"
 
@@ -71,18 +68,15 @@ public:
 
     unsigned int NumberOfEquations()     const {return NE_;};
 
-    unsigned int Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
+    unsigned int DaeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
 
-    unsigned int Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+    unsigned int DaePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
 
-    void AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic);
+    unsigned int OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
 
-    #if ASALI_USE_BZZ == 1
-    void AlgebraicEquations(BzzVectorInt& algebraic);
-    virtual void GetSystemFunctions(BzzVector &y, double t, BzzVector &dy);
-    virtual void ObjectBzzPrint(void);
-    virtual ~DAESystem(){};
-    #endif
+    unsigned int OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+
+    void AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M);
 
 private:
 
@@ -153,7 +147,7 @@ private:
 
 };
 
-DAESystem::DAESystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+equationSystem::equationSystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
                         OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
                         OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
                         OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
@@ -211,7 +205,7 @@ DAESystem::DAESystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          t
         Compprofile_.resize(NC_);
     }
 
-void DAESystem::SetReactor(const double G, const double Dp, const double Dt, const double epsi)
+void equationSystem::SetReactor(const double G, const double Dp, const double Dt, const double epsi)
 {
     G_         = G;
     Dp_        = Dp;
@@ -219,102 +213,88 @@ void DAESystem::SetReactor(const double G, const double Dp, const double Dt, con
     Dt_        = Dt;
 }
 
-void DAESystem::SetCorrelation(const std::string fmName, const std::string NuName)
+void equationSystem::SetCorrelation(const std::string fmName, const std::string NuName)
 {
     fmName_    = fmName;
     NuName_    = NuName;
 }
 
-void DAESystem::SetReactorType(const std::string type)
+void equationSystem::SetReactorType(const std::string type)
 {
     type_ = type;
 }
 
 
-void DAESystem::SetInertSpecie(const std::string inert)
+void equationSystem::SetInertSpecie(const std::string inert)
 {
     inert_ = inert;
 }
 
-void DAESystem::SetTemperature(const double T)
+void equationSystem::SetTemperature(const double T)
 {
     T_ = T;
 }
 
-#if ASALI_USE_BZZ == 1
-void DAESystem::GetSystemFunctions(BzzVector &y, double t, BzzVector &dy)
-{
-    FromBzzToOS(y,yOS_);
-    #include "DAEequations.H"
-    #include "DAEprint.H"
-    FromOSToBzz(dyOS_,dy);
-}
-
-void DAESystem::ObjectBzzPrint(void)
-{
-}
-
-void DAESystem::AlgebraicEquations(BzzVectorInt& algebraic)
-{
-    ChangeDimensions(NE_, &algebraic, true);
-    for (unsigned int j=1;j<=NC_;j++)
-    {
-        if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
-        {
-            algebraic[j]     = 1;
-        }
-        else
-        {
-            algebraic[j]     = 0;
-        }
-    }
-    for (unsigned int j=1;j<=NC_;j++)
-    {
-        algebraic[j+NC_] = 0;
-    }
-    algebraic[NE_]       = 1;
-}
-#endif
-
-unsigned int DAESystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+unsigned int equationSystem::DaeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
     ChangeDimensions(NE_, &dy,    true);
     for (unsigned int i=1;i<=NE_;i++)
         yOS_[i] = y[i];
+
     #include "DAEequations.H"
     #include "DAEprint.H"
+
     for (unsigned int i=1;i<=NE_;i++)
         dy[i] = dyOS_[i];
     return 0;
 }
 
-unsigned int DAESystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+unsigned int equationSystem::OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
 {
     return 0;
 }
 
-void DAESystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
+unsigned int equationSystem::OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
 {
-    ChangeDimensions(NE_, &algebraic, true);
+    ChangeDimensions(NE_, &dy,    true);
+    for (unsigned int i=1;i<=NE_;i++)
+        yOS_[i] = y[i];
+
+    #include "ODEequations.H"
+
+    for (unsigned int i=1;i<=NE_;i++)
+        dy[i] = dyOS_[i];
+    return 0;
+}
+
+unsigned int equationSystem::DaePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+{
+    return 0;
+}
+
+void equationSystem::AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M)
+{
+    M.resize(NE_);
+    unsigned int counter = 0;
     for (unsigned int j=1;j<=NC_;j++)
     {
         if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
         {
-            algebraic[j]     = false;
+            M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
         }
         else
         {
-            algebraic[j]     = true;
+           M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
         }
     }
     for (unsigned int j=1;j<=NC_;j++)
     {
-        algebraic[j+NC_] = true;
+        M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
     }
-    algebraic[NE_]       = false;
+    M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
 }
 
-void DAESystem::GetProfile(std::vector<double> &z, std::vector<double> &p, std::vector<double> &comp)
+void equationSystem::GetProfile(std::vector<double> &z, std::vector<double> &p, std::vector<double> &comp)
 {
     p.resize(pprofile_.size());
     for (unsigned int k=0;k<p.size();k++)
@@ -329,7 +309,7 @@ void DAESystem::GetProfile(std::vector<double> &z, std::vector<double> &p, std::
          z[k] = z_[k];
 }
 
-void DAESystem::FrictionFactor(const double Reynolds)
+void equationSystem::FrictionFactor(const double Reynolds)
 {
     if ( type_ == "PackedBed" )
     {
@@ -425,7 +405,7 @@ void DAESystem::FrictionFactor(const double Reynolds)
     }
 }
 
-void DAESystem::Sherwood(const double Reynolds)
+void equationSystem::Sherwood(const double Reynolds)
 {
     if ( type_ == "PackedBed" )
     {
@@ -546,7 +526,7 @@ void DAESystem::Sherwood(const double Reynolds)
     }
 }
 
-void DAESystem::av()
+void equationSystem::av()
 {
     if ( type_ == "Monolith" )
     {
@@ -558,7 +538,7 @@ void DAESystem::av()
     }
 }
 
-double DAESystem::ReynoldsForMassTransfer()
+double equationSystem::ReynoldsForMassTransfer()
 {
     double Reynolds = 0.;
     if ( type_ == "Monolith" )
@@ -573,7 +553,7 @@ double DAESystem::ReynoldsForMassTransfer()
     return Reynolds;
 }
 
-double DAESystem::ReynoldsForFrictionFactor()
+double equationSystem::ReynoldsForFrictionFactor()
 {
     double Reynolds = 0.;
     if ( type_ == "Monolith" )
@@ -588,7 +568,7 @@ double DAESystem::ReynoldsForFrictionFactor()
     return Reynolds;
 }
 
-void DAESystem::Sc()
+void equationSystem::Sc()
 {
     for(unsigned int i=1;i<=NC_;i++)
     {
@@ -596,7 +576,7 @@ void DAESystem::Sc()
     }
 }
 
-void DAESystem::kMat()
+void equationSystem::kMat()
 {
     if ( type_ == "Monolith" )
     {
@@ -614,7 +594,7 @@ void DAESystem::kMat()
     }
 }
 
-void  DAESystem::error()
+void  equationSystem::error()
 {
     std::cout << "\nASALI::HEATtransfer::ERROR\n" << std::endl;
 }

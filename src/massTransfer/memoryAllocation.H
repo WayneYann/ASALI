@@ -45,7 +45,6 @@ OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>*           transportMapXML;
 OpenSMOKE::StoichiometricMap*                                stoichiometricMapXML;
 
 OpenSMOKE::OpenSMOKEVectorDouble yF;
-OpenSMOKE::OpenSMOKEVectorDouble yFode;
 OpenSMOKE::OpenSMOKEVectorDouble x0;
 
 double G;

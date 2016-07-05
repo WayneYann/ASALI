@@ -58,10 +58,6 @@ echo '{' >> massTransfer.txt
 echo '  pressure drops    Eisfeld' >> massTransfer.txt
 echo ' ' >> massTransfer.txt
 echo '  mass transfer     Yoshida' >> massTransfer.txt
-echo '}' >> massTransfer.txt
 echo ' ' >> massTransfer.txt
-echo 'Numerical solvers' >> massTransfer.txt
-echo '{' >> massTransfer.txt
-echo '  ODE       BzzMath' >> massTransfer.txt
-echo '  DAE       BzzMath' >> massTransfer.txt
+echo '  numerical solver  OpenSMOKE' >> massTransfer.txt
 echo '}' >> massTransfer.txt

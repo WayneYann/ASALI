@@ -38,73 +38,70 @@
 #                                                                                              #
 ##############################################################################################*/
 
-if ( input.getOdeSolver() == "BzzMath")
+// C++
+#include <string>
+#include <iostream>
+#include <math.h>
+#include <ctime>
+#include <sstream>
+#include <fstream>
+#include <stdlib.h>
+#include <vector>
+#include <algorithm>
+
+#if ASALI_USE_BZZ == 1
+#define BZZ_COMPILER 101
+#define OPENSMOKE_USE_BZZMATH 1
+#include "BzzMath.hpp"
+#endif
+
+#if ASALI_USE_BZZ == 0
+#define OPENSMOKE_USE_BZZMATH 0
+#endif
+
+// OpenSMOKE++
+#include "OpenSMOKEpp"
+#include "maps/Maps_CHEMKIN"
+#include "reactors/utilities/Utilities"
+#include "math/OpenSMOKEVector.h"
+#include "math/multivalue-ode-solvers/MultiValueSolver"
+#include "math/multivalue-dae-solvers/MultiValueSolver"
+
+// Eigen
+#include <Eigen/Dense>
+
+// Boost
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
+// RapidXML
+#include "rapidxml.hpp"
+
+// Utilities
+#include "readInput.h"
+#include "functions.h"
+#include "vector.h"
+#include "chemistry/reactionRates.H"
+
+// Equations
+#include "memoryAllocation.H"
+#include "equations.h"
+#include "odeInterfaces.h"
+#include "daeInterfaces.h"
+
+
+int main( int argc, char** argv )
 {
-    #if ASALI_USE_BZZ == 1
+    double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
 
-    BzzVector yFbzz;
-    BzzVector x0bzz;
-    ChangeDimensions( ode->NumberOfEquations(), &yFbzz, true);
-    ChangeDimensions( ode->NumberOfEquations(), &x0bzz, true);
-    ChangeDimensions( ode->NumberOfEquations(), &yFode, true);
+    #include "input.H"
+    #include "resolution.H"
+    #include "write.H"
 
-    for (unsigned int i=1;i<=NC;i++)
-    {
-        x0bzz[i] = x0[i];
-    }
+    remove("BzzFile.txt");
 
-    for (unsigned int i=1;i<=NC;i++)
-    {
-        x0bzz[i] = x0[i];
-    }
-    
-    x0bzz[ode->NumberOfEquations()] = input.getFeedPressure();
+    double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
+    ASALI::CPUtime(tStart,tEnd);
 
-    BzzOdeStiffObject o;
-    o(x0bzz,0.,ode);
-
-    o.SetTolAbs(1.e-12);
-    o.SetTolRel(1.e-08);
-
-    yFbzz = o(1e07);
-
-    FromBzzToOS(yFbzz,yFode);
-
-    #endif
-}
-else if ( input.getOdeSolver() == "Sundials" )
-{
-    #if ASALI_USE_SUNDIALS == 1
-
-    OpenSMOKE::OpenSMOKEVectorDouble y0(ode->NumberOfEquations());
-    ChangeDimensions(ode->NumberOfEquations(), &yFode, true);
-
-    for (unsigned int i=1;i<=NC;i++)
-    {
-        y0[i] = x0[i];
-    }
-
-    for (unsigned int i=1;i<=NC;i++)
-    {
-        y0[i+NC] = x0[i];
-    }
- 
-    y0[ode->NumberOfEquations()] = input.getFeedPressure();
-
-    OpenSMOKE::ODESystem_CVODE_Template *odeSystemObject;
-    odeSystemObject = OpenSMOKE::ODESystem_CVODE_Template::GetInstance();
-    odeSystemObject->SetOdeSystem(ode);
-
-    OpenSMOKE::OpenSMOKE_CVODE_Sundials<OpenSMOKE::ODESystem_CVODE_Template>   o(odeSystemObject);
-    o.SetDimensions(ode->NumberOfEquations());
-    o.SetAbsoluteTolerance(1e-12);
-    o.SetRelativeTolerance(1e-08);
-    o.SetMaximumNumberOfSteps(20000);
-    o.SetAnalyticalJacobian(false);
-    o.SetInitialValues(0, y0.GetHandle());
-
-    // Solution
-    o.Solve(1e07);
-    o.Solution(yFode.GetHandle());
-    #endif
+    return 0;
 }

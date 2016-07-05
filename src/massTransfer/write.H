@@ -42,7 +42,7 @@
     std::vector<double> p;
     std::vector<double> comp;
     std::vector<double> z;
-    dae->GetProfile(z,p,comp);
+    eq->GetProfile(z,p,comp);
 
     OpenSMOKE::OpenSMOKEVectorDouble *omega;
 

@@ -37,87 +37,110 @@
 #   along with ASALI. If not, see <http://www.gnu.org/licenses/>.                              #
 #                                                                                              #
 ##############################################################################################*/
-
-// C++
-#include <string>
-#include <iostream>
-#include <math.h>
-#include <ctime>
-#include <sstream>
-#include <fstream>
-#include <stdlib.h>
-#include <vector>
-#include <algorithm>
-
-#if ASALI_USE_BZZ == 1
-// BzzMath
-#define BZZ_COMPILER 101
-#include "BzzMath.hpp"
-#endif
-
-#if ASALI_USE_SUNDIALS == 1
-#define OPENSMOKE_USE_SUNDIALS 1
-#endif
-
-#if ASALI_USE_SUNDIALS == 0
-#define OPENSMOKE_USE_SUNDIALS 0
-#endif
-
-// OpenSMOKE++ Definitions
-#include "OpenSMOKEpp"
-
-// CHEMKIN maps
-#include "maps/Maps_CHEMKIN"
-
-// Reactor utilities
-#include "reactors/utilities/Utilities"
-
-// Eigen
-#include <Eigen/Dense>
-
-// Boost
-#include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
-
-// RapidXML
-#include "rapidxml.hpp"
-
-// Utilities
-#include "readInput.h"
-#include "functions.h"
-#include "vector.h"
-#include "chemistry/reactionRates.H"
-
-// Equations
-#include "memoryAllocation.H"
-#include "ODEsystem.h"
-#include "DAEsystem.h"
-#if ASALI_USE_SUNDIALS == 1
-#include "odeInterfaces.h"
-#include "daeInterfaces.h"
-#endif
-
-
-int main( int argc, char** argv )
+if ( input.getSolver() == "OpenSMOKE")
 {
-    double tStart = OpenSMOKE::OpenSMOKEGetCpuTime();
+    unsigned int NE = eq->NumberOfEquations();
+    Eigen::VectorXd                      y0(NE);
+    Eigen::VectorXd                      yf(NE);
+    std::vector<OpenSMOKE::EquationType> algebraic(NE);
+    {
+        ASALI::ODEstart();
+        x0.CopyTo(y0.data());
+        // Create the solver
+        typedef OdeSMOKE::KernelDense<OpenSMOKE::ODESystem_OpenSMOKE> denseOde;
+        typedef OdeSMOKE::MethodGear<denseOde> methodGear;
+        OdeSMOKE::MultiValueSolver<methodGear> ode_solver;
+        ode_solver.SetReactor(eq);
 
-    #include "input.H"
-    std::cout << "\n#####################" << std::endl;
-    std::cout << "Solving ODE --> ";
-    #include "ODEresolution.H"
-    std::cout << "done!" << std::endl;
-    std::cout << "#####################" << std::endl;
-    std::cout << "Solving DAE --> ";
-    #include "DAEresolution.H"
-    std::cout << "done!" << std::endl;
-    std::cout << "#####################" << std::endl;
-    #include "write.H"
+        // Set initial conditions
+        ode_solver.SetInitialConditions(0., y0);
 
-    remove("BzzFile.txt");
+        // Set linear algebra options
+        ode_solver.SetFullPivoting(true);
 
-    double tEnd = OpenSMOKE::OpenSMOKEGetCpuTime();
-    ASALI::CPUtime(tStart,tEnd);
+        // Set relative and absolute tolerances
+        ode_solver.SetAbsoluteTolerances(1e-12);
+        ode_solver.SetRelativeTolerances(1e-07);
 
-    return 0;
+		OdeSMOKE::OdeStatus status = ode_solver.Solve(1e10);
+		ode_solver.Solution(y0);
+
+        ASALI::ODEend();
+    }
+
+    //- DAE
+    {
+        ASALI::DAEstart();
+        typedef DaeSMOKE::KernelDense<OpenSMOKE::DAESystem_OpenSMOKE> denseDae;
+        typedef DaeSMOKE::MethodGear<denseDae> methodGear;
+        DaeSMOKE::MultiValueSolver<methodGear> dae_solver;
+        dae_solver.SetReactor(eq);
+
+        eq->AlgebraicEquations(algebraic);
+        dae_solver.SetInitialConditions(0., y0, algebraic);
+
+        dae_solver.SetFullPivoting(true);
+
+
+        dae_solver.SetAbsoluteTolerances(1.e-12);
+        dae_solver.SetRelativeTolerances(1.e-07);
+
+        DaeSMOKE::DaeStatus status = dae_solver.Solve(input.getReactorLength());
+
+        dae_solver.Solution(yf);
+        ChangeDimensions(NE, &yF, true);
+        yF.CopyFrom(yf.data());
+        ASALI::DAEend();
+    }
+}
+else if ( input.getSolver() == "BzzMath")
+{
+#if ASALI_USE_BZZ == 1
+    unsigned int NE = eq->NumberOfEquations();
+
+    BzzVector                            y0(NE);
+    BzzVector                            yf(NE);
+    BzzVectorInt                         integer(NE);
+    std::vector<OpenSMOKE::EquationType> algebraic(NE);
+
+    {
+        ASALI::ODEstart();
+        x0.CopyTo(y0.GetHandle());
+
+        // Create the solver
+        OpenSMOKE::ODESystem_BzzOde ode(*eq);
+        BzzOdeStiffObject ode_solver(y0, 0., &ode);
+
+        // Set relative and absolute tolerances
+        ode_solver.SetTolAbs(1e-12);
+        ode_solver.SetTolRel(1e-07);
+
+		y0 = ode_solver(1e10);
+        ASALI::ODEend();
+    }
+
+    //- DAE
+    {
+        ASALI::DAEstart();
+        
+        eq->AlgebraicEquations(algebraic);
+        for (unsigned int i = 1; i <= NE; i++)
+        {
+            integer[i] = (algebraic[i-1] == OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL) ? 1 : 0;
+        }
+
+        // Create the solver
+        OpenSMOKE::DAESystem_BzzDae dae(*eq);
+        BzzDaeObject dae_solver(y0, 0.,integer, &dae);
+        
+        // Set relative and absolute tolerances
+        dae_solver.SetTolAbs(1e-12);
+        dae_solver.SetTolRel(1e-07);
+
+        yf = dae_solver(input.getReactorLength());
+        ChangeDimensions(NE, &yF, true);
+        yF.CopyFrom(yf.GetHandle());
+        ASALI::DAEend();
+    }
+#endif
 }

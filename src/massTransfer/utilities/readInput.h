@@ -60,8 +60,7 @@ namespace ASALI
             std::string getKineticsPath()              const  { return kineticsPath_;};
             std::string getPressureCorrelation()       const  { return pCorr_;};
             std::string getMassTransferCorrelation()   const  { return hCorr_;};
-            std::string getOdeSolver()                 const  { return odeSolver_;};
-            std::string getDaeSolver()                 const  { return daeSolver_;};
+            std::string getSolver()                    const  { return solver_;};
             std::string getInletType()                 const  { return inlet_;};
             std::string getResultsType()               const  { return results_;};
             std::string getInertSpecie()               const  { return inert_;};
@@ -86,7 +85,7 @@ namespace ASALI
             std::string kineticsPath_;
             std::string hCorr_;
             std::string pCorr_;
-            std::string odeSolver_;
+            std::string solver_;
             std::string daeSolver_;
             std::string inert_;
             std::string results_;
@@ -115,7 +114,6 @@ namespace ASALI
             void reactor();
             void solver();
             void operating();
-            void numerical();
             void transport();
             void reaction();
 
@@ -139,13 +137,12 @@ namespace ASALI
         p_       = 0.;
 
 
-        typeIndex_         = 0;
-        operatingIndex_    = 0;
-        propertiesIndex_   = 0;
-        solverIndex_       = 0;
-        numericalIndex_    = 0;
+        typeIndex_        = 0;
+        operatingIndex_   = 0;
+        propertiesIndex_  = 0;
+        solverIndex_      = 0;
         kineticsIndex_    = 0;
-        reactionIndex_     = 0;
+        reactionIndex_    = 0;
 
         //- Check input
         {
@@ -167,7 +164,6 @@ namespace ASALI
         reactor();
         operating();
         solver();
-        numerical();
         reaction();
 
     }
@@ -202,8 +198,8 @@ namespace ASALI
         }
         else
         {
-            std::vector<bool>         checkWord(7);
-            std::vector<std::string>  words(7);
+            std::vector<bool>         checkWord(6);
+            std::vector<std::string>  words(6);
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
@@ -212,9 +208,8 @@ namespace ASALI
             words[1] = "Operating conditions";
             words[2] = "Reactor properties";
             words[3] = "Solver options";
-            words[4] = "Numerical solvers";
-            words[5] = "Kinetics path";
-            words[6] = "Reaction properties";
+            words[4] = "Kinetics path";
+            words[5] = "Reaction properties";
 
             for (unsigned int i=0;i<inputVector_.size();i++)
             {
@@ -226,12 +221,10 @@ namespace ASALI
                          inputVector_[i+1] == "properties" )         {checkWord[2]  = true; propertiesIndex_      = i;}
                 else if (inputVector_[i]   == "Solver" &&
                          inputVector_[i+1] == "options" )            {checkWord[3]  = true; solverIndex_          = i;}
-                else if (inputVector_[i]   == "Numerical" &&
-                         inputVector_[i+1] == "solvers" )            {checkWord[4]  = true; numericalIndex_       = i;}
                 else if (inputVector_[i]   == "Kinetics" &&
-                         inputVector_[i+1] == "path" )               {checkWord[5]  = true; kineticsIndex_       = i;}
+                         inputVector_[i+1] == "path" )               {checkWord[4]  = true; kineticsIndex_       = i;}
                 else if (inputVector_[i]   == "Reaction" &&
-                         inputVector_[i+1] == "properties" )         {checkWord[6]  = true; reactionIndex_        = i;}
+                         inputVector_[i+1] == "properties" )         {checkWord[5]  = true; reactionIndex_        = i;}
             }
             
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -547,24 +540,28 @@ namespace ASALI
             }
             
             
-            unsigned int pIndex      = 0;
-            unsigned int hIndex      = 0;
+            unsigned int pIndex = 0;
+            unsigned int hIndex = 0;
+            unsigned int nIndex = 0;
             
-            std::vector<bool>        checkWord(2);
-            std::vector<std::string> words(2);
+            std::vector<bool>        checkWord(3);
+            std::vector<std::string> words(3);
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
 
             words[0] = "pressure drops";
             words[1] = "mass transfer";
+            words[2] = "numerical solver";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
                 if        (dummyVector[i] == "pressure" &&
-                         dummyVector[i+1] == "drops")             {checkWord[0] = true; pIndex       = i;}
+                         dummyVector[i+1] == "drops")           {checkWord[0] = true; pIndex = i;}
                 else if (dummyVector[i] == "mass" &&
-                         dummyVector[i+1] == "transfer")        {checkWord[1] = true; hIndex       = i;}
+                         dummyVector[i+1] == "transfer")        {checkWord[1] = true; hIndex = i;}
+                else if (dummyVector[i] == "numerical" &&
+                         dummyVector[i+1] == "solver")          {checkWord[2] = true; nIndex = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -642,6 +639,28 @@ namespace ASALI
                 std::cout << "key word || mass transfer || MUST BE || Wakao || Gupta || Gamson || Yoshida || Rebughini || Petrovic ||\n" << std::endl;
                 exit (EXIT_FAILURE);
             }
+            
+            solver_ = dummyVector[nIndex+2];
+            if (solver_ == "BzzMath" )
+            {
+                #if ASALI_USE_BZZ == 0
+                    error();
+                    std::cout << "key word || solver || cannot be || BzzMath || \n" << std::endl;
+                    exit(EXIT_FAILURE);
+                #endif
+            }
+            else if ( solver_ == "OpenSMOKE" )
+            {}
+            else
+            {
+                error();
+                std::cout << "key word || solver || could be || OpenSMOKE ||";
+                #if ASALI_USE_BZZ == 1
+                    std::cout << " BzzMath ||";
+                #endif
+                std::cout << "\n" << std::endl;
+                exit(EXIT_FAILURE);
+            }
         }
     }
 
@@ -676,108 +695,11 @@ namespace ASALI
         #if ASALI_USE_BZZ == 1
         std::cout << "|| BzzMath ";
         #endif
-        #if ASALI_USE_SUNDIALS == 1
-        std::cout << "|| Sundials ";
-        #endif
+        std::cout << "|| OpenSMOKE ";
         std::cout << "||" << std::endl;
-        std::cout << "ODE:                                        " << odeSolver_ << std::endl;
-        std::cout << "DAE:                                        " << daeSolver_ << std::endl;
+        std::cout << "Chosen solver:                              || " << solver_ << " ||" << std::endl;
         std::cout << "\n################################################################################################" << std::endl;
-    }
-
-    void READinput::numerical()
-    {
-        if ( inputVector_[numericalIndex_+1+1] != "{" )
-        {
-            error();
-            std::cout << "The Numerical solvers sub-dictionary must start with {\n" << std::endl;
-            exit (EXIT_FAILURE);
-        }
-        else
-        {
-            unsigned int finalCount = 1e05;
-            for (unsigned int i=numericalIndex_;i<inputVector_.size();i++)
-            {
-                if (inputVector_[i] == "}")
-                {
-                    finalCount = i;
-                    break;
-                }
-            }
-            
-            if ( finalCount == 1e05 )
-            {
-                error();
-                std::cout << "The Numerical solvers sub-dictionary must finish with }\n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-
-            std::vector<std::string> dummyVector;
-            unsigned int k=0;
-            for (unsigned int i=numericalIndex_+1+1+1;i<=finalCount;i++)
-            {
-                if (inputVector_[i] == "{")
-                {
-                    error();
-                    std::cout << "The Numerical solvers sub-dictionary must finish with }\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
-                else
-                {
-                    dummyVector.resize(k+1);
-                    dummyVector[k] = inputVector_[i];
-                    k++;
-                }
-            }
-
-            std::vector<bool>        checkWord(2);
-            std::vector<std::string> words(2);
-
-            double odeIndex;
-            double daeIndex;
-
-            for (unsigned int i=0;i<checkWord.size();i++)
-                checkWord[i] = false;
-
-            words[0] = "ODE";
-            words[1] = "DAE";
-
-            for (unsigned int i=0;i<dummyVector.size();i++)
-            {
-                if         (dummyVector[i] == "ODE")                 {checkWord[0] = true; odeIndex      = i;}
-                else if    (dummyVector[i] == "DAE")                 {checkWord[1] = true; daeIndex      = i;}
-            }
-
-            for (unsigned int i=0;i<checkWord.size();i++)
-            {
-                if ( checkWord[i] == false)
-                {
-                    error();
-                    std::cout << "key word || " << words[i] << " || is MISSING in Numerical solvers sub-dictionary!\n" << std::endl;
-                    exit (EXIT_FAILURE);
-                }
-            }
-
-            odeSolver_ = dummyVector[odeIndex + 1];
-
-            if ( odeSolver_ != "BzzMath" && odeSolver_ != "Sundials")
-            {
-                error();
-                std::cout << "key word || " << "ODE" << " || MUST be || BzzMath || Sundials || \n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-
-            daeSolver_ = dummyVector[daeIndex + 1];
-
-            if ( daeSolver_ != "BzzMath" && daeSolver_ != "Sundials")
-            {
-                error();
-                std::cout << "key word || " << "DAE" << " || MUST be || BzzMath || Sundials || \n" << std::endl;
-                exit (EXIT_FAILURE);
-            }
-
-        }
-    }
+}
 
     void READinput::reaction()
     {

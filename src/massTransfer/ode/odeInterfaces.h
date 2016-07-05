@@ -38,62 +38,96 @@
 #                                                                                              #
 ##############################################################################################*/
 
-#ifndef OpenSMOKE_DaeInterfaces_H
-#define OpenSMOKE_DaeInterfaces_H
+#ifndef OpenSMOKE_OdeInterfaces_H
+#define OpenSMOKE_OdeInterfaces_H
 
 #include "math/OpenSMOKEVector.h"
-#include "dae/OpenSMOKE_DaeSystemObject.h"
+#include "ode/OpenSMOKE_OdeSystemObject.h"
 
-
-#if ASALI_USE_SUNDIALS == 1
-#include "dae/OpenSMOKE_IDA_Sundials_Interface.h"
-#include "dae/OpenSMOKE_IDA_Sundials.h"
+#if OPENSMOKE_USE_BZZMATH == 1
+#include "BzzMath.hpp"
 #endif
+
+#include "math/multivalue-ode-solvers/MultiValueSolver"
 
 namespace OpenSMOKE
 {
-    #if ASALI_USE_SUNDIALS == 1
+    class ODESystem_OpenSMOKE
+    {
+    public:
 
-        class DAESystem_IDA_Template : public OpenSMOKE::OpenSMOKE_DaeSystemObject
-        {
-            DEFINE_DAESOLVERINTERFACE_IDA_Sundials(DAESystem_IDA_Template)
+            ODESystem_OpenSMOKE() {};
 
-            ASALI::DAESystem* dae_;
-            OpenSMOKE::OpenSMOKEVectorDouble y_;
+            void SetReactor(ASALI::equationSystem* reactor)
+            {
+                reactor_ = reactor;
+            }
+
+        protected:
+
+            unsigned int ne_;
+
+            void MemoryAllocation()
+            {
+                OpenSMOKE::ChangeDimensions(ne_, &y_, true);
+                OpenSMOKE::ChangeDimensions(ne_, &dy_, false);
+            }
+
+            virtual void Equations(const Eigen::VectorXd &Y, const double t, Eigen::VectorXd &DY)
+            {
+                y_.CopyFrom(Y.data());
+                reactor_->OdeEquations(t, y_, dy_);
+                dy_.CopyTo(DY.data());
+            }
+
+            virtual void Jacobian(const Eigen::VectorXd &Y, const double t, Eigen::MatrixXd &J) {};
+
+            void Print(const double t, const Eigen::VectorXd &Y)
+            {
+                y_.CopyFrom(Y.data());
+                reactor_->OdePrint(t, y_);
+            }
+
+        private:
+
+            ASALI::equationSystem* reactor_;
+            OpenSMOKE::OpenSMOKEVectorDouble  y_;
             OpenSMOKE::OpenSMOKEVectorDouble dy_;
+    };
 
+    #if OPENSMOKE_USE_BZZMATH == 1
+    class ODESystem_BzzOde : public BzzOdeSystemObject 
+    {
         public:
-
-            void SetDaeSystem(ASALI::DAESystem* dae)
+            ODESystem_BzzOde(ASALI::equationSystem& reactor) :
+            reactor_(reactor)
             {
-                dae_ = dae;
-                ChangeDimensions(dae_->NumberOfEquations(), &y_, true);
-                ChangeDimensions(dae_->NumberOfEquations(), &dy_, false);
+                ChangeDimensions(reactor_.NumberOfEquations(), &y_, true);
+                ChangeDimensions(reactor_.NumberOfEquations(), &dy_, false);
+            }
+        
+            virtual void GetSystemFunctions(BzzVector &Y, double t, BzzVector &DY)
+            {
+                y_.CopyFrom(Y.GetHandle());
+                reactor_.OdeEquations(t, y_, dy_);
+                dy_.CopyTo(DY.GetHandle());
             }
 
-            int GetSystemFunctions(const double t, double* y, double* dy)
+            void MyPrint(BzzVector &Y, double t)
             {
-                y_.CopyFrom(y);
-                int flag = dae_->Equations(t, y_, dy_);
-                dy_.CopyTo(dy);
-                return(flag);
+                y_.CopyFrom(Y.GetHandle());
+                reactor_.OdePrint(t, y_);
             }
 
-            int GetAnalyticalJacobian(const double t, double* y, double* J)
-            {
-                return(0);
-            }
+            virtual void ObjectBzzPrint(void) {};
 
-            int GetWriteFunction(const double t, double *y)
-            {
-                y_.CopyFrom(y);
-                int flag = dae_->Print(t, y_);
-                return 0;
-            }
-        };
-        COMPLETE_DAESOLVERINTERFACE_IDA_Sundials(DAESystem_IDA_Template)
+        private:
 
+            ASALI::equationSystem& reactor_;
+            OpenSMOKE::OpenSMOKEVectorDouble  y_;
+            OpenSMOKE::OpenSMOKEVectorDouble dy_;
+    };
     #endif
 }
 
-#endif    // OpenSMOKE_DaeInterfaces_H
+#endif    // OpenSMOKE_OdeInterfaces_H
