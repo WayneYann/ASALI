@@ -158,6 +158,6 @@ namespace ASALI
         std::cout << "\n#################" << std::endl;
         std::cout << "# DAE:     END  #" << std::endl;
         std::cout << "#################\n" << std::endl;
-	}
+    }
 
 }
