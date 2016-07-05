@@ -112,4 +112,33 @@ namespace ASALI
     {
         std::cout << "\nASALI::READinput::ERROR\n" << std::endl;
     }
+
+    void ODEstart()
+    {
+        std::cout << "\n######################################" << std::endl;
+        std::cout << "# ODE system:                 START  #" << std::endl;
+        std::cout << "######################################\n" << std::endl;
+    }
+    
+    void ODEend()
+    {
+        std::cout << "\n######################################" << std::endl;
+        std::cout << "# ODE system:                 END    #" << std::endl;
+        std::cout << "######################################\n" << std::endl;
+    }
+
+    void DAEstart()
+    {
+        std::cout << "\n######################################" << std::endl;
+        std::cout << "# DAE system:                 START  #" << std::endl;
+        std::cout << "######################################\n" << std::endl;
+    }
+    
+    void DAEend()
+    {
+        std::cout << "\n######################################" << std::endl;
+        std::cout << "# DAE system:                 END    #" << std::endl;
+        std::cout << "######################################\n" << std::endl;
+    }
+
 }

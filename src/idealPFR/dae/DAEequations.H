@@ -149,7 +149,7 @@
             }
             else
             {
-                dyOS_[counter++] = 1. - omegaBulk_.SumElements();// ALGEBRAI
+                dyOS_[counter++] = 1. - omegaBulk_.SumElements();// ALGEBRAIC
             }
         }
         for (unsigned int j=1;j<=NC_;j++)
@@ -165,7 +165,7 @@
         }
         for (unsigned int j=1;j<=SURF_NC_;j++)
         {
-            if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+            if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != catalyst_ )
             {
                 dyOS_[counter++] = 1e06*(Rsurface_[j]/SD_); //ALGEBRAIC
             }

@@ -42,9 +42,8 @@ ASALI::check(argc);
 std::string* file;
 file    = new std::string(argv[1]);
 
-ASALI::READinput  input(*file);
-ASALI::ODESystem *ode;
-ASALI::DAESystem *dae;
+ASALI::READinput       input(*file);
+ASALI::equationSystem *eq;
 
 {
     std::string folderPath = input.getKineticsPath() + "/";
@@ -94,7 +93,7 @@ ASALI::DAESystem *dae;
     thermodynamicsMapXML->SetTemperature(input.getTemperature());
     thermodynamicsMapXML->SetPressure(input.getPressure());
 
-    x0site[1] = 1.;
+    x0site[thermodynamicsSurfaceMapXML->IndexOfSpecies(input.getCatalyst())-NC] = 1.;
     for (unsigned int k=1;k<=SURF_NC;k++)
         x0site[k]=std::max(x0site[k],0.);
 
@@ -149,23 +148,14 @@ ASALI::DAESystem *dae;
 }
 
 {
-    ode = new ASALI::ODESystem(*thermodynamicsMapXML,        *kineticsMapXML,
-                               *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
-                               *transportMapXML);
+    eq = new ASALI::equationSystem(*thermodynamicsMapXML,        *kineticsMapXML,
+                                   *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
+                                   *transportMapXML);
 
-    ode->setTemperature(input.getTemperature());
-    ode->setPressure(input.getPressure());
-    ode->setHomogeneusReactions(input.getHomogeneousReactions());
-    ode->setHeterogeneusReactions(input.getHeterogenousReactions());
-    ode->setReactorGeometry(input.getAlfa(), input.getSpecificArea(), G, input.getHydraulicDiameter());
-
-    dae = new ASALI::DAESystem(*thermodynamicsMapXML,        *kineticsMapXML,
-                               *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
-                               *transportMapXML);
-
-    dae->setTemperature(input.getTemperature());
-    dae->setPressure(input.getPressure());
-    dae->setHomogeneusReactions(input.getHomogeneousReactions());
-    dae->setHeterogeneusReactions(input.getHeterogenousReactions());
-    dae->setReactorGeometry(input.getAlfa(), input.getSpecificArea(), G, input.getHydraulicDiameter());
+    eq->setTemperature(input.getTemperature());
+    eq->setPressure(input.getPressure());
+    eq->setHomogeneusReactions(input.getHomogeneousReactions());
+    eq->setHeterogeneusReactions(input.getHeterogenousReactions());
+    eq->setReactorGeometry(input.getAlfa(), input.getSpecificArea(), G, input.getHydraulicDiameter());
+    eq->setCatalyst(input.getCatalyst());
 }
