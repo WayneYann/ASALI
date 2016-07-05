@@ -40,19 +40,16 @@
 
 namespace ASALI
 {
-class BVPSystem
-#if ASALI_USE_BZZ == 1
- : public BzzDaeSystemObject
-#endif
+class equationSystem
 {
 
 public:
 
-    BVPSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
-              OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
-              OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
-              OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
-              OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap);
+    equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+                   OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
+                   OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
+                   OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
+                   OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap);
 
     #include "vector.h"
 
@@ -71,13 +68,15 @@ public:
     void setReactorType(const std::string reactorType);
     
     void setCorrelation(const std::string correlation);
+    
+    void setCatalyst(const std::string name);
 
     void setDiscretizationScheme(const std::string discretizationScheme);
 
-    void setReactorGeometry( const double alfa, const double epsi, 
-                             const double Lcat, const double Linert,
-                             const double av,   const double aex,
-                             const double G);
+    void setReactorGeometry(const double alfa, const double epsi, 
+                            const double Lcat, const double Linert,
+                            const double av,   const double aex,
+                            const double G);
 
     void setPackedBedProperties(const double Dh, const double Dt);
 
@@ -91,28 +90,27 @@ public:
     void setInert(const std::string inert);
 
     void resize(const unsigned int NP);
-
-    unsigned int BlockDimension()        const {return NB_;};
-
-    unsigned int NumberOfEquations()    const {return NE_;};
-
-    void start();
-    void end();
-
-    unsigned int Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
-
-    unsigned int Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
-
-    void AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic);
-
+    
+    void cleanMemory();
+    
     OpenSMOKE::OpenSMOKEVectorDouble getVelocity()    const {return v_;};
 
-    #if ASALI_USE_BZZ == 1
-    void AlgebraicEquations(BzzVectorInt& algebraic);
-    virtual void GetSystemFunctions(BzzVector &y, double t, BzzVector &dy);
-    virtual void ObjectBzzPrint(void);
-    virtual ~BVPSystem(){};
-    #endif
+    unsigned int BlockDimension()                     const {return NB_;};
+
+    unsigned int NumberOfEquations()                  const {return NE_;};
+    
+    unsigned int BandDimension()                      const {return NB_ + NB_+ 1;};
+
+    unsigned int BvpEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
+
+    unsigned int BvpPrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+
+    unsigned int OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy);
+
+    unsigned int OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
+
+    void AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M);
+
 
 private:
 
@@ -161,6 +159,7 @@ private:
     std::string discretizationScheme_;
     std::string reactorType_;
     std::string correlation_;
+    std::string catalyst_;
 
     bool homogeneusReactions_ ;
     bool heterogeneusReactions_;
@@ -217,19 +216,22 @@ private:
 
     void HeatTransferCoefficient(const double z, const double cp,  const double eta, const double cond);
     void MassTransferCoefficient(const double z, const double rho, const double eta, const OpenSMOKE::OpenSMOKEVectorDouble dG);
+    
     OpenSMOKE::OpenSMOKEVectorDouble FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value);
     OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff, const std::string type);
     OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type);
+    
     double EffectiveThermalConductivity(const double T, const double cond);
     double OverallHeatTransferCoefficient(const double cp, const double eta, const double cond);
+
 };
 
 
-BVPSystem::BVPSystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
-                        OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
-                        OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
-                        OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
-                        OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap):
+equationSystem::equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
+                               OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
+                               OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
+                               OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
+                               OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap):
     thermodynamicsMap_(thermodynamicsMap), 
     kineticsMap_(kineticsMap),
     thermodynamicsSurfaceMap_(thermodynamicsSurfaceMap), 
@@ -238,7 +240,7 @@ BVPSystem::BVPSystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          t
     {
     }
 
-void BVPSystem::resize(const unsigned int NP)
+void equationSystem::resize(const unsigned int NP)
 {
     NP_      = NP;
     NC_      = thermodynamicsMap_.NumberOfSpecies();
@@ -292,43 +294,48 @@ void BVPSystem::resize(const unsigned int NP)
     ChangeDimensions(NE_, &yOS_, true);
 }
 
-void BVPSystem::setSolid(const double rhoSolid, const double condSolid, const double cpSolid)
+void equationSystem::setSolid(const double rhoSolid, const double condSolid, const double cpSolid)
 {
     rhoSolid_   = rhoSolid;
     condSolid_  = condSolid;
     cpSolid_    = cpSolid;
 }
 
-void BVPSystem::setInert(const std::string inert)
+void equationSystem::setInert(const std::string inert)
 {
     inert_        = inert;
 }
 
-void BVPSystem::setDiscretizationScheme(const std::string discretizationScheme)
+void equationSystem::setDiscretizationScheme(const std::string discretizationScheme)
 {
     discretizationScheme_ = discretizationScheme;
 }
 
-void BVPSystem::setReactorType(const std::string reactorType)
+void equationSystem::setCatalyst(const std::string name)
+{
+    catalyst_ = name;
+}
+
+void equationSystem::setReactorType(const std::string reactorType)
 {
     reactorType_ = reactorType;
 }
 
-void BVPSystem::setCorrelation(const std::string correlation)
+void equationSystem::setCorrelation(const std::string correlation)
 {
     correlation_ = correlation;
 }
 
-void BVPSystem::setExternalHeatExchange(const bool flag, const double Tex)
+void equationSystem::setExternalHeatExchange(const bool flag, const double Tex)
 {
     hex_ = flag;
     Tex_ = Tex;
 }
 
-void BVPSystem::setReactorGeometry( const double alfa, const double epsi, 
-                                    const double Lcat, const double Linert,
-                                    const double av,   const double aex,
-                                    const double G)
+void equationSystem::setReactorGeometry(const double alfa, const double epsi, 
+                                        const double Lcat, const double Linert,
+                                        const double av,   const double aex,
+                                        const double G)
 {
     alfaTemp_        = alfa;
     av_              = av;
@@ -340,19 +347,19 @@ void BVPSystem::setReactorGeometry( const double alfa, const double epsi,
     G_               = G;
 }
 
-void BVPSystem::setPackedBedProperties(const double Dh, const double Dt)
+void equationSystem::setPackedBedProperties(const double Dh, const double Dt)
 {
     Dh_ = Dh;
     Dt_ = Dt;
 }
 
-void BVPSystem::setHoneyCombProperties(const double AsymptoticSh, const double Dh)
+void equationSystem::setHoneyCombProperties(const double AsymptoticSh, const double Dh)
 {
     Dh_           = Dh;
     AsymptoticSh_ = AsymptoticSh;
 }
 
-void BVPSystem::setFeedValue(const double p, const double T0,
+void equationSystem::setFeedValue(const double p, const double T0,
                              const OpenSMOKE::OpenSMOKEVectorDouble x0bulk)
 {
     p_  = p;
@@ -364,7 +371,7 @@ void BVPSystem::setFeedValue(const double p, const double T0,
     }
 }
 
-void BVPSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
+void equationSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
 {
     ChangeDimensions(z.Size(), &z_, true);
     for (unsigned int k=1;k<=z_.Size();k++)
@@ -373,7 +380,7 @@ void BVPSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
     }
 }
 
-double BVPSystem::EffectiveThermalConductivity(const double T, const double cond)
+double equationSystem::EffectiveThermalConductivity(const double T, const double cond)
 {
     double newCond = 0.;
     if ( reactorType_ == "honeyComb" )
@@ -392,7 +399,7 @@ double BVPSystem::EffectiveThermalConductivity(const double T, const double cond
     return newCond;
 }
 
-double BVPSystem::OverallHeatTransferCoefficient(const double cp, const double eta, const double cond)
+double equationSystem::OverallHeatTransferCoefficient(const double cp, const double eta, const double cond)
 {
     double U = 0.;
     if ( reactorType_ == "honeyComb" )
@@ -427,7 +434,7 @@ double BVPSystem::OverallHeatTransferCoefficient(const double cp, const double e
     return U;
 }
 
-void BVPSystem::HeatTransferCoefficient(const double z, const double cp, const double eta, const double cond)
+void equationSystem::HeatTransferCoefficient(const double z, const double cp, const double eta, const double cond)
 {
     if ( reactorType_ == "honeyComb" )
     {
@@ -489,7 +496,7 @@ void BVPSystem::HeatTransferCoefficient(const double z, const double cp, const d
     }
 }
 
-void BVPSystem::MassTransferCoefficient(const double z, const double rho, const double eta, const OpenSMOKE::OpenSMOKEVectorDouble dG)
+void equationSystem::MassTransferCoefficient(const double z, const double rho, const double eta, const OpenSMOKE::OpenSMOKEVectorDouble dG)
 {
     if ( reactorType_ == "honeyComb" )
     {
@@ -570,300 +577,8 @@ void BVPSystem::MassTransferCoefficient(const double z, const double rho, const 
     }
 }
 
-#if ASALI_USE_BZZ == 1
-void BVPSystem::GetSystemFunctions(BzzVector &y, double t, BzzVector &dy)
-{
-    FromBzzToOS(y,yOS_);
-    #include "BVPequations.H"
-    ObjectBzzPrint();
-    FromOSToBzz(dyOS_,dy);
-}
 
-void BVPSystem::ObjectBzzPrint(void)
-{
-    #include "printIntegration.H"
-}
-
-void BVPSystem::AlgebraicEquations(BzzVectorInt& algebraic)
-{
-    ChangeDimensions(NE_, &algebraic, true);
-    unsigned int counter = 1;
-    for (unsigned int i=0;i<NP_;i++)
-    {
-        if ( i == 0)
-        {
-            for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = 0;
-            for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = 0;
-            for (unsigned int j=1;j<=SURF_NC_;j++)
-            {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
-                {
-                    algebraic[counter++] = 1;
-                }
-                else
-                {
-                    algebraic[counter++] = 0;
-                }
-            }
-            if (energy_ == true)
-            {
-                algebraic[counter++] = 0;
-                algebraic[counter++] = 0;
-            }
-            else
-            {
-                algebraic[counter++] = 1;
-                algebraic[counter++] = 1;
-            }
-        }
-        else if ( i == (NP_ - 1) )
-        {
-            for (unsigned int j=1;j<=NC_;j++)
-            {
-                if ( gasDiffusion_ == true )
-                {
-                    algebraic[counter++] = 0;
-                }
-                else
-                {
-                    if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
-                    {
-                        algebraic[counter++] = 1;
-                    }
-                    else
-                    {
-                        algebraic[counter++] = 0;
-                    }
-                }
-            }
-            for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = 0;
-            for (unsigned int j=1;j<=SURF_NC_;j++)
-            {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
-                {
-                    algebraic[counter++] = 1;
-                }
-                else
-                {
-                    algebraic[counter++] = 0;
-                }
-            }
-            if (energy_ == true)
-            {
-                if ( gasDiffusion_ == true)
-                {
-                    algebraic[counter++] = 0;
-                }
-                else
-                {
-                    algebraic[counter++] = 1;
-                }
-                algebraic[counter++] = 0;
-            }
-            else
-            {
-                algebraic[counter++] = 1;
-                algebraic[counter++] = 1;
-            }
-        }
-        else
-        {
-            for (unsigned int j=1;j<=NC_;j++)
-            {
-                if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
-                {
-                    algebraic[counter++] = 1;
-                }
-                else
-                {
-                    algebraic[counter++] = 0;
-                }
-            }
-            for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = 0;
-            for (unsigned int j=1;j<=SURF_NC_;j++)
-            {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
-                {
-                    algebraic[counter++] = 1;
-                }
-                else
-                {
-                    algebraic[counter++] = 0;
-                }
-            }
-            algebraic[counter++] = 1;
-            algebraic[counter++] = 1;
-        }
-    }
-}
-#endif
-
-unsigned int BVPSystem::Equations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
-{
-    ChangeDimensions(NE_, &yOS_,  true);
-    ChangeDimensions(NE_, &dy,    true);
-    ChangeDimensions(NE_, &dyOS_, true);
-
-    for (unsigned int i=1;i<=NE_;i++)
-        yOS_[i] = y[i];
-
-    #include "BVPequations.H"
-
-    for (unsigned int i=1;i<=NE_;i++)
-        dy[i] = dyOS_[i];
-    
-    return 0;
-}
-
-unsigned int BVPSystem::Print(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
-{
-    t_ = t;
-    #include "printIntegration.H"
-    return 0;
-}
-
-void BVPSystem::AlgebraicEquations(OpenSMOKE::OpenSMOKEVectorBool& algebraic)
-{
-    ChangeDimensions(NE_, &algebraic, true);
-    unsigned int counter = 1;
-    for (unsigned int i=0;i<NP_;i++)
-    {
-        if ( i == 0)
-        {
-            for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = true;
-            for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = true;
-            for (unsigned int j=1;j<=SURF_NC_;j++)
-            {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
-                {
-                    algebraic[counter++] = false;
-                }
-                else
-                {
-                    algebraic[counter++] = true;
-                }
-            }
-            if (energy_ == true)
-            {
-                algebraic[counter++] = true;
-                algebraic[counter++] = true;
-            }
-            else
-            {
-                algebraic[counter++] = false;
-                algebraic[counter++] = false;
-            }
-        }
-        else if ( i == (NP_ - 1) )
-        {
-            for (unsigned int j=1;j<=NC_;j++)
-            {
-                if ( gasDiffusion_ == true )
-                {
-                    algebraic[counter++] = true;
-                }
-                else
-                {
-                    if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
-                    {
-                        algebraic[counter++] = false;
-                    }
-                    else
-                    {
-                        algebraic[counter++] = true;
-                    }
-                }
-            }
-            for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = true;
-            for (unsigned int j=1;j<=SURF_NC_;j++)
-            {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
-                {
-                    algebraic[counter++] = false;
-                }
-                else
-                {
-                    algebraic[counter++] = true;
-                }
-            }
-            if (energy_ == true)
-            {
-                if ( gasDiffusion_ == true)
-                {
-                    algebraic[counter++] = true;
-                }
-                else
-                {
-                    algebraic[counter++] = false;
-                }
-                algebraic[counter++] = true;
-            }
-            else
-            {
-                algebraic[counter++] = false;
-                algebraic[counter++] = false;
-            }
-        }
-        else
-        {
-            for (unsigned int j=1;j<=NC_;j++)
-            {
-                if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
-                {
-                    algebraic[counter++] = false;
-                }
-                else
-                {
-                    algebraic[counter++] = true;
-                }
-            }
-            for (unsigned int j=1;j<=NC_;j++)
-                algebraic[counter++] = true;
-            for (unsigned int j=1;j<=SURF_NC_;j++)
-            {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
-                {
-                    algebraic[counter++] = false;
-                }
-                else
-                {
-                    algebraic[counter++] = true;
-                }
-            }
-            algebraic[counter++] = false;
-            algebraic[counter++] = false;
-        }
-    }
-}
-
-void BVPSystem::start()
-{
-    std::cout << "\n######################################" << std::endl;
-    std::cout << "# DAE system:                 START  #" << std::endl;
-    std::cout << "######################################\n" << std::endl;
-}
-
-void BVPSystem::end()
-{
-    delete [] omegaBulk_;
-    delete [] omegaWall_;
-    delete [] jGas_;
-    delete [] cGas_;
-    delete [] jSolid_;
-    delete [] teta_;
-    std::cout << "\n######################################" << std::endl;
-    std::cout << "# DAE system:                 END    #" << std::endl;
-    std::cout << "######################################\n" << std::endl;
-}
-
-OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value)
+OpenSMOKE::OpenSMOKEVectorDouble equationSystem::FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value)
 {
     OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
 
@@ -906,7 +621,7 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::FirstOrderDerivate (const OpenSMOKE:
     return dvalue_;
 }
 
-OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff, const std::string type)
+OpenSMOKE::OpenSMOKEVectorDouble equationSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff, const std::string type)
 {
     OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
 
@@ -950,7 +665,7 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE
     return dvalue_;
 }
 
-OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type)
+OpenSMOKE::OpenSMOKEVectorDouble equationSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type)
 {
     OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
 
@@ -992,4 +707,189 @@ OpenSMOKE::OpenSMOKEVectorDouble BVPSystem::SecondOrderDerivate (const OpenSMOKE
     }
     return dvalue_;
 }
+
+unsigned int equationSystem::BvpEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+{
+    ChangeDimensions(NE_, &yOS_,  true);
+    ChangeDimensions(NE_, &dy,    true);
+    ChangeDimensions(NE_, &dyOS_, true);
+
+    for (unsigned int i=1;i<=NE_;i++)
+        yOS_[i] = y[i];
+
+    #include "BVPequations.H"
+
+    for (unsigned int i=1;i<=NE_;i++)
+        dy[i] = dyOS_[i];
+    
+    return 0;
+}
+
+unsigned int equationSystem::BvpPrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+{
+    t_ = t;
+    #include "printIntegration.H"
+    return 0;
+}
+
+unsigned int equationSystem::OdeEquations(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y, OpenSMOKE::OpenSMOKEVectorDouble& dy)
+{
+    ChangeDimensions(NE_, &yOS_,  true);
+    ChangeDimensions(NE_, &dy,    true);
+    ChangeDimensions(NE_, &dyOS_, true);
+
+    for (unsigned int i=1;i<=NE_;i++)
+        yOS_[i] = y[i];
+
+    #include "ODEequations.H"
+
+    for (unsigned int i=1;i<=NE_;i++)
+        dy[i] = dyOS_[i];
+    
+    return 0;
+}
+
+unsigned int equationSystem::OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y)
+{
+    t_ = t;
+    #include "printIntegration.H"
+    return 0;
+}
+
+void equationSystem::AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M)
+{
+    M.resize(NE_);
+    unsigned int counter = 0;
+    for (unsigned int i=0;i<NP_;i++)
+    {
+        if ( i == 0)
+        {
+            for (unsigned int j=1;j<=NC_;j++)
+            {
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+            }
+            for (unsigned int j=1;j<=NC_;j++)
+            {
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+            }
+            for (unsigned int j=1;j<=SURF_NC_;j++)
+            {
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != catalyst_ )
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                }
+                else
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+            }
+            if (energy_ == true)
+            {
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+            }
+            else
+            {
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+            }
+        }
+        else if ( i == (NP_ - 1) )
+        {
+            for (unsigned int j=1;j<=NC_;j++)
+            {
+                if ( gasDiffusion_ == true )
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+                else
+                {
+                    if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
+                    {
+                        M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                    }
+                    else
+                    {
+                        M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    }
+                }
+            }
+            for (unsigned int j=1;j<=NC_;j++)
+            {
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+            }
+            for (unsigned int j=1;j<=SURF_NC_;j++)
+            {
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != catalyst_ )
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                }
+                else
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+            }
+            if (energy_ == true)
+            {
+                if ( gasDiffusion_ == true )
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+                else
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                }
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+            }
+            else
+            {
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+            }
+        }
+        else
+        {
+            for (unsigned int j=1;j<=NC_;j++)
+            {
+                if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                }
+                else
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+            }
+            for (unsigned int j=1;j<=NC_;j++)
+            {
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+            }
+            for (unsigned int j=1;j<=SURF_NC_;j++)
+            {
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != catalyst_ )
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                }
+                else
+                {
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                }
+            }
+            M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+            M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+        }
+    }
+}
+
+
+void equationSystem::cleanMemory()
+{
+    delete [] omegaBulk_;
+    delete [] omegaWall_;
+    delete [] jGas_;
+    delete [] cGas_;
+    delete [] jSolid_;
+    delete [] teta_;
+}
+
 }

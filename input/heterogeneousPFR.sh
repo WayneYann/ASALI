@@ -52,6 +52,7 @@ echo '  mass                  500 mg' >> heterogeneousPFR.txt
 echo '  dispersion            0.2' >> heterogeneousPFR.txt
 echo '  Rh fraction           0.02' >> heterogeneousPFR.txt
 echo '  deactivation factor   1.0' >> heterogeneousPFR.txt
+echo '  active site           Rh(s)' >> heterogeneousPFR.txt
 echo '}' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo 'Solid' >> heterogeneousPFR.txt
@@ -73,17 +74,8 @@ echo 'Solver options' >> heterogeneousPFR.txt
 echo '{' >> heterogeneousPFR.txt
 echo '  Constraints          false' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
-echo '  Absolute tollerance' >> heterogeneousPFR.txt
-echo '  (' >> heterogeneousPFR.txt
-echo '    specie           1e-15' >> heterogeneousPFR.txt
-echo '    temperature      1e-08' >> heterogeneousPFR.txt
-echo '  )' >> heterogeneousPFR.txt
-echo ' ' >> heterogeneousPFR.txt
-echo '  Relative tollerance' >> heterogeneousPFR.txt
-echo '  (' >> heterogeneousPFR.txt
-echo '    specie           1e-08' >> heterogeneousPFR.txt
-echo '    temperature      1e-08' >> heterogeneousPFR.txt
-echo '  )' >> heterogeneousPFR.txt
+echo '  Absolute tollerance  1e-12' >> heterogeneousPFR.txt
+echo '  Relative tollerance  1e-07' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo '  Energy equation    on' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
@@ -116,10 +108,6 @@ echo ' ' >> heterogeneousPFR.txt
 echo '  Integration time            100 s' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo '  Results                     mole' >> heterogeneousPFR.txt
-echo '}' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
-echo 'Numerical solvers' >> heterogeneousPFR.txt
-echo '{' >> heterogeneousPFR.txt
-echo '  ODE       BzzMath' >> heterogeneousPFR.txt
-echo '  DAE       BzzMath' >> heterogeneousPFR.txt
+echo '  Numerical solver            OpenSMOKE' >> heterogeneousPFR.txt
 echo '}' >> heterogeneousPFR.txt

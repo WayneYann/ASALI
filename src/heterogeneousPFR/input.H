@@ -55,10 +55,9 @@ std::string* options;
     }
 }
 
-ASALI::READinput  input(*file,*options);
-ASALI::ODESystem *ode;
-ASALI::BVPSystem *bvp;
-ASALI::GROWgrid  *growGrid;
+ASALI::READinput       input(*file,*options);
+ASALI::equationSystem *eq;
+ASALI::GROWgrid       *growGrid;
 
 {
     std::string folderPath = input.getKineticsPath() + "/";
@@ -126,7 +125,7 @@ ASALI::GROWgrid  *growGrid;
         thermodynamicsMapXML->SetTemperature(T0);
         thermodynamicsMapXML->SetPressure(input.getPressure());
 
-        x0site[1] = 1.;
+        x0site[thermodynamicsSurfaceMapXML->IndexOfSpecies(input.getCatalyst())-NC] = 1.;
         for (unsigned int k=1;k<=SURF_NC;k++)
             x0site[k]=std::max(x0site[k],0.);
 
@@ -365,53 +364,34 @@ ASALI::GROWgrid  *growGrid;
 
 if ( input.getStart() == "new" || input.getStart() == "latest" )
 {
-    ode = new ASALI::ODESystem(*thermodynamicsMapXML,        *kineticsMapXML,
-                               *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
-                               *transportMapXML);
+    eq = new ASALI::equationSystem(*thermodynamicsMapXML,        *kineticsMapXML,
+                                   *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
+                                   *transportMapXML);
 
-    ode->setHomogeneusReactions(input.getHomogeneousReactions());
-    ode->setHeterogeneusReactions(input.getHeterogenousReactions());
-    ode->setReactorType(input.getReactorType());
+    eq->setSolid(input.getSolidDensity(),input.getSolidConductivity(),input.getSolidSpecificHeat());
+    eq->setHomogeneusReactions(input.getHomogeneousReactions());
+    eq->setHeterogeneusReactions(input.getHeterogenousReactions());
+    eq->setEnergyEquation(input.getEnergy());
+    eq->setExternalHeatExchange(input.getExternalHeatExchange(),input.getExternalTemperature());
+    eq->setReactorType(input.getReactorType());
     if ( input.getReactorType() == "honeyComb" )
     {
-        ode->setHoneyCombProperties(input.getSherwood(),input.getChannelDiameter());
+        eq->setHoneyCombProperties(input.getSherwood(),input.getChannelDiameter());
     }
     else if ( input.getReactorType() == "packedBed" )
     {
-        ode->setPackedBedProperties(input.getParticleDiameter(),input.getTubeDiameter());
-        ode->setCorrelation(input.getCorrelation());
+        eq->setPackedBedProperties(input.getParticleDiameter(),input.getTubeDiameter());
+        eq->setCorrelation(input.getCorrelation());
     }
-    ode->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
-                            input.getInertLength(), input.getSpecificArea(), G);
-    ode->setFeedValue(input.getPressure(),T0,x0bulk);
-    ode->setInert(input.getInert());
-    ode->setDiffusion(input.getDiffusion());
 
-    bvp = new ASALI::BVPSystem(*thermodynamicsMapXML,        *kineticsMapXML,
-                               *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
-                               *transportMapXML);
+    eq->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
+                           input.getInertLength(), input.getSpecificArea(), input.getExternalArea(),
+                           G);
 
-    bvp->setSolid(input.getSolidDensity(),input.getSolidConductivity(),input.getSolidSpecificHeat());
-    bvp->setHomogeneusReactions(input.getHomogeneousReactions());
-    bvp->setHeterogeneusReactions(input.getHeterogenousReactions());
-    bvp->setExternalHeatExchange(input.getHeatExchange(),input.getExternalTemperature());
-    bvp->setEnergyEquation(input.getEnergy());
-    bvp->setReactorType(input.getReactorType());
-    if ( input.getReactorType() == "honeyComb" )
-    {
-        bvp->setHoneyCombProperties(input.getSherwood(),input.getChannelDiameter());
-    }
-    else if ( input.getReactorType() == "packedBed" )
-    {
-        bvp->setPackedBedProperties(input.getParticleDiameter(),input.getTubeDiameter());
-        bvp->setCorrelation(input.getCorrelation());
-    }
-    bvp->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
-                            input.getInertLength(), input.getSpecificArea(), input.getExternalArea(),
-                            G);
-    bvp->setFeedValue(input.getPressure(),T0,x0bulk);
-    bvp->setInert(input.getInert());
-    bvp->setDiffusion(input.getDiffusion());
+    eq->setFeedValue(input.getPressure(),T0,x0bulk);
+    eq->setInert(input.getInert());
+    eq->setCatalyst(input.getCatalyst());
+    eq->setDiffusion(input.getDiffusion());
     
 
     growGrid = new ASALI::GROWgrid(NC, SURF_NC);

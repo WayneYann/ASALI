@@ -270,7 +270,7 @@
             }
             for (unsigned int j=1;j<=SURF_NC_;j++)
             {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != catalyst_ )
                 {
                     dyOS_[counter++] = 0.; //DIFFERENTIAL
                 }
@@ -325,7 +325,7 @@
             }
             for (unsigned int j=1;j<=SURF_NC_;j++)
             {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != catalyst_ )
                 {
                     dyOS_[counter++] = 0.; //DIFFERENTIAL
                 }
@@ -372,7 +372,7 @@
             }
             for (unsigned int j=1;j<=SURF_NC_;j++)
             {
-                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != "Rh(s)" )
+                if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != catalyst_ )
                 {
                     dyOS_[counter++] = 0.; //DIFFERENTIAL
                 }

@@ -406,7 +406,7 @@
         vel << "Velocity [m/s]" << std::endl;
         for (unsigned int i=1;i<=N;i++)
         {
-            vel << bvp->getVelocity()[i] << std::endl;
+            vel << eq->getVelocity()[i] << std::endl;
         }
         vel.close();
     }

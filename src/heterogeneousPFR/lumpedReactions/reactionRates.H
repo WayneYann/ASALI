@@ -10,17 +10,12 @@ namespace OpenSMOKE
         {
         }
 
-
         virtual void UserDefinedReactionRates(const OpenSMOKEVectorDouble& c, 
                                                 const OpenSMOKEVectorDouble& z, 
                                                 const OpenSMOKEVectorDouble& a, 
                                                 const OpenSMOKEVectorDouble& gamma)
         {
-
-
         }
-
-        private:
 
 
     };

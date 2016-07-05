@@ -50,27 +50,22 @@
 #include <algorithm>
 
 #if ASALI_USE_BZZ == 1
-// BzzMath
 #define BZZ_COMPILER 101
+#define OPENSMOKE_USE_BZZMATH 1
 #include "BzzMath.hpp"
 #endif
 
-#if ASALI_USE_SUNDIALS == 1
-#define OPENSMOKE_USE_SUNDIALS 1
+#if ASALI_USE_BZZ == 0
+#define OPENSMOKE_USE_BZZMATH 0
 #endif
 
-#if ASALI_USE_SUNDIALS == 0
-#define OPENSMOKE_USE_SUNDIALS 0
-#endif
-
-// OpenSMOKE++ Definitions
+// OpenSMOKE++
 #include "OpenSMOKEpp"
-
-// CHEMKIN maps
 #include "maps/Maps_CHEMKIN"
-
-// Reactor utilities
 #include "reactors/utilities/Utilities"
+#include "math/OpenSMOKEVector.h"
+#include "math/multivalue-ode-solvers/MultiValueSolver"
+#include "math/multivalue-dae-solvers/MultiValueSolver"
 
 // Eigen
 #include <Eigen/Dense>
@@ -94,12 +89,9 @@
 
 // Equations
 #include "memoryAllocation.H"
-#include "ODEsystem.h"
-#include "BVPsystem.h"
-#if ASALI_USE_SUNDIALS == 1
+#include "equations.H"
 #include "odeInterfaces.h"
 #include "bvpInterfaces.h"
-#endif
 
 int main( int argc, char** argv )
 {
@@ -109,8 +101,7 @@ int main( int argc, char** argv )
 
     if ( input.getStart() == "new")
     {
-        #include "ODEresolution.H"
-        #include "BVPresolution.H"
+        #include "resolution.H"
         #include "write.H"
 
         if ( grow == true)
@@ -118,8 +109,7 @@ int main( int argc, char** argv )
             while ( ended == false)
             {
                 #include "grow.H"
-                #include "ODEresolution.H"
-                #include "BVPresolution.H"
+                #include "resolution.H"
                 #include "write.H"
             }
         }
@@ -127,8 +117,7 @@ int main( int argc, char** argv )
     else if ( input.getStart() == "latest")
     {
         #include "grow.H"
-        #include "ODEresolution.H"
-        #include "BVPresolution.H"
+        #include "resolution.H"
         #include "write.H"
 
         if ( grow == true)
@@ -136,8 +125,7 @@ int main( int argc, char** argv )
             while ( ended == false)
             {
                 #include "grow.H"
-                #include "ODEresolution.H"
-                #include "BVPresolution.H"
+                #include "resolution.H"
                 #include "write.H"
             }
         }
