@@ -960,8 +960,8 @@ namespace ASALI
                 }
             }
             
-            std::vector<bool>        checkWord(9);
-            std::vector<std::string> words(9);
+            std::vector<bool>        checkWord(11);
+            std::vector<std::string> words(11);
 
             unsigned int inertIndex;
             unsigned int catIndex;
@@ -972,39 +972,47 @@ namespace ASALI
             unsigned int limitationIndex;
             unsigned int typeIndex;
             unsigned int particleIndex;
+            unsigned int tubeIndex;
+            unsigned int washcoatIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
 
-            words[0] = "inert length";
-            words[1] = "catalytic length";
-            words[2] = "hydraulic diameter";
-            words[3] = "channel diameter";
-            words[4] = "channel shape";
-            words[5] = "void fraction";
-            words[6] = "external limitations";
-            words[7] = "type";
-            words[8] = "particle diameter";
+            words[0]  = "inert length";
+            words[1]  = "catalytic length";
+            words[2]  = "hydraulic diameter";
+            words[3]  = "channel diameter";
+            words[4]  = "channel shape";
+            words[5]  = "void fraction";
+            words[6]  = "external limitations";
+            words[7]  = "type";
+            words[8]  = "particle diameter";
+            words[9]  = "washcoat thickness";
+            words[10] = "tube shape";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
                 if      (dummyVector[i] == "inert" &&
-                         dummyVector[i+1] == "length")             {checkWord[0] = true; inertIndex       = i;}
+                         dummyVector[i+1] == "length")             {checkWord[0]  = true; inertIndex       = i;}
                 else if (dummyVector[i] == "catalytic" &&
-                         dummyVector[i+1] == "length")             {checkWord[1] = true; catIndex         = i;}
+                         dummyVector[i+1] == "length")             {checkWord[1]  = true; catIndex         = i;}
                 else if (dummyVector[i] == "hydraulic" &&
-                         dummyVector[i+1] == "diameter")           {checkWord[2] = true; hydraulicIndex   = i;}
+                         dummyVector[i+1] == "diameter")           {checkWord[2]  = true; hydraulicIndex   = i;}
                 else if (dummyVector[i] == "channel" &&
-                         dummyVector[i+1] == "diameter")           {checkWord[3] = true; diameterIndex    = i;}
+                         dummyVector[i+1] == "diameter")           {checkWord[3]  = true; diameterIndex    = i;}
                 else if (dummyVector[i] == "channel" &&
-                         dummyVector[i+1] == "shape")              {checkWord[4] = true; shapeIndex       = i;}
+                         dummyVector[i+1] == "shape")              {checkWord[4]  = true; shapeIndex       = i;}
                 else if (dummyVector[i] == "void" &&
-                         dummyVector[i+1] == "fraction")           {checkWord[5] = true; epsiIndex        = i;}
+                         dummyVector[i+1] == "fraction")           {checkWord[5]  = true; epsiIndex        = i;}
                 else if (dummyVector[i] == "external" &&
-                         dummyVector[i+1] == "limitations")        {checkWord[6] = true; limitationIndex  = i;}
-                else if (dummyVector[i] == "type")                 {checkWord[7] = true; typeIndex        = i;}
+                         dummyVector[i+1] == "limitations")        {checkWord[6]  = true; limitationIndex  = i;}
+                else if (dummyVector[i] == "type")                 {checkWord[7]  = true; typeIndex        = i;}
                 else if (dummyVector[i] == "particle" &&
-                         dummyVector[i+1] == "diameter")           {checkWord[8] = true; particleIndex    = i;}
+                         dummyVector[i+1] == "diameter")           {checkWord[8]  = true; particleIndex    = i;}
+                else if (dummyVector[i] == "washcoat" &&
+                         dummyVector[i+1] == "thickness")          {checkWord[9]  = true; washcoatIndex    = i;}
+                else if (dummyVector[i] == "tube" &&
+                         dummyVector[i+1] == "shape")              {checkWord[10] = true; tubeIndex        = i;}
             }
 
             {
@@ -1012,18 +1020,29 @@ namespace ASALI
 
                 if ( reactorType_ == "honeyComb" )
                 {
-                    checkWord[8] = true;
+                    checkWord[8]  = true;
+                    checkWord[9]  = true;
+                    checkWord[10] = true;
                 }
                 else if ( reactorType_ == "packedBed" )
+                {
+                    checkWord[3]  = true;
+                    checkWord[4]  = true;
+                    checkWord[5]  = true;
+                    checkWord[9]  = true;
+                    checkWord[10] = true;
+                }
+                else if ( reactorType_ == "tubular" )
                 {
                     checkWord[3] = true;
                     checkWord[4] = true;
                     checkWord[5] = true;
+                    checkWord[8] = true;
                 }
                 else
                 {
                     error();
-                    std::cout << "key word ||" << " type " << "|| MUST be || honeyComb || packedBed ||\n" << std::endl;
+                    std::cout << "key word ||" << " type " << "|| MUST be || honeyComb || packedBed || tubular ||\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
             }
@@ -1098,7 +1117,35 @@ namespace ASALI
                 }
 
             }
+            else if ( reactorType_ == "tubular" )
+            {
+                double Sw   = boost::lexical_cast<double>(dummyVector[washcoatIndex+2]);
+                std::string dimSw = dummyVector[washcoatIndex+3];
+                ConvertsToMeter(Sw, dimSw);
 
+                double Dint = Dmatrix_ - 2.*Sw;
+
+                epsi_ = std::pow(Dint,2.)/std::pow(Dmatrix_,2.);
+                
+                av_   = 4./Dmatrix_;
+                aex_  = 4./Dmatrix_;
+
+                shape_ = dummyVector[tubeIndex+1+1];
+                if ( shape_ != "circle" && shape_ != "triangle" && shape_ != "square")
+                {
+                    error();
+                    std::cout << "key word ||" << " channel shape " << "|| MUST be || circle || triangle || square ||\n" << std::endl;
+                    exit (EXIT_FAILURE);
+                }
+
+                limitations_ = dummyVector[limitationIndex+1+1];
+                if ( limitations_ != "massTransfer" && limitations_ != "chemicalRegime")
+                {
+                    error();
+                    std::cout << "key word ||" << " external limitations " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
+                    exit (EXIT_FAILURE);
+                }
+            }
         }
     }
     
@@ -1247,13 +1294,13 @@ namespace ASALI
         {
             if ( shape_ == "square")                 {Sh_ = 3.087;}
             else if ( shape_ == "circle")            {Sh_ = 4.362;}
-            else if ( shape_ == "triangle")            {Sh_ = 1.891;}
+            else if ( shape_ == "triangle")          {Sh_ = 1.891;}
         }
         else if (limitations_ == "massTransfer")
         {
             if ( shape_ == "square")                {Sh_ = 2.977;}
-            else if ( shape_ == "circle")            {Sh_ = 3.659;}
-            else if ( shape_ == "triangle")            {Sh_ = 2.494;}
+            else if ( shape_ == "circle")           {Sh_ = 3.659;}
+            else if ( shape_ == "triangle")         {Sh_ = 2.494;}
         }
         
         return Sh_;
@@ -1411,9 +1458,9 @@ namespace ASALI
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
-                if         (dummyVector[i] == "gas")               {checkWord[0] = true; gasIndex    = i;}
-                else if (dummyVector[i] == "solid")                {checkWord[1] = true; solidIndex  = i;}
-                else if (dummyVector[i] == "external")             {checkWord[2] = true; exIndex     = i;}
+                if      (dummyVector[i] == "gas")               {checkWord[0] = true; gasIndex    = i;}
+                else if (dummyVector[i] == "solid")             {checkWord[1] = true; solidIndex  = i;}
+                else if (dummyVector[i] == "external")          {checkWord[2] = true; exIndex     = i;}
             }
 
             if ( ex_ == false )

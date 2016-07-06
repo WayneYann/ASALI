@@ -383,6 +383,10 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
         eq->setPackedBedProperties(input.getParticleDiameter(),input.getTubeDiameter());
         eq->setCorrelation(input.getCorrelation());
     }
+    else if ( input.getReactorType() == "tubular" )
+    {
+        eq->setTubularProperties(input.getSherwood(),input.getTubeDiameter());
+    }
 
     eq->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
                            input.getInertLength(), input.getSpecificArea(), input.getExternalArea(),
@@ -392,7 +396,6 @@ if ( input.getStart() == "new" || input.getStart() == "latest" )
     eq->setInert(input.getInert());
     eq->setCatalyst(input.getCatalyst());
     eq->setDiffusion(input.getDiffusion());
-    
 
     growGrid = new ASALI::GROWgrid(NC, SURF_NC);
 

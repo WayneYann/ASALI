@@ -82,6 +82,8 @@ public:
 
     void setHoneyCombProperties(const double AsymptoticSh, const double Dh);
 
+    void setTubularProperties(const double AsymptoticSh, const double Dh);
+
     void setFeedValue(const double p, const double T0,
                       const OpenSMOKE::OpenSMOKEVectorDouble x0bulk);
 
@@ -359,6 +361,12 @@ void equationSystem::setHoneyCombProperties(const double AsymptoticSh, const dou
     AsymptoticSh_ = AsymptoticSh;
 }
 
+void equationSystem::setTubularProperties(const double AsymptoticSh, const double Dh)
+{
+    Dh_           = Dh;
+    AsymptoticSh_ = AsymptoticSh;
+}
+
 void equationSystem::setFeedValue(const double p, const double T0,
                              const OpenSMOKE::OpenSMOKEVectorDouble x0bulk)
 {
@@ -396,6 +404,11 @@ double equationSystem::EffectiveThermalConductivity(const double T, const double
         
         newCond = cond*krs;
     }
+    else if ( reactorType_ == "tubular" )
+    {
+        newCond = condSolid_;
+    }
+
     return newCond;
 }
 
@@ -430,13 +443,17 @@ double equationSystem::OverallHeatTransferCoefficient(const double cp, const dou
         double kr   = Re*Pr/Per;
                U    = 1/(1/hw + (Dt_/(6*kr))*(Bi+3)/(Bi+4));
     }
+    else if ( reactorType_ == "tubular" )
+    {
+        U = AsymptoticSh_*cond/Dh_;
+    }
 
     return U;
 }
 
 void equationSystem::HeatTransferCoefficient(const double z, const double cp, const double eta, const double cond)
 {
-    if ( reactorType_ == "honeyComb" )
+    if ( reactorType_ == "honeyComb" || reactorType_ == "tubular" )
     {
         double Re = G_*Dh_/(eta*epsi_);
         double Pr = cp*eta/cond;
@@ -498,7 +515,7 @@ void equationSystem::HeatTransferCoefficient(const double z, const double cp, co
 
 void equationSystem::MassTransferCoefficient(const double z, const double rho, const double eta, const OpenSMOKE::OpenSMOKEVectorDouble dG)
 {
-    if ( reactorType_ == "honeyComb" )
+    if ( reactorType_ == "honeyComb" || reactorType_ == "tubular" )
     {
         double Re = G_*Dh_/(eta*epsi_);
         OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
