@@ -74,8 +74,8 @@
                 }
                 else
                 {
-                    R_[a][r]      = ReactionRate(omegaWall_[a][r],TWall_[a][r+1]);
-                    Q_[a][r+1]    = ReactionHeat(omegaWall_[a][r],TWall_[a][r+1]);
+                    R_[a][r]      = ReactionRate(omegaWall_[a][r],TWall_[a][r+1],epsiHC_);
+                    Q_[a][r+1]    = ReactionHeat(omegaWall_[a][r],TWall_[a][r+1],epsiHC_);
                 }
             }
         }

@@ -103,7 +103,7 @@ public:
 
     void resize(const std::string type);
 
-    void setEnergy(const bool energy);
+    void setEnergy(const bool energy, const double Q);
 
     void start(const std::string type,const std::string eq);
     void end(const std::string type,const std::string eq);
@@ -174,6 +174,7 @@ private:
     double LgeoH_;
     double LgeoM_;
     double Linert_;
+    double Qext_;
     
     bool   energy_;
 
@@ -277,6 +278,7 @@ equationSystem::equationSystem()
         LgeoH_  = 0.;
         LgeoM_  = 0.;
         Linert_ = 0.;
+        Qext_   = 0.;
     }
 
 void equationSystem::setFlowRate(const double G)
@@ -289,9 +291,10 @@ void equationSystem::setFeedTemperature(const double Tin)
     Tin_ = Tin;
 }
 
-void equationSystem::setEnergy(const bool energy)
+void equationSystem::setEnergy(const bool energy, const double Q)
 {
     energy_ = energy;
+    Qext_   = Q;
 }
 
 void equationSystem::setMassFraction(const std::vector<double> IN)

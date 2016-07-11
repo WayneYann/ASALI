@@ -62,7 +62,7 @@
     temp.open(pathWall,std::ios::out);
 
     std::ofstream grid;
-    std::string fileNameGrid = folderName + "/grid.txt";
+    std::string fileNameGrid = folderName + "/axial-coordinate.txt";
     const char *pathGrid = fileNameGrid.c_str();
     remove(pathGrid);
     grid.open(pathGrid,std::ios::out);
@@ -453,5 +453,44 @@
     grid.close();
     twoD.close();
     rad.close();
+}
+
+{
+    std::string folderName = "results/" + input.getModelName()[j];
+
+    std::ofstream info;
+    std::string fileNameInfo = folderName + "/geometry.txt";
+    const char *pathInfo = fileNameInfo.c_str();
+    remove(pathInfo);
+    info.open(pathInfo,std::ios::out);
+    
+    if (input.getModelName()[j] == "honeyComb")
+    {
+        info << "Tube diameter:      " << input.getHoneyCombTubeDiameter() << " m" << std::endl;
+        info << "CPSI:               " << input.getHoneyCombCPSI() << std::endl;
+        info << "Wall thickness:     " << input.getHoneyCombWall() << " mills" << std::endl;
+        info << "Washcoat thickness: " << input.getHoneyCombWashCoat() << " m" << std::endl;
+        info << "Catalytic lenght:   " << input.getHoneyCombLength() << " m" << std::endl;
+        info << "Inert lenght:       " << input.getInertLength() << " m" << std::endl;
+        info << "Type:               " << input.getHoneyCombType() << std::endl;
+    }
+    else if (input.getModelName()[j] == "packedBed")
+    {
+        info << "Tube diameter:      " << input.getPackedBedTubeDiameter() << " m" << std::endl;
+        info << "Particle diameter:  " << input.getPackedBedParticleDiameter() << " m" << std::endl;
+        info << "Catalytic lenght:   " << input.getPackedBedLength() << " m" << std::endl;
+        info << "Inert lenght:       " << input.getInertLength() << " m" << std::endl;
+    }
+    else if (input.getModelName()[j] == "microBed")
+    {
+        info << "Tube diameter:      " << input.getMicroBedTubeDiameter() << " m" << std::endl;
+        info << "CPSI:               " << input.getMicroBedCPSI() << std::endl;
+        info << "Particle diameter:  " << input.getMicroBedParticleDiameter() << " m" << std::endl;
+        info << "Washcoat thickness: " << input.getMicroBedWall() << " m" << std::endl;
+        info << "Catalytic lenght:   " << input.getMicroBedLength() << " m" << std::endl;
+        info << "Inert lenght:       " << input.getInertLength() << " m" << std::endl;
+    }
+
+    info.close();
 }
 

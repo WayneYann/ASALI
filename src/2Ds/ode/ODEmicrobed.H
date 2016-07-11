@@ -70,8 +70,8 @@
                 }
                 else
                 {
-                    R_[a][r]      = ReactionRate(omegaBulk_[a][r],TBulk_[a][r+1]);
-                    Q_[a][r+1]    = ReactionHeat(omegaBulk_[a][r],TBulk_[a][r+1]);
+                    R_[a][r]      = ReactionRate(omegaBulk_[a][r],TBulk_[a][r+1],(1. - epsiMh_*(1.-epsiMp_)));
+                    Q_[a][r+1]    = ReactionHeat(omegaBulk_[a][r],TBulk_[a][r+1],(1. - epsiMh_*(1.-epsiMp_)));
                 }
             }
         }

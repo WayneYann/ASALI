@@ -94,6 +94,7 @@ namespace ASALI
             inline double                   getSupportDensity()             const {return rhoS_;};
             inline double                   getSupportConductivity()        const {return kS_;};
             inline double                   getInertLength()                const {return Linert_;};
+            inline double                   getHeat()                       const {return Q_;};
 
             void recapOnScreen();
 
@@ -148,6 +149,7 @@ namespace ASALI
             double tauC_;
             double epsiC_;
             double Linert_;
+            double Q_;
 
             void error() { std::cout << "\nASALI::readInput::ERROR\n" << std::endl;};
             
@@ -235,7 +237,7 @@ namespace ASALI
                     name_[4] = "N2";
                     name_[5] = "H2O";
                 }
-                else if ( "ethylene-partial-oxidation" )
+                else if ( reactionType_ == "ethylene-partial-oxidation" )
                 {
                     NC_    = 6;
 
@@ -255,10 +257,19 @@ namespace ASALI
                     name_[4] = "CH4";
                     name_[5] = "H2O";
                 }
+                else if ( reactionType_ == "heat-generation")
+                {
+                    NC_    = 1;
+                    MW_.resize(NC_);
+                    MW_[0] = 44.;
+
+                    name_.resize(NC_);
+                    name_[0] = "N2";
+                }
                 else
                 {
                     error();
-                    std::cout << "node || reaction || could be only || O-xylene-to-phthalic || O-xylene-to-phthalic-complex || ethylene-partial-oxidation ||\n" << std::endl;
+                    std::cout << "node || reaction || could be only || O-xylene-to-phthalic || O-xylene-to-phthalic-complex || ethylene-partial-oxidation || heat-generation ||\n" << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }
@@ -291,7 +302,7 @@ namespace ASALI
                     x[1]     = tree.get<double>("mole.XYLENE");
                     x[4]     = tree.get<double>("mole.N2");
                 }
-                else if ( "ethylene-partial-oxidation" )
+                else if ( reactionType_ == "ethylene-partial-oxidation" )
                 {
                     for (unsigned int i=0;i<NC_;i++)
                     {
@@ -302,6 +313,10 @@ namespace ASALI
                     x[0] = tree.get<double>("mole.C2H4");
                     x[3] = tree.get<double>("mole.CO2");
                     x[4] = tree.get<double>("mole.CH4");
+                }
+                else if ( reactionType_ == "heat-generation" )
+                {
+                    x[0] = 1.;
                 }
 
                 for (unsigned int i=0;i<NC_;i++)
@@ -336,6 +351,15 @@ namespace ASALI
                 G_      = tree.get<double>("operatingConditions.specificMassFlowRate");
                 Linert_ = tree.get<double>("operatingConditions.inertLength");
                 energy_ = tree.get<bool>("operatingConditions.energy");
+
+                if ( reactionType_ == "heat-generation")
+                {
+                    Q_  = tree.get<double>("operatingConditions.heatGenerated");
+                }
+                else
+                {
+                    Q_  = 0.;
+                }
             }
             
             // packed bed
@@ -377,7 +401,7 @@ namespace ASALI
 
             // micro bed
             {
-                if ( models_[3] == true)
+                if ( models_[2] == true)
                 {
                     CPSIM_ = tree.get<double>("microBed.CPSI"); 
                     DtM_   = tree.get<double>("microBed.tubeDiameter");
