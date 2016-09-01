@@ -67,5 +67,5 @@ echo '    Homogeneous      off' >> idealPFR.txt
 echo '    Heterogeneous    on' >> idealPFR.txt
 echo '  )' >> idealPFR.txt
 echo ' ' >> idealPFR.txt
-echo '  Numerical solvers  OpenSMOKE' >> idealPFR.txt
+echo '  Numerical solver  OpenSMOKE' >> idealPFR.txt
 echo '}' >> idealPFR.txt

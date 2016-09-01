@@ -984,7 +984,7 @@ namespace ASALI
             words[3]  = "channel diameter";
             words[4]  = "channel shape";
             words[5]  = "void fraction";
-            words[6]  = "external limitations";
+            words[6]  = "gas-to-solid correlation";
             words[7]  = "type";
             words[8]  = "particle diameter";
             words[9]  = "washcoat thickness";
@@ -1004,8 +1004,8 @@ namespace ASALI
                          dummyVector[i+1] == "shape")              {checkWord[4]  = true; shapeIndex       = i;}
                 else if (dummyVector[i] == "void" &&
                          dummyVector[i+1] == "fraction")           {checkWord[5]  = true; epsiIndex        = i;}
-                else if (dummyVector[i] == "external" &&
-                         dummyVector[i+1] == "limitations")        {checkWord[6]  = true; limitationIndex  = i;}
+                else if (dummyVector[i] == "gas-to-solid" &&
+                         dummyVector[i+1] == "correlation")        {checkWord[6]  = true; limitationIndex  = i;}
                 else if (dummyVector[i] == "type")                 {checkWord[7]  = true; typeIndex        = i;}
                 else if (dummyVector[i] == "particle" &&
                          dummyVector[i+1] == "diameter")           {checkWord[8]  = true; particleIndex    = i;}
