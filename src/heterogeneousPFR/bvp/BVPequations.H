@@ -94,13 +94,14 @@
 
         //- Temperture - 2nd
         {
+            OpenSMOKE::OpenSMOKEVectorDouble condgas_(NP_);
             if ( gasDiffusion_ == true )
             {
-                 jbulk_ = SecondOrderDerivate(Tbulk_,"gas");
+                jbulk_   = SecondOrderDerivate(Tbulk_,condBulk_,"gas");
 
                 for (unsigned int i=0;i<NP_;i++)
                 {
-                    jbulk_[i+1]   = jbulk_[i+1]*condBulk_[i+1]/(rhoBulk_[i+1]*cp_[i+1]);
+                    jbulk_[i+1] = jbulk_[i+1]/(rhoBulk_[i+1]*cp_[i+1]);
                 }
             }
             else
@@ -121,6 +122,7 @@
 
         //- Species
         OpenSMOKE::OpenSMOKEVectorDouble omegagas_(NP_);
+        OpenSMOKE::OpenSMOKEVectorDouble diffgas_(NP_);
         OpenSMOKE::OpenSMOKEVectorDouble cgas_(NP_);
         OpenSMOKE::OpenSMOKEVectorDouble jgas_(NP_);
 
@@ -140,12 +142,12 @@
             {
                 if ( gasDiffusion_ == true )
                 {
-                    jgas_   = SecondOrderDerivate(omegagas_,"gas");
-                    
                     for (unsigned int i=0;i<NP_;i++)
                     {
-                        jgas_[i+1] = diffG_[i][j]*jgas_[i+1];
+                        diffgas_[i+1] = diffG_[i][j]*rhoBulk_[i+1];
                     }
+
+                    jgas_   = SecondOrderDerivate(omegagas_,diffgas_,"gas");
                 }
                 else
                 {
@@ -158,7 +160,7 @@
                 for (unsigned int i=0;i<NP_;i++)
                 {
                     cGas_[i][j] = cgas_[i+1];
-                    jGas_[i][j] = jgas_[i+1];
+                    jGas_[i][j] = jgas_[i+1]/rhoBulk_[i+1];
                 }
             }
         }
@@ -309,7 +311,7 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j] + diffG_[i][j]*rhoBulk_[i+1]*cGas_[i][j]/G_;// ALGEBRAIC
+                        dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j] + diffG_[i][j]*rhoBulk_[i+1]*cGas_[i][j]/G_; // ALGEBRAIC
                     }
                     else
                     {
@@ -347,11 +349,11 @@
             {
                 if ( gasDiffusion_ == true )
                 {
-                    dyOS_[counter++] = T0_- Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/(G_*cp_[i+1]); // ALGEBRAIC
+                    dyOS_[counter++] = T0_ - Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/(cp_[i+1]*G_);// ALGEBRAIC
                 }
                 else
                 {
-                    dyOS_[counter++] = T0_ - Tbulk_[i+1];
+                    dyOS_[counter++] = T0_ - Tbulk_[i+1];// ALGEBRAIC
                 }
 
                 dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
@@ -370,16 +372,9 @@
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
-                    if ( gasDiffusion_ == true )
-                    {
-                        dyOS_[counter++] = omegaBulk_[i][j] - omegaBulk_[i-1][j]; //ALGEBRAIC
-                    }
-                    else
-                    {
-                        dyOS_[counter++] = (-G_/(rhoBulk_[i+1]*epsi_))*cGas_[i][j]
-                                           - av_*jSolid_[i][j]/epsi_
-                                           + RfromGas_[j]/rhoBulk_[i+1]; //DIFFERENTIAL
-                    }
+                    dyOS_[counter++] = (-G_/(rhoBulk_[i+1]*epsi_))*cGas_[i][j]
+                                       - av_*jSolid_[i][j]/epsi_
+                                       + RfromGas_[j]/rhoBulk_[i+1]; //DIFFERENTIAL
                 }
                 else
                 {
@@ -410,25 +405,18 @@
             }
             if (energy_ == true)
             {
-                if ( gasDiffusion_ == true )
+                if ( reactorType_ == "honeyComb" )
                 {
-                    dyOS_[counter++] = Tbulk_[i+1] - Tbulk_[i-1+1]; // ALGEBRAIC
+                    dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
+                                       - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
+                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
-                else
+                else if ( reactorType_ == "packedBed" )
                 {
-                    if ( reactorType_ == "honeyComb" )
-                    {
-                        dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
-                                           - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
-                                           + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
-                    }
-                    else if ( reactorType_ == "packedBed" )
-                    {
-                        dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
-                                           - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1])
-                                           - U_*aex_*(Tbulk_[i+1]-Tex_)/(epsi_*rhoBulk_[i+1]*cp_[i+1])
-                                           + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
-                    }
+                    dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
+                                       - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1])
+                                       - U_*aex_*(Tbulk_[i+1]-Tex_)/(epsi_*rhoBulk_[i+1]*cp_[i+1])
+                                       + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
 
                 dyOS_[counter++] = Twall_[i+1] - Twall_[i-1+1]; // ALGEBRAIC

@@ -95,7 +95,7 @@ public:
     
     void cleanMemory();
     
-    OpenSMOKE::OpenSMOKEVectorDouble getVelocity()    const {return v_;};
+    OpenSMOKE::OpenSMOKEVectorDouble getVelocity();
 
     unsigned int BlockDimension()                     const {return NB_;};
 
@@ -112,6 +112,14 @@ public:
     unsigned int OdePrint(const double t, const OpenSMOKE::OpenSMOKEVectorDouble& y);
 
     void AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M);
+    
+    std::vector<double> atomicBalanceError(const OpenSMOKE::OpenSMOKEVectorDouble yF);
+    
+    double massBalanceError(const OpenSMOKE::OpenSMOKEVectorDouble yF);
+    
+    double enthalpyBalanceError(const OpenSMOKE::OpenSMOKEVectorDouble yF);
+    
+    OpenSMOKE::OpenSMOKEVectorDouble getVelocity(const OpenSMOKE::OpenSMOKEVectorDouble yF);
 
 
 private:
@@ -221,10 +229,10 @@ private:
     
     OpenSMOKE::OpenSMOKEVectorDouble FirstOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value);
     OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const OpenSMOKE::OpenSMOKEVectorDouble coeff, const std::string type);
-    OpenSMOKE::OpenSMOKEVectorDouble SecondOrderDerivate(const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type);
-    
+
     double EffectiveThermalConductivity(const double T, const double cond);
     double OverallHeatTransferCoefficient(const double cp, const double eta, const double cond);
+    double TaylorArisDisperionCoefficient(const double Pe);
 
 };
 
@@ -286,11 +294,11 @@ void equationSystem::resize(const unsigned int NP)
     ChangeDimensions(NP_, &condBulk_,     true);
     ChangeDimensions(NP_, &etaMix_,       true);
 
-    ChangeDimensions(NC_, &xBulk_, true);
-    ChangeDimensions(NC_, &xWall_, true);
-    ChangeDimensions(NC_, &cBulk_, true);
-    ChangeDimensions(NC_, &cWall_, true);
-    ChangeDimensions(NC_, &Kmat_, true);
+    ChangeDimensions(NC_, &xBulk_,  true);
+    ChangeDimensions(NC_, &xWall_,  true);
+    ChangeDimensions(NC_, &cBulk_,  true);
+    ChangeDimensions(NC_, &cWall_,  true);
+    ChangeDimensions(NC_, &Kmat_,   true);
 
     ChangeDimensions(NE_, &dyOS_, true);
     ChangeDimensions(NE_, &yOS_, true);
@@ -344,7 +352,7 @@ void equationSystem::setReactorGeometry(const double alfa, const double epsi,
     epsi_            = epsi;
     Lcat_            = Lcat;
     L_               = Lcat_ + Linert;
-    Linert_          = Linert/L_;
+    Linert_          = Linert;
     aex_             = aex;
     G_               = G;
 }
@@ -368,7 +376,7 @@ void equationSystem::setTubularProperties(const double AsymptoticSh, const doubl
 }
 
 void equationSystem::setFeedValue(const double p, const double T0,
-                             const OpenSMOKE::OpenSMOKEVectorDouble x0bulk)
+                                  const OpenSMOKE::OpenSMOKEVectorDouble x0bulk)
 {
     p_  = p;
     T0_ = T0;
@@ -384,7 +392,7 @@ void equationSystem::setGrid(const OpenSMOKE::OpenSMOKEVectorDouble z)
     ChangeDimensions(z.Size(), &z_, true);
     for (unsigned int k=1;k<=z_.Size();k++)
     {
-        z_[k] = z[k]/L_;
+        z_[k] = z[k];
     }
 }
 
@@ -450,6 +458,22 @@ double equationSystem::OverallHeatTransferCoefficient(const double cp, const dou
 
     return U;
 }
+
+double equationSystem::TaylorArisDisperionCoefficient(const double Pe)
+{
+    double diffTA = 0.;
+    if ( reactorType_ == "honeyComb" || reactorType_ == "tubular" )
+    {
+        diffTA = std::pow(Pe,2.)/192.;
+    }
+    else if ( reactorType_ == "packedBed" )
+    {
+        diffTA = 0.;
+    }
+    
+    return diffTA;
+}
+
 
 void equationSystem::HeatTransferCoefficient(const double z, const double cp, const double eta, const double cond)
 {
@@ -605,15 +629,15 @@ OpenSMOKE::OpenSMOKEVectorDouble equationSystem::FirstOrderDerivate (const OpenS
         {
             if ( k == 1 )
             {
-                dvalue_[k] = ((value[k+1] - value[k])/(z_[k+1] - z_[k]))/L_;
+                dvalue_[k] = ((value[k+1] - value[k])/(z_[k+1] - z_[k]));
             }
             else if ( k == NP_ )
             {
-                dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]))/L_;
+                dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]));
             }
             else
             {
-                dvalue_[k] = ((value[k+1] - value[k-1])/(z_[k+1] - z_[k-1]))/L_;
+                dvalue_[k] = ((value[k+1] - value[k-1])/(z_[k+1] - z_[k-1]));
             }
         }
     }
@@ -623,15 +647,15 @@ OpenSMOKE::OpenSMOKEVectorDouble equationSystem::FirstOrderDerivate (const OpenS
         {
             if ( k == 1 )
             {
-                dvalue_[k] = ((value[k+1] - value[k])/(z_[k+1] - z_[k]))/L_;
+                dvalue_[k] = ((value[k+1] - value[k])/(z_[k+1] - z_[k]));
             }
             else if ( k == NP_ )
             {
-                dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]))/L_;
+                dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]));
             }
             else
             {
-                dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]))/L_;
+                dvalue_[k] = ((value[k] - value[k-1])/(z_[k] - z_[k-1]));
             }
         }
     }
@@ -656,7 +680,7 @@ OpenSMOKE::OpenSMOKEVectorDouble equationSystem::SecondOrderDerivate (const Open
             }
             else
             {
-                dvalue_[k] = ((coeff[k+1]*value[k+1]-coeff[k]*value[k])/(z[k+1]-z[k])/L_ - (coeff[k]*value[k]-coeff[k-1]*value[k-1])/(z[k]-z[k-1])/L_)/(0.5*(z[k+1]-z[k-1])/L_);
+                dvalue_[k] = ((coeff[k+1]+coeff[k])*0.5*(value[k+1]-value[k])/(z[k+1]-z[k]) - (coeff[k]+coeff[k-1])*0.5*(value[k]-value[k-1])/(z[k]-z[k-1]))/(0.5*(z[k+1]-z[k-1])); //((coeff[k+1]+coeff[k]+coeff[k-1])/3.)*(value[k+1]*(z[k]-z[k-1]) + value[k-1]*(z[k+1]-z[k]) - value[k]*(z[k+1]-z[k-1]))/(0.5*(z[k+1]-z[k-1])*(z[k+1]-z[k])*(z[k]-z[k-1]));
             }
         }
     }
@@ -674,54 +698,11 @@ OpenSMOKE::OpenSMOKEVectorDouble equationSystem::SecondOrderDerivate (const Open
             }
             else
             {
-                dvalue_[k] = ((coeff[k+1]*value[k+1]-coeff[k]*value[k])/(z[k+1]-z[k])/L_ - (coeff[k]*value[k]-coeff[k-1]*value[k-1])/(z[k]-z[k-1])/L_)/(0.5*(z[k+1]-z[k-1])/L_);
+                dvalue_[k] = ((coeff[k+1]*value[k+1]-coeff[k]*value[k])/(z[k+1]-z[k]) - (coeff[k]*value[k]-coeff[k-1]*value[k-1])/(z[k]-z[k-1]))/(0.5*(z[k+1]-z[k-1]));
             }
         }
     }
 
-    return dvalue_;
-}
-
-OpenSMOKE::OpenSMOKEVectorDouble equationSystem::SecondOrderDerivate (const OpenSMOKE::OpenSMOKEVectorDouble value, const std::string type)
-{
-    OpenSMOKE::OpenSMOKEVectorDouble dvalue_(NP_);
-
-    if ( type == "gas" )
-    {
-        for (unsigned int k=1;k<=NP_;k++)
-        {
-            if ( k == 1 )
-            {
-                dvalue_[k] = 0.;
-            }
-            else if ( k == NP_ )
-            {
-                dvalue_[k] = 0.;
-            }
-            else
-            {
-                dvalue_[k] = (value[k+1]*(z[k]-z[k-1])/L_ + value[k-1]*(z[k+1]-z[k])/L_ - value[k]*(z[k+1]-z[k-1])/L_)/(0.5*((z[k+1]-z[k-1])/L_)*((z[k+1]-z[k])/L_)*((z[k]-z[k-1])/L_));
-            }
-        }
-    }
-    else if ( type == "solid" )
-    {
-        for (unsigned int k=1;k<=NP_;k++)
-        {
-            if ( k == 1 )
-            {
-                dvalue_[k] = 0.;
-            }
-            else if ( k == NP_ )
-            {
-                dvalue_[k] = 0.;
-            }
-            else
-            {
-                dvalue_[k] = ((value[k+1]-value[k])/(z[k+1]-z[k])/L_ - (value[k]-value[k-1])/(z[k]-z[k-1])/L_)/(0.5*(z[k+1]-z[k-1])/L_);
-            }
-        }
-    }
     return dvalue_;
 }
 
@@ -815,20 +796,13 @@ void equationSystem::AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M)
         {
             for (unsigned int j=1;j<=NC_;j++)
             {
-                if ( gasDiffusion_ == true )
+                if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
-                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
                 }
                 else
                 {
-                    if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
-                    {
-                        M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
-                    }
-                    else
-                    {
-                        M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
-                    }
+                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
                 }
             }
             for (unsigned int j=1;j<=NC_;j++)
@@ -848,14 +822,7 @@ void equationSystem::AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M)
             }
             if (energy_ == true)
             {
-                if ( gasDiffusion_ == true )
-                {
-                    M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
-                }
-                else
-                {
-                    M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
-                }
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
                 M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC;
             }
             else
@@ -908,5 +875,192 @@ void equationSystem::cleanMemory()
     delete [] jSolid_;
     delete [] teta_;
 }
+
+std::vector<double> equationSystem::atomicBalanceError(const OpenSMOKE::OpenSMOKEVectorDouble yF)
+{
+    unsigned int counter = 1;
+    for (unsigned int i=0;i<NP_;i++)
+    {
+        for (unsigned int j=1;j<=NC_;j++)
+            omegaBulk_[i][j] = yF[counter++];
+        for (unsigned int j=1;j<=NC_;j++)
+            omegaWall_[i][j] = yF[counter++];
+        for (unsigned int j=1;j<=SURF_NC_;j++)
+            teta_[i][j] = yF[counter++];
+        Tbulk_[i+1] = yF[counter++];
+        Twall_[i+1] = yF[counter++];
+    }
+
+    Eigen::MatrixXd SpecieAtomicComposition;
+
+    std::vector<std::string> ElementsNames;
+
+    std::vector<double> error;
+
+    Eigen::VectorXd Element(NC_);
+
+    ElementsNames           = thermodynamicsMap_.elements();
+    SpecieAtomicComposition = thermodynamicsMap_.atomic_composition();
+
+    error.resize(ElementsNames.size());
+
+    for (unsigned int i=0;i<NP_;i++)
+    {
+        thermodynamicsMap_.SetTemperature(Tbulk_[i+1]);
+        thermodynamicsMap_.SetPressure(p_);
+        transportMap_.SetPressure(p_);
+        transportMap_.SetTemperature(Tbulk_[i+1]);
+
+        thermodynamicsMap_.MoleFractions_From_MassFractions(xBulk_,MWbulk_,omegaBulk_[i]);
+
+        rhoBulk_[i+1] = p_*MWbulk_/(PhysicalConstants::R_J_kmol*Tbulk_[i+1]);
+
+        transportMap_.MassDiffusionCoefficients(diffG_[i], xBulk_);
+    }
+
+    for (unsigned int k=0;k<ElementsNames.size();k++)
+    {
+        double in  = 0.;
+        double out = 0.;
+        if ( gasDiffusion_ == true )
+        {
+            Element = SpecieAtomicComposition.col(k);
+            for (unsigned int j=0;j<NC;j++)
+            {
+                in  += (omegaBulk_[0][j+1]*G_- rhoBulk_[1]*diffG_[0][j+1]*(omegaBulk_[1][j+1]-omegaBulk_[0][j+1])/(z[2] - z[1]))*Element[j]/thermodynamicsMap_.MW()[j+1];
+                out +=  omegaBulk_[NP_-1][j+1]*G_*Element[j]/thermodynamicsMap_.MW()[j+1];
+            }
+        }
+        else
+        {
+            Element = SpecieAtomicComposition.col(k);
+            for (unsigned int j=0;j<NC;j++)
+            {
+                in  +=  omegaBulk_[0][j+1]*G_*Element[j]/thermodynamicsMap_.MW()[j+1];
+                out +=  omegaBulk_[NP_-1][j+1]*G_*Element[j]/thermodynamicsMap_.MW()[j+1];
+            }
+        }
+
+        if (in != 0. )
+        {
+            error[k] = (in - out)*100./in;
+        }
+        else
+        {
+            error[k] = 0.;
+        }
+    }
+
+    return error;
+}
+
+double equationSystem::massBalanceError(const OpenSMOKE::OpenSMOKEVectorDouble yF)
+{
+    double error;
+    unsigned int counter = 1;
+    for (unsigned int i=0;i<NP_;i++)
+    {
+        for (unsigned int j=1;j<=NC_;j++)
+            omegaBulk_[i][j] = yF[counter++];
+        for (unsigned int j=1;j<=NC_;j++)
+            omegaWall_[i][j] = yF[counter++];
+        for (unsigned int j=1;j<=SURF_NC_;j++)
+            teta_[i][j] = yF[counter++];
+        Tbulk_[i+1] = yF[counter++];
+        Twall_[i+1] = yF[counter++];
+    }
+
+    double in  = 0.;
+    double out = 0.;
+    for (unsigned int j=0;j<NC;j++)
+    {
+        in  +=  omegaBulk_[0][j+1]*G_;
+        out +=  omegaBulk_[NP_-1][j+1]*G_;
+    }
+
+    error = (in - out)*100./in;
+
+    return error;
+}
+
+double equationSystem::enthalpyBalanceError(const OpenSMOKE::OpenSMOKEVectorDouble yF)
+{
+    double error;
+    unsigned int counter = 1;
+    for (unsigned int i=0;i<NP_;i++)
+    {
+        for (unsigned int j=1;j<=NC_;j++)
+            omegaBulk_[i][j] = yF[counter++];
+        for (unsigned int j=1;j<=NC_;j++)
+            omegaWall_[i][j] = yF[counter++];
+        for (unsigned int j=1;j<=SURF_NC_;j++)
+            teta_[i][j] = yF[counter++];
+        Tbulk_[i+1] = yF[counter++];
+        Twall_[i+1] = yF[counter++];
+    }
+
+    double in  = 0.;
+    {
+        OpenSMOKE::OpenSMOKEVectorDouble h(NC);
+        thermodynamicsMap_.SetPressure(p_);
+        thermodynamicsMap_.SetTemperature(Tbulk_[1]);
+        thermodynamicsMap_.hMolar_Species(h);
+        for (unsigned int j=0;j<NC;j++)
+        {
+            in  +=  omegaBulk_[0][j+1]*G_*h[j+1]/thermodynamicsMapXML->MW()[j+1];
+        }
+    }
+
+    double out  = 0.;
+    {
+        OpenSMOKE::OpenSMOKEVectorDouble h(NC);
+        thermodynamicsMap_.SetPressure(p_);
+        thermodynamicsMap_.SetTemperature(Tbulk_[NP_]);
+        thermodynamicsMap_.hMolar_Species(h);
+        for (unsigned int j=0;j<NC;j++)
+        {
+            out  +=  omegaBulk_[NP_-1][j+1]*G_*h[j+1]/thermodynamicsMapXML->MW()[j+1];
+        }
+    }
+
+    error = (in - out)*100./in;
+
+    return error;
+}
+
+OpenSMOKE::OpenSMOKEVectorDouble equationSystem::getVelocity(const OpenSMOKE::OpenSMOKEVectorDouble yF)
+{
+    unsigned int counter = 1;
+    for (unsigned int i=0;i<NP_;i++)
+    {
+        for (unsigned int j=1;j<=NC_;j++)
+            omegaBulk_[i][j] = yF[counter++];
+        for (unsigned int j=1;j<=NC_;j++)
+            omegaWall_[i][j] = yF[counter++];
+        for (unsigned int j=1;j<=SURF_NC_;j++)
+            teta_[i][j] = yF[counter++];
+        Tbulk_[i+1] = yF[counter++];
+        Twall_[i+1] = yF[counter++];
+    }
+
+    OpenSMOKE::OpenSMOKEVectorDouble vel(NP_);
+
+    for (unsigned int i=0;i<NP_;i++)
+    {
+        thermodynamicsMap_.SetTemperature(Tbulk_[i+1]);
+        thermodynamicsMap_.SetPressure(p_);
+        transportMap_.SetPressure(p_);
+        transportMap_.SetTemperature(Tbulk_[i+1]);
+
+        thermodynamicsMap_.MoleFractions_From_MassFractions(xBulk_,MWbulk_,omegaBulk_[i]);
+
+        rhoBulk_[i+1] = p_*MWbulk_/(PhysicalConstants::R_J_kmol*Tbulk_[i+1]);
+
+        vel[i+1]   = G_/(rhoBulk_[i+1]*epsi_);
+    }
+    
+    return vel;
+}
+
 
 }

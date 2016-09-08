@@ -245,7 +245,7 @@
                 {
                     if ( gasDiffusion_ == true )
                     {
-                        dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j] + diffG_[i][j]*rhoBulk_[i+1]*cGas_[i][j]/G_;// ALGEBRAIC
+                        dyOS_[counter++] = x0bulk_[j] - omegaBulk_[i][j] + diffG_[i][j]*rhoBulk_[i+1]*cGas_[i][j]/G_; // ALGEBRAIC
                     }
                     else
                     {
@@ -282,11 +282,11 @@
 
             if ( gasDiffusion_ == true )
             {
-                dyOS_[counter++] = T0_- Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/(G_*cp_[i+1]); // ALGEBRAIC
+                dyOS_[counter++] = T0_ - Tbulk_[i+1] + condBulk_[i+1]*cbulk_[i+1]/(cp_[i+1]*G_);// ALGEBRAIC
             }
             else
             {
-                dyOS_[counter++] = T0_ - Tbulk_[i+1];
+                dyOS_[counter++] = T0_ - Tbulk_[i+1];// ALGEBRAIC
             }
 
             dyOS_[counter++] = Twall_[i+1+1] - Twall_[i+1]; // ALGEBRAIC
@@ -298,14 +298,7 @@
             {
                 if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != inert_ )
                 {
-                    if ( gasDiffusion_ == true )
-                    {
-                        dyOS_[counter++] = omegaBulk_[i][j] - omegaBulk_[i-1][j]; // ALGEBRAIC
-                    }
-                    else
-                    {
-                        dyOS_[counter++] = 0.; //DIFFERENTIAL
-                    }
+                    dyOS_[counter++] = 0.; //DIFFERENTIAL
                 }
                 else
                 {
@@ -335,14 +328,7 @@
                 }
             }
 
-            if ( gasDiffusion_ == true )
-            {
-                dyOS_[counter++] = Tbulk_[i+1] - Tbulk_[i-1+1]; // ALGEBRAIC
-            }
-            else
-            {
-                dyOS_[counter++] = 0.; // ALGEBRAIC
-            }
+            dyOS_[counter++] = 0.; // ALGEBRAIC
 
             dyOS_[counter++] = Twall_[i+1] - Twall_[i-1+1]; // ALGEBRAIC
         }

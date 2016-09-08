@@ -289,74 +289,17 @@
 
     grid.close();
 
-    double MassFluxIn = 0.;
-    double EnthalpyFluxIn = 0.;
-    double MassFluxOut = 0.;
-    double EnthalpyFluxOut = 0.;
-
-    std::vector<double> IN;
-    std::vector<double> OUT;
-    {
-        OpenSMOKE::OpenSMOKEVectorDouble h(NC);
-        thermodynamicsMapXML->SetPressure(input.getPressure());
-        thermodynamicsMapXML->SetTemperature(Tbulk[1]);
-        thermodynamicsMapXML->hMolar_Species(h);
-        for (unsigned int j=1;j<=NC;j++)
-        {
-            MassFluxIn += omegaBulk[0][j]*G;
-            EnthalpyFluxIn += omegaBulk[0][j]*h[j]*G/thermodynamicsMapXML->MW()[j];
-        }
-
-        Eigen::MatrixXd SpecieAtomicComposition;
-        Eigen::VectorXd Element;
-        std::vector<std::string> ElementsNames;
-        ElementsNames = thermodynamicsMapXML->elements();
-        SpecieAtomicComposition = thermodynamicsMapXML->atomic_composition();
-        Element.resize(NC);
-        IN.resize(ElementsNames.size());
-        for (unsigned int k=0;k<ElementsNames.size();k++)
-        {
-            IN[k] = 0.;
-            Element = SpecieAtomicComposition.col(k);
-            for (unsigned int j=0;j<NC;j++)
-                IN[k] += omegaBulk[0][j+1]*G*Element[j]/thermodynamicsMapXML->MW()[j+1];
-        }
-    }
-
-    {
-        OpenSMOKE::OpenSMOKEVectorDouble h(NC);
-        thermodynamicsMapXML->SetPressure(input.getPressure());
-        thermodynamicsMapXML->SetTemperature(Tbulk[N]);
-        thermodynamicsMapXML->hMolar_Species(h);
-        for (unsigned int j=1;j<=NC;j++)
-        {
-            MassFluxOut += omegaBulk[N-1][j]*G;
-            EnthalpyFluxOut += omegaBulk[N-1][j]*h[j]*G/thermodynamicsMapXML->MW()[j];
-        }
-
-        Eigen::MatrixXd SpecieAtomicComposition;
-        Eigen::VectorXd Element;
-        std::vector<std::string> ElementsNames;
-        ElementsNames = thermodynamicsMapXML->elements();
-        SpecieAtomicComposition = thermodynamicsMapXML->atomic_composition();
-        Element.resize(NC);
-        OUT.resize(ElementsNames.size());
-        for (unsigned int k=0;k<ElementsNames.size();k++)
-        {
-            OUT[k] = 0.;
-            Element = SpecieAtomicComposition.col(k);
-            for (unsigned int j=0;j<NC;j++)
-                OUT[k] += omegaBulk[N-1][j+1]*G*Element[j]/thermodynamicsMapXML->MW()[j+1];
-        }
-    }
-
     //- Change discretization schemes to CDS
     if ( grow == true) 
     {
+        eq->resize(N);
+        eq->setGrid(z);
+        double errorEnthalpy  = eq->enthalpyBalanceError(yF);
+        
         NJ++;
         if ( NJ > 1 )
         {
-            if ( fabs((EnthalpyFluxIn - EnthalpyFluxOut)/EnthalpyFluxIn) <= input.getEnergyError() )
+            if ( fabs(errorEnthalpy) <= input.getEnergyError() )
             {
                 discretizationScheme = "CDS";
             }
@@ -365,20 +308,21 @@
 
     if ( input.getStart() == "new" || input.getStart() == "latest" )
     {
+        eq->resize(N);
+        eq->setGrid(z);
+        std::vector<double> errorAtom      = eq->atomicBalanceError(yF);
+        double              errorMass      = eq->massBalanceError(yF);
+        double              errorEnthalpy  = eq->enthalpyBalanceError(yF);
+
         extra << "Results written in:        " << results << " fractions\n" << std::endl; 
         extra << "Discretization scheme:     " << discretizationScheme << "\n" << std::endl;  
         extra << "Number of grid point     = " << N << "\n" << std::endl; 
-        extra << "Mass flux IN             = " << MassFluxIn << "    [Kg/m2/s]" << std::endl;
-        extra << "Mass flux OUT            = " << MassFluxOut << "    [Kg/m2/s]\n" << std::endl;
-        extra << "ERROR on MASS BALANCE    = " << (MassFluxIn - MassFluxOut)*100./MassFluxIn << "    [%]\n" << std::endl;
-        extra << "Enthalpy flux IN         = " << EnthalpyFluxIn << "    [W/m2]" << std::endl;
-        extra << "Enthalpy flux OUT        = " << EnthalpyFluxOut << "    [W/m2]\n" << std::endl;
-        extra << "ERROR on ENERGY BALANCE  = " << (EnthalpyFluxIn - EnthalpyFluxOut)*100./EnthalpyFluxIn << "    [%]\n" << std::endl;
+        extra << "ERROR on MASS BALANCE    = " << errorMass << "    [%]\n" << std::endl;
+        extra << "ERROR on ENERGY BALANCE  = " << errorEnthalpy << "    [%]\n" << std::endl;
         extra << "\nATOMIC BALANCE               " << std::endl;
-        for (unsigned int k=0;k<IN.size();k++)
+        for (unsigned int k=0;k<errorAtom.size();k++)
         {
-            if ( IN[k] != 0. )
-                extra << thermodynamicsMapXML->elements()[k] << " :\t" << (IN[k] - OUT[k])*100./IN[k] << "\t[%]" << std::endl;
+            extra << thermodynamicsMapXML->elements()[k] << " :\t" << errorAtom[k] << "\t[%]" << std::endl;
         }
         extra << "\n" << std::endl;
         
@@ -387,26 +331,24 @@
         std::cout << "\n#################################################" << std::endl;
         std::cout << "Results written in:        " << results << " fractions\n" << std::endl; 
         std::cout << "Number of grid point     = " << N << "\n" << std::endl; 
-        std::cout << "Mass flux IN             = " << MassFluxIn << "    [Kg/m2/s]" << std::endl;
-        std::cout << "Mass flux OUT            = " << MassFluxOut << "    [Kg/m2/s]\n" << std::endl;
-        std::cout << "ERROR on MASS BALANCE    = " << (MassFluxIn - MassFluxOut)*100./MassFluxIn << "    [%]\n" << std::endl;
-        std::cout << "Enthalpy flux IN         = " << EnthalpyFluxIn << "    [W/m2]" << std::endl;
-        std::cout << "Enthalpy flux OUT        = " << EnthalpyFluxOut << "    [W/m2]\n" << std::endl;
-        std::cout << "ERROR on ENERGY BALANCE  = " << (EnthalpyFluxIn - EnthalpyFluxOut)*100./EnthalpyFluxIn << "    [%]\n" << std::endl;
+        std::cout << "ERROR on MASS BALANCE    = " << errorMass << "    [%]\n" << std::endl;
+        std::cout << "ERROR on ENERGY BALANCE  = " << errorEnthalpy << "    [%]\n" << std::endl;
         std::cout << "#################################################" << std::endl;
         std::cout << "\n############################" << std::endl;
         std::cout << "ATOMIC BALANCE               " << std::endl;
-        for (unsigned int k=0;k<IN.size();k++)
+        for (unsigned int k=0;k<errorAtom.size();k++)
         {
-            if ( IN[k] != 0. )
-                std::cout << thermodynamicsMapXML->elements()[k] << " :\t" << (IN[k] - OUT[k])*100./IN[k] << "\t[%]" << std::endl;
+            std::cout << thermodynamicsMapXML->elements()[k] << " :\t" << errorAtom[k] << "\t[%]" << std::endl;
         }
         std::cout << "############################\n" << std::endl;
         
+        
+        OpenSMOKE::OpenSMOKEVectorDouble velocity = eq->getVelocity(yF);
+
         vel << "Velocity [m/s]" << std::endl;
         for (unsigned int i=1;i<=N;i++)
         {
-            vel << eq->getVelocity()[i] << std::endl;
+            vel << velocity[i] << std::endl;
         }
         vel.close();
     }
@@ -421,21 +363,7 @@
     {
         extra << "Results written in:        " << results << " fractions\n" << std::endl;
         extra << "Number of grid point     = " << N << "\n" << std::endl;
-        extra << "Mass flux IN             = " << MassFluxIn << "    [Kg/m2/s]" << std::endl;
-        extra << "Mass flux OUT            = " << MassFluxOut << "    [Kg/m2/s]\n" << std::endl;
-        extra << "ERROR on MASS BALANCE    = " << (MassFluxIn - MassFluxOut)*100./MassFluxIn << "    [%]\n" << std::endl;
-        extra << "Enthalpy flux IN         = " << EnthalpyFluxIn << "    [W/m2]" << std::endl;
-        extra << "Enthalpy flux OUT        = " << EnthalpyFluxOut << "    [W/m2]\n" << std::endl;
-        extra << "ERROR on ENERGY BALANCE  = " << (EnthalpyFluxIn - EnthalpyFluxOut)*100./EnthalpyFluxIn << "    [%]\n" << std::endl;
-        
-        extra << "\nATOMIC BALANCE               " << std::endl;
-        for (unsigned int k=0;k<IN.size();k++)
-        {
-            if ( IN[k] != 0. )
-                extra << thermodynamicsMapXML->elements()[k] << " :\t" << (IN[k] - OUT[k])*100./IN[k] << "\t[%]" << std::endl;
-        }
-        extra << "\n" << std::endl;
-        
+
         extra.close();
         vel.close();
         remove(pathVel);
