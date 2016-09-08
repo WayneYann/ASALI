@@ -40,7 +40,20 @@
 
 ASALI::check(argc);
 std::string* file;
-file    = new std::string(argv[1]);
+std::string* options;
+
+{
+    if ( argc == 2 )
+    {
+        file    = new std::string(argv[1]);
+        options = new std::string("none");
+    }
+    else if ( argc == 3 )
+    {
+        file    = new std::string(argv[1]);
+        options = new std::string(argv[2]);
+    }
+}
 
 ASALI::READinput       input(*file);
 ASALI::equationSystem *eq;
@@ -158,4 +171,16 @@ ASALI::equationSystem *eq;
     eq->setHeterogeneusReactions(input.getHeterogenousReactions());
     eq->setReactorGeometry(input.getAlfa(), input.getSpecificArea(), G, input.getHydraulicDiameter());
     eq->setCatalyst(input.getCatalyst());
+}
+
+if ( *options == "none" || *options == "reaction" )
+{
+
+}
+else
+{
+    ASALI::error();
+    std::cout << "\n " << std::endl;
+    std::cout << "option keyword are: || reaction ||" << std::endl;
+    exit(EXIT_FAILURE);
 }

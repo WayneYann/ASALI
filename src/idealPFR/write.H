@@ -267,5 +267,65 @@
         }
         std::cout << "############################\n" << std::endl;
     }
+    
+    
+    if ( *options == "reaction" )
+    {
+        std::ofstream output;
+        std::string fileNameOutput = folderName + "/reaction.txt";
+        const char *pathOutput = fileNameOutput.c_str();
+        remove(pathOutput);
+        output.open(pathOutput,std::ios::out);
+        output.setf(std::ios::scientific);
+        
+        {
+            double MW;
+            double cTot;
+            
+            unsigned int SURF_NP = thermodynamicsSurfaceMapXML->number_of_site_phases(0);
+            unsigned int NR      = kineticsSurfaceMapXML->NumberOfReactions();
+
+            OpenSMOKE::OpenSMOKEVectorDouble x(NC);
+            OpenSMOKE::OpenSMOKEVectorDouble c(NC);
+            OpenSMOKE::OpenSMOKEVectorDouble fakephase(SURF_NP);
+            OpenSMOKE::OpenSMOKEVectorDouble fakebulk(NC);
+            OpenSMOKE::OpenSMOKEVectorDouble RfromSurface(NC);
+            OpenSMOKE::OpenSMOKEVectorDouble Rsurface(SURF_NC);
+            OpenSMOKE::OpenSMOKEVectorDouble RsurfacePhases(SURF_NP);
+            OpenSMOKE::OpenSMOKEVectorDouble R(NR);
+
+            thermodynamicsMapXML->SetTemperature(input.getTemperature());
+            thermodynamicsMapXML->SetPressure(input.getPressure());
+            thermodynamicsSurfaceMapXML->SetPressure(input.getPressure());
+            thermodynamicsSurfaceMapXML->SetTemperature(input.getTemperature());
+            kineticsSurfaceMapXML->SetPressure(input.getPressure());
+            kineticsSurfaceMapXML->SetTemperature(input.getTemperature());
+
+
+            thermodynamicsMapXML->MoleFractions_From_MassFractions(x, MW, omegaWall);
+            cTot = input.getPressure()/(PhysicalConstants::R_J_kmol*input.getTemperature());
+            Product(cTot, x, &c); 
+
+            for(unsigned int j=1;j<=SURF_NP;j++)
+            {
+                fakephase[j] = thermodynamicsSurfaceMapXML->matrix_densities_site_phases()[0][j-1];
+            }
+
+            kineticsSurfaceMapXML->ReactionEnthalpiesAndEntropies();
+            kineticsSurfaceMapXML->ArrheniusKineticConstants();
+            kineticsSurfaceMapXML->ReactionRates(c, teta, fakebulk, fakephase);
+            kineticsSurfaceMapXML->FormationRates(&RfromSurface, &Rsurface, &fakebulk, &RsurfacePhases);
+            ElementByElementProduct(RfromSurface, thermodynamicsMapXML->MW(), &RfromSurface);
+            kineticsSurfaceMapXML->GetReactionRates(&R);
+
+            output << "#" << "\t" << "Reaction [Kg/m2/s]" << std::endl;
+            for (unsigned int j=1;j<=NR;j++)
+            {
+                output << j << "\t" << R[j] << std::endl;
+            }
+        }
+
+        output.close();
+    }
 }
 

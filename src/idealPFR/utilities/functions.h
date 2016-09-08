@@ -67,12 +67,13 @@ namespace ASALI
 
     void check( const int argc )
     {
-        if (argc != 2)
+        if ( argc != 3 && argc != 2)
         {
             std::cout << "\n " << std::endl;
             std::cout << "INPUT ORDER SHOULD BE:  " << std::endl;
             std::cout << "\n " << std::endl;
             std::cout << " 1/ input file " << std::endl;
+            std::cout << " 2/ [options] " << std::endl;
             std::cout << "\n " << std::endl;
             exit(EXIT_FAILURE);
         }
