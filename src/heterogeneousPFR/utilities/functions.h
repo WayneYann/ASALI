@@ -83,6 +83,12 @@ namespace ASALI
             std::cout << "#       KINETIC analysis       # " << std::endl;
             std::cout << "################################\n " << std::endl;
         }
+        else if ( type == "heat" )
+        {
+            std::cout << "\n#################################" << std::endl;
+            std::cout << "#  HEAT of REACTION evaluation  # " << std::endl;
+            std::cout << "#################################\n " << std::endl;
+        }
         else if ( type == "RPA" )
         {
             std::cout << "\n################################" << std::endl;

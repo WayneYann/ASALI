@@ -99,6 +99,21 @@
             results = "mole";
         }
     }
+    else if ( input.getStart() == "heat")
+    {
+        folderName = "results/" + ASALI::to_string(N) + ".heat";
+        boost::filesystem::remove_all(folderName);
+        boost::filesystem::create_directory(folderName);
+        
+        if ( input.getRestartResults() == "mass")
+        {
+            results = "mass";
+        }
+        else if ( input.getRestartResults() == "mole")
+        {
+            results = "mole";
+        }
+    }
     else if ( input.getStart() == "RPA")
     {
         folderName = "results/" + ASALI::to_string(N) + ".RPA";
@@ -401,6 +416,10 @@
         remove(pathGrid);
         remove(pathExtra);
         remove(pathVel);
+    }
+    else if ( input.getStart() == "heat" )
+    {
+        #include "heat.H"
     }
 
     delete [] omegaBulk;

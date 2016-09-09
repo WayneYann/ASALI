@@ -313,11 +313,12 @@ namespace ASALI
         temperature();
         velocity();
         solid();
-        if ( start_ == "latest"    || 
-             start_ == "converter" ||
-             start_ == "kinetic"   ||
-             start_ == "RPA"       ||
-             start_ == "conversion")
+        if ( start_ == "latest"      || 
+             start_ == "converter"   ||
+             start_ == "kinetic"     ||
+             start_ == "RPA"         ||
+             start_ == "conversion"  ||
+             start_ == "heat")
         {
             restarting();
         }
@@ -877,17 +878,18 @@ namespace ASALI
                     grow_ = false;
 
                 start_ = vectorDummy[startIndex+1+1];
-                if ( start_ != "new"       && 
-                     start_ != "latest"    && 
-                     start_ != "converter" && 
-                     start_ != "sampling"  && 
-                     start_ != "help"      &&
-                     start_ != "kinetic"   &&
-                     start_ != "RPA"       &&
-                     start_ != "conversion")
+                if ( start_ != "new"        && 
+                     start_ != "latest"     && 
+                     start_ != "converter"  && 
+                     start_ != "sampling"   && 
+                     start_ != "help"       &&
+                     start_ != "kinetic"    &&
+                     start_ != "RPA"        &&
+                     start_ != "conversion" &&
+                     start_ != "heat")
                 {
                     error();
-                    std::cout << "key word || " << "Resolution type" << " || MUST be || new || latest || converter || sampling || help || kinetic || RPA || conversion ||\n" << std::endl;
+                    std::cout << "key word || " << "Resolution type" << " || MUST be || new || latest || converter || sampling || help || kinetic || RPA || conversion || heat ||\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
                 else if ( start_ == "help" )
@@ -899,8 +901,9 @@ namespace ASALI
                     std::cout << "3/ 'converter'   : last results are converted from mass to mole fraction and viceversa" << std::endl;
                     std::cout << "4/ 'sampling'    : last results are sampled on a grid provided by the user in the additional file" << std::endl;
                     std::cout << "5/ 'kinetic'     : kinetic analysis of the results" << std::endl;
-                    std::cout << "6/ 'RPA'         : reaction path analysis of the results\n" << std::endl;
-                    std::cout << "7/ 'conversion'  : conversion of the specie is obtained from the last results\n" << std::endl;
+                    std::cout << "6/ 'RPA'         : reaction path analysis of the results" << std::endl;
+                    std::cout << "7/ 'conversion'  : conversion of the specie is obtained from the last results" << std::endl;
+                    std::cout << "8/ 'heat'        : heat of reaction is obtained from the last results\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
 

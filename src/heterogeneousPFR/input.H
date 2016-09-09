@@ -212,7 +212,8 @@ ASALI::GROWgrid       *growGrid;
               input.getStart() == "sampling"    ||
               input.getStart() == "kinetic"     ||
               input.getStart() == "RPA"         ||
-              input.getStart() == "conversion")
+              input.getStart() == "conversion"  ||
+              input.getStart() == "heat")
     {
         N       = input.getRestartPoints();
         NC      = thermodynamicsMapXML->NumberOfSpecies();
@@ -362,7 +363,14 @@ ASALI::GROWgrid       *growGrid;
     }
 }
 
-if ( input.getStart() == "new" || input.getStart() == "latest" )
+if ( input.getStart() == "new"         ||
+     input.getStart() == "latest"      || 
+     input.getStart() == "converter"   || 
+     input.getStart() == "sampling"    ||
+     input.getStart() == "kinetic"     ||
+     input.getStart() == "RPA"         ||
+     input.getStart() == "conversion"  ||
+     input.getStart() == "heat")
 {
     eq = new ASALI::equationSystem(*thermodynamicsMapXML,        *kineticsMapXML,
                                    *thermodynamicsSurfaceMapXML, *kineticsSurfaceMapXML,
