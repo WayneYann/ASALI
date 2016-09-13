@@ -65,28 +65,28 @@ mkdir exe
 
 #2D models
 rm -f exe/2Ds-$v.sh
-g++ -Ofast -m64 -Wno-write-strings -fpermissive src/2Ds/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -I2Ds -Isrc/2Ds/ode -Isrc/2Ds/bvp -Isrc/2Ds/utilities -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/2Ds-$v.sh
+g++ -Ofast -m64 -std=c++11 -Wno-write-strings -fpermissive src/2Ds/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -I2Ds -Isrc/2Ds/ode -Isrc/2Ds/bvp -Isrc/2Ds/utilities -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/2Ds-$v.sh
 
 #heat transfer pfr
 rm -f exe/heatTransferPFR-$v.sh
-g++ -Ofast -m64 -Wno-write-strings -fpermissive src/heatTransferPFR/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IheatTransferPFR -Isrc/heatTransferPFR/utilities -Isrc/heatTransferPFR/ode -I. -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/heatTransferPFR-$v.sh
+g++ -Ofast -m64 -std=c++11 -Wno-write-strings -fpermissive src/heatTransferPFR/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IheatTransferPFR -Isrc/heatTransferPFR/utilities -Isrc/heatTransferPFR/ode -I. -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/heatTransferPFR-$v.sh
 
 #heterogeneous pfr
 rm -f exe/heterogeneousPFR-$v.sh
-g++ -Ofast -m64 -Wno-write-strings -fpermissive src/heterogeneousPFR/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IheterogeneousPFR -Isrc/heterogeneousPFR/utilities -Isrc/heterogeneousPFR/ode -Isrc/heterogeneousPFR/bvp -Isrc/heterogeneousPFR/post -I. -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/heterogeneousPFR-$v.sh
+g++ -Ofast -m64 -std=c++11 -Wno-write-strings -fpermissive src/heterogeneousPFR/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IheterogeneousPFR -Isrc/heterogeneousPFR/utilities -Isrc/heterogeneousPFR/ode -Isrc/heterogeneousPFR/bvp -Isrc/heterogeneousPFR/post -I. -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/heterogeneousPFR-$v.sh
 
 #ideal batch
 rm -f exe/idealBATCH-$v.sh
-g++ -Ofast -m64 -Wno-write-strings -fpermissive src/idealBATCH/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IidealBATCH -Isrc/idealBATCH/utilities -Isrc/idealBATCH/ode -Isrc/idealBATCH/ic -I. -I. -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/idealBATCH-$v.sh
+g++ -Ofast -m64 -std=c++11 -Wno-write-strings -fpermissive src/idealBATCH/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IidealBATCH -Isrc/idealBATCH/utilities -Isrc/idealBATCH/ode -Isrc/idealBATCH/ic -I. -I. -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/idealBATCH-$v.sh
 
 #ideal pfr
 rm -f exe/idealPFR-$v.sh
-g++ -Ofast -m64 -Wno-write-strings -fpermissive src/idealPFR/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IidealPFR -Isrc/idealPFR/utilities -Isrc/idealPFR/ode -Isrc/idealPFR/dae -I. -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/idealPFR-$v.sh
+g++ -Ofast -m64 -std=c++11 -Wno-write-strings -fpermissive src/idealPFR/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IidealPFR -Isrc/idealPFR/utilities -Isrc/idealPFR/ode -Isrc/idealPFR/dae -I. -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/idealPFR-$v.sh
 
 #mass transfer pfr
 rm -f exe/massTransferPFR-$v.sh
-g++ -Ofast -m64 -Wno-write-strings -fpermissive src/massTransferPFR/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -Isrc/massTransferPFR/. -Isrc/massTransferPFR/utilities -Isrc/massTransferPFR/dae -Isrc/massTransferPFR/ode  -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/massTransferPFR-$v.sh
+g++ -Ofast -m64 -std=c++11 -Wno-write-strings -fpermissive src/massTransferPFR/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -Isrc/massTransferPFR/. -Isrc/massTransferPFR/utilities -Isrc/massTransferPFR/dae -Isrc/massTransferPFR/ode  -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/massTransferPFR-$v.sh
 
 #packed bed
 rm -f exe/packedBed-$v.sh
-g++ -Ofast -m64 -Wno-write-strings -fpermissive src/packedBed/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IpackedBed -Isrc/packedBed/ode -Isrc/packedBed/dae -Isrc/packedBed/utilities -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/packedBed-$v.sh
+g++ -Ofast -m64 -std=c++11 -Wno-write-strings -fpermissive src/packedBed/main.C $SUPPORT $ASALI_SUPPORT -I$MKL_INCLUDE -IpackedBed -Isrc/packedBed/ode -Isrc/packedBed/dae -Isrc/packedBed/utilities -I$BZZ_INCLUDE -I$EIGEN -I$BOOST/include/ -I$OPENSMOKE/ -I$RAPIDXML -L$BZZ_LIBS_PATH -L$BOOST/lib/ $BZZ_LIBS -lgfortran -L$MKL_LIBS_PATH $MKL_LIBS -Wl,--no-as-needed -ldl -lpthread -lm $BOOST_LIBS -o exe/packedBed-$v.sh
