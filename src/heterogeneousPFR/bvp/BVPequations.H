@@ -140,11 +140,13 @@
 
             //- Species - 2nd
             {
+                double Pe = 0.;
                 if ( gasDiffusion_ == true )
                 {
                     for (unsigned int i=0;i<NP_;i++)
                     {
-                        diffgas_[i+1] = diffG_[i][j]*rhoBulk_[i+1];
+                        Pe            = G_*Dh_/(diffG_[i][j]*rhoBulk_[i+1]);
+                        diffgas_[i+1] = diffG_[i][j]*rhoBulk_[i+1] + diffG_[i][j]*rhoBulk_[i+1]*TaylorArisDisperionCoefficient(Pe);
                     }
 
                     jgas_   = SecondOrderDerivate(omegagas_,diffgas_,"gas");

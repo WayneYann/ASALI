@@ -43,7 +43,7 @@ echo '  hydraulic diameter        24   mm' >> heterogeneousPFR.txt
 echo '  channel diameter          1.1  mm' >> heterogeneousPFR.txt
 echo '  channel shape             square' >> heterogeneousPFR.txt
 echo '  void fraction             0.75' >> heterogeneousPFR.txt
-echo '  gas-to-solid correlation  massTransfer' >> heterogeneousPFR.txt
+echo '  gas-to-solid solid        massTransfer' >> heterogeneousPFR.txt
 echo '}' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo 'Catalyst' >> heterogeneousPFR.txt

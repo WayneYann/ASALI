@@ -987,7 +987,7 @@ namespace ASALI
             words[3]  = "channel diameter";
             words[4]  = "channel shape";
             words[5]  = "void fraction";
-            words[6]  = "gas-to-particle correlation";
+            words[6]  = "gas-to-solid correlation";
             words[7]  = "type";
             words[8]  = "particle diameter";
             words[9]  = "washcoat thickness";
@@ -1007,7 +1007,7 @@ namespace ASALI
                          dummyVector[i+1] == "shape")              {checkWord[4]  = true; shapeIndex       = i;}
                 else if (dummyVector[i] == "void" &&
                          dummyVector[i+1] == "fraction")           {checkWord[5]  = true; epsiIndex        = i;}
-                else if (dummyVector[i] == "gas-to-particle" &&
+                else if (dummyVector[i] == "gas-to-solid" &&
                          dummyVector[i+1] == "correlation")        {checkWord[6]  = true; limitationIndex  = i;}
                 else if (dummyVector[i] == "type")                 {checkWord[7]  = true; typeIndex        = i;}
                 else if (dummyVector[i] == "particle" &&
@@ -1096,7 +1096,7 @@ namespace ASALI
                 if ( limitations_ != "massTransfer" && limitations_ != "chemicalRegime")
                 {
                     error();
-                    std::cout << "key word ||" << " gas-to-particle correlation " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
+                    std::cout << "key word ||" << " gas-to-particle solid " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
             }
@@ -1115,7 +1115,7 @@ namespace ASALI
                 if ( limitations_ != "Yoshida" && limitations_ != "Wakao" && limitations_ != "Petrovic" )
                 {
                     error();
-                    std::cout << "key word ||" << " gas-to-particle correlation " << "|| MUST be || Yoshida || Wakao || Petrovic || \n" << std::endl;
+                    std::cout << "key word ||" << " gas-to-particle solid " << "|| MUST be || Yoshida || Wakao || Petrovic || \n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
 
@@ -1145,7 +1145,7 @@ namespace ASALI
                 if ( limitations_ != "massTransfer" && limitations_ != "chemicalRegime")
                 {
                     error();
-                    std::cout << "key word ||" << " gas-to-particle correlation " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
+                    std::cout << "key word ||" << " gas-to-particle solid " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
             }
