@@ -91,7 +91,7 @@
         transportMap_.DynamicViscosity(etaMix_, xBulk_);
 
         //Mass Transfer coefficient
-        MassTransferCoefficient(t_);
+        MassTransferCoefficient(1e-07);
 
         // Fluxes from gas to solid [m/s]
         for (unsigned int j=1;j<=NC_;j++)

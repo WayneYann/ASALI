@@ -167,7 +167,7 @@
         {
             if ( thermodynamicsSurfaceMap_.NamesOfSpecies()[j-1+thermodynamicsSurfaceMap_.number_of_gas_species()] != catalyst_ )
             {
-                dyOS_[counter++] = 1e06*(Rsurface_[j]/SD_); //ALGEBRAIC
+                dyOS_[counter++] = Rsurface_[j]; //ALGEBRAIC
             }
             else
             {

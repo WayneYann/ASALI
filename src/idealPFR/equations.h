@@ -325,7 +325,7 @@ void equationSystem::AlgebraicEquations(std::vector<OpenSMOKE::EquationType>& M)
         {
             if ( thermodynamicsMapXML->NamesOfSpecies()[j-1] != catalyst_ )
             {
-                M[counter++] = OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
+                M[counter++] = OpenSMOKE::EQUATION_TYPE_ALGEBRAIC; //OpenSMOKE::EQUATION_TYPE_DIFFERENTIAL;
             }
             else
             {

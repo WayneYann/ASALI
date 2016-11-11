@@ -191,7 +191,7 @@ else if ( input.getSolver() == "BzzMath")
             ode_solver.SetMaximumConstraints(yMax);
         }
 
-        y0 = ode_solver(1e10);
+        y0 = ode_solver(1e15);
         ASALI::ODEend();
     }
 
