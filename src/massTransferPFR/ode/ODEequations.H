@@ -105,7 +105,6 @@
             }
 
             kineticsSurfaceMap_.ReactionEnthalpiesAndEntropies();
-            kineticsSurfaceMap_.ArrheniusKineticConstants();
             kineticsSurfaceMap_.ReactionRates(c_, faketeta, fakebulk, fakephase);
             kineticsSurfaceMap_.FormationRates(&R_, &Rsurface_, &fakebulk, &RsurfacePhases_);
         }

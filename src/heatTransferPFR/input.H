@@ -53,8 +53,8 @@ ASALI::equationSystem *eq;
         std::vector<char> xml_string;
         OpenSMOKE::OpenInputFileXML(doc, xml_string, path_kinetics / "kinetics.xml");
 
-        thermodynamicsMapXML = new OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>(doc); 
-        transportMapXML = new OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>(doc); 
+        thermodynamicsMapXML = new OpenSMOKE::ThermodynamicsMap_CHEMKIN(doc); 
+        transportMapXML      = new OpenSMOKE::TransportPropertiesMap_CHEMKIN(doc); 
     }
 
     {

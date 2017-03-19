@@ -312,7 +312,6 @@
             }
 
             kineticsSurfaceMapXML->ReactionEnthalpiesAndEntropies();
-            kineticsSurfaceMapXML->ArrheniusKineticConstants();
             kineticsSurfaceMapXML->ReactionRates(c, teta, fakebulk, fakephase);
             kineticsSurfaceMapXML->FormationRates(&RfromSurface, &Rsurface, &fakebulk, &RsurfacePhases);
             ElementByElementProduct(RfromSurface, thermodynamicsMapXML->MW(), &RfromSurface);

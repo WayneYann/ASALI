@@ -62,10 +62,10 @@
 // OpenSMOKE++
 #include "OpenSMOKEpp"
 #include "maps/Maps_CHEMKIN"
-#include "reactors/utilities/Utilities"
+#include "idealreactors/utilities/Utilities"
 #include "math/OpenSMOKEVector.h"
-#include "math/multivalue-ode-solvers/MultiValueSolver"
-#include "math/multivalue-dae-solvers/MultiValueSolver"
+#include "math/native-ode-solvers/MultiValueSolver"
+#include "math/native-dae-solvers/MultiValueSolver"
 
 // Eigen
 #include <Eigen/Dense>

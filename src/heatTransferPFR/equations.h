@@ -44,8 +44,8 @@ class equationSystem
 {
 public:
 
-    equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&       thermodynamicsMap, 
-                   OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&  transportMap);
+    equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN&       thermodynamicsMap, 
+                   OpenSMOKE::TransportPropertiesMap_CHEMKIN&  transportMap);
 
     #include "vector.h"
 
@@ -110,8 +110,8 @@ private:
     std::vector<double> Tprofile_;
     std::vector<double> z_;
 
-    OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&            thermodynamicsMap_;
-    OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&         transportMap_;
+    OpenSMOKE::ThermodynamicsMap_CHEMKIN&            thermodynamicsMap_;
+    OpenSMOKE::TransportPropertiesMap_CHEMKIN&       transportMap_;
 
     void FrictionFactor(const double Reynolds);
     void Nusselt(const double Reynolds);
@@ -127,8 +127,8 @@ private:
     double termalConducitivity(const double mu, const double cv, const double MW);
 };
 
-equationSystem::equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>& thermodynamicsMap, 
-                     OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>& transportMap):
+equationSystem::equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN&       thermodynamicsMap, 
+                               OpenSMOKE::TransportPropertiesMap_CHEMKIN&  transportMap):
     thermodynamicsMap_(thermodynamicsMap), 
     transportMap_(transportMap)
     {

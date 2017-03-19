@@ -191,7 +191,6 @@
             SD_ = fakephase[1];
 
             kineticsSurfaceMap_.ReactionEnthalpiesAndEntropies();
-            kineticsSurfaceMap_.ArrheniusKineticConstants();
             kineticsSurfaceMap_.ReactionRates(cWall_, teta_[i], fakebulk, fakephase);
             kineticsSurfaceMap_.FormationRates(&RfromSurface_, &Rsurface_, &fakebulk, &RsurfacePhases_);
             ElementByElementProduct(RfromSurface_, thermodynamicsMap_.MW(), &RfromSurface_);

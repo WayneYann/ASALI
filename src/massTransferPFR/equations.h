@@ -44,11 +44,11 @@ class equationSystem
 {
 public:
 
-    equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
-                   OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
-                   OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
-                   OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
-                   OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap);
+    equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN&          thermodynamicsMap, 
+                   OpenSMOKE::KineticsMap_CHEMKIN&                kineticsMap,
+                   OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN&  thermodynamicsSurfaceMap, 
+                   OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped& kineticsSurfaceMap,
+                   OpenSMOKE::TransportPropertiesMap_CHEMKIN&     transportMap);
 
     #include "vector.h"
 
@@ -123,11 +123,11 @@ private:
     OpenSMOKE::OpenSMOKEVectorDouble dyOS_;
     OpenSMOKE::OpenSMOKEVectorDouble yOS_;
 
-    OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&              thermodynamicsMap_;             //!< thermodynamic map
-    OpenSMOKE::KineticsMap_CHEMKIN<double>&                    kineticsMap_;                   //!< kinetic map
-    OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&      thermodynamicsSurfaceMap_;      //!< thermodynamic map
-    OpenSMOKE::KineticsMap_Surface_CHEMKIN<double>&            kineticsSurfaceMap_;            //!< kinetic map
-    OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&         transportMap_;                  //!< transport map
+    OpenSMOKE::ThermodynamicsMap_CHEMKIN&              thermodynamicsMap_;             //!< thermodynamic map
+    OpenSMOKE::KineticsMap_CHEMKIN&                    kineticsMap_;                   //!< kinetic map
+    OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN&      thermodynamicsSurfaceMap_;      //!< thermodynamic map
+    OpenSMOKE::KineticsMap_Surface_CHEMKIN&            kineticsSurfaceMap_;            //!< kinetic map
+    OpenSMOKE::TransportPropertiesMap_CHEMKIN&         transportMap_;                  //!< transport map
 
     std::vector<double> pprofile_;
     std::vector<double> Compprofile_;
@@ -147,11 +147,11 @@ private:
 
 };
 
-equationSystem::equationSystem(   OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>&          thermodynamicsMap, 
-                        OpenSMOKE::KineticsMap_CHEMKIN<double>&                kineticsMap,
-                        OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>&  thermodynamicsSurfaceMap, 
-                        OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>& kineticsSurfaceMap,
-                        OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>&     transportMap):
+equationSystem::equationSystem(OpenSMOKE::ThermodynamicsMap_CHEMKIN&          thermodynamicsMap, 
+                               OpenSMOKE::KineticsMap_CHEMKIN&                kineticsMap,
+                               OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN&  thermodynamicsSurfaceMap, 
+                               OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped& kineticsSurfaceMap,
+                               OpenSMOKE::TransportPropertiesMap_CHEMKIN&     transportMap):
     thermodynamicsMap_(thermodynamicsMap), 
     kineticsMap_(kineticsMap),
     thermodynamicsSurfaceMap_(thermodynamicsSurfaceMap), 

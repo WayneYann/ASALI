@@ -42,7 +42,7 @@
 #define OpenSMOKE_DaeInterfaces_H
 
 #include "math/OpenSMOKEVector.h"
-#include "dae/OpenSMOKE_DaeSystemObject.h"
+#include "math/external-dae-solvers/OpenSMOKE_DaeSystemObject.h"
 
 #if OPENSMOKE_USE_BZZMATH == 1
 #include "BzzMath.hpp"

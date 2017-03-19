@@ -98,7 +98,6 @@ if ( resolution_ == "volume" )
         if ( heterogeneusReactions_ == true)
         {
             kineticsSurfaceMap_.ReactionEnthalpiesAndEntropies();
-            kineticsSurfaceMap_.ArrheniusKineticConstants();
             kineticsSurfaceMap_.ReactionRates(c_, Z_, dummy, Gamma_);
             kineticsSurfaceMap_.FormationRates(&RfromSurface_, &Rsurface_, &dummy, &RsurfacePhases_);
         }
@@ -240,7 +239,6 @@ else if ( resolution_ == "pressure" )
         if ( heterogeneusReactions_ == true)
         {
             kineticsSurfaceMap_.ReactionEnthalpiesAndEntropies();
-            kineticsSurfaceMap_.ArrheniusKineticConstants();
             kineticsSurfaceMap_.ReactionRates(c_, Z_, dummy, Gamma_);
             kineticsSurfaceMap_.FormationRates(&RfromSurface_, &Rsurface_, &dummy, &RsurfacePhases_);
         }

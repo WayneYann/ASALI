@@ -55,17 +55,17 @@ ASALI::equationSystem *eq;
         std::vector<char> xml_string;
         OpenSMOKE::OpenInputFileXML(doc, xml_string, path_kinetics / "kinetics.xml");
 
-        thermodynamicsMapXML = new OpenSMOKE::ThermodynamicsMap_CHEMKIN<double>(doc); 
-        transportMapXML = new OpenSMOKE::TransportPropertiesMap_CHEMKIN<double>(doc); 
-        kineticsMapXML = new OpenSMOKE::KineticsMap_CHEMKIN<double>(*thermodynamicsMapXML, doc);
+        thermodynamicsMapXML = new OpenSMOKE::ThermodynamicsMap_CHEMKIN(doc); 
+        transportMapXML      = new OpenSMOKE::TransportPropertiesMap_CHEMKIN(doc); 
+        kineticsMapXML       = new OpenSMOKE::KineticsMap_CHEMKIN(*thermodynamicsMapXML, doc);
     }
     {
         rapidxml::xml_document<> doc;
         std::vector<char> xml_string;
         OpenSMOKE::OpenInputFileXML(doc, xml_string, path_kinetics / "kinetics.surface.xml");
 
-        thermodynamicsSurfaceMapXML = new OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN<double>(doc); 
-        kineticsSurfaceMapXML = new OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped<double>(*thermodynamicsSurfaceMapXML, doc);
+        thermodynamicsSurfaceMapXML = new OpenSMOKE::ThermodynamicsMap_Surface_CHEMKIN(doc); 
+        kineticsSurfaceMapXML       = new OpenSMOKE::KineticsMap_Surface_CHEMKIN_Lumped(*thermodynamicsSurfaceMapXML, doc);
     }
 
     {

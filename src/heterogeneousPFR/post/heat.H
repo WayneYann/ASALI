@@ -160,7 +160,6 @@
                     fakephase[j] = thermodynamicsSurfaceMapXML->matrix_densities_site_phases()[0][j-1];
 
                 kineticsSurfaceMapXML->ReactionEnthalpiesAndEntropies();
-                kineticsSurfaceMapXML->ArrheniusKineticConstants();
                 kineticsSurfaceMapXML->ReactionRates(cWall_, teta[i], fakebulk, fakephase);
                 kineticsSurfaceMapXML->FormationRates(&Rwall_, &Rteta_, &fakebulk, &Rphase);
                 Qwall[i+1] = kineticsSurfaceMapXML->HeatRelease(Rwall_, Rteta_, dummy);

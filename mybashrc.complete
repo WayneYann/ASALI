@@ -1,7 +1,7 @@
 #Compulsory libraries
-export EIGEN=$HOME/NumericalLibraries/Eigen/eigen-3.2.4
-export BOOST=$HOME/NumericalLibraries/Boost/boost_1_57_0/build
-export RAPIDXML=$HOME/NumericalLibraries/Rapidxml/rapidxml-1.13 
+export EIGEN=$HOME/NumericalLibraries/Eigen/Eigen-3.3.3
+export BOOST=$HOME/NumericalLibraries/Boost/boost_1_63_0/built
+export RAPIDXML=$HOME/NumericalLibraries/Rapidxml/Rapidxml-1.13
 export OPENSMOKE=$HOME/NumericalLibraries/OpenSMOKEpp/source
 
 #External support options for MKL

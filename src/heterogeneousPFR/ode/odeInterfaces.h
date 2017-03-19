@@ -42,13 +42,13 @@
 #define OpenSMOKE_OdeInterfaces_H
 
 #include "math/OpenSMOKEVector.h"
-#include "ode/OpenSMOKE_OdeSystemObject.h"
+#include "math/external-ode-solvers/OpenSMOKE_OdeSystemObject.h"
 
 #if OPENSMOKE_USE_BZZMATH == 1
 #include "BzzMath.hpp"
 #endif
 
-#include "math/multivalue-ode-solvers/MultiValueSolver"
+#include "math/native-ode-solvers/MultiValueSolver"
 
 namespace OpenSMOKE
 {

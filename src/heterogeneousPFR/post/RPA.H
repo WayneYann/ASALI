@@ -133,7 +133,6 @@
                     fakephase[j] = thermodynamicsSurfaceMapXML->matrix_densities_site_phases()[0][j-1];
 
                 kineticsSurfaceMapXML->ReactionEnthalpiesAndEntropies();
-                kineticsSurfaceMapXML->ArrheniusKineticConstants();
                 kineticsSurfaceMapXML->ReactionRates(cWall_, teta[i], fakebulk, fakephase);
                 kineticsSurfaceMapXML->GetReactionRates(&R);
             }
