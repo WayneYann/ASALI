@@ -258,6 +258,115 @@ OpenSMOKE::OpenSMOKEVectorDouble ReactionRate(const OpenSMOKE::OpenSMOKEVectorDo
             R[i] = 0.;
         }
     }
+    else if ( reactionType_ == "O-xylene-to-phthalic-with-tolualdehyde" )
+    {
+        unsigned int NR = 5;
+        OpenSMOKE::OpenSMOKEVectorDouble r(NR);
+        OpenSMOKE::OpenSMOKEVectorDouble p(NC_);
+        {
+            double k1 = 6.917*std::exp(-61.379e03/(8.314*(T + 273.15))); // [kmol/(kg s bar)]
+            double k2 = 2.497*std::exp(-46.422e03/(8.314*(T + 273.15)));
+            double k3 = 0.419*std::exp(-51.170e03/(8.314*(T + 273.15)));
+            double k4 = 0.000*std::exp(-54.476e03/(8.314*(T + 273.15)));
+            double k5 = 57.00*std::exp(-57.907e03/(8.314*(T + 273.15)));
+            double MWmix = mixtureMolecularWeight(omega);
+
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                p[i] = omega[i]*MWmix*p_/(1.e05*MW_[i]);  // [bar]
+            }
+
+            unsigned int iO2 = 1;  // Oxygen
+            unsigned int iXY = 2;  // o-Xylene
+            unsigned int iPA = 3;  // Phthalic anhydride
+            unsigned int iTA = 4;  // o-Tolualdehyde
+            unsigned int iPD = 5;  // Phthalide
+
+			double kcpo2 = 0.722e-05;
+
+			double a = kcpo2/(kcpo2 + p[iXY]*(k1 + 6.5*k3 + 3*k4) + k2*p[iTA] + k5*p[iPD]);
+
+            r[1] = k1*a*p[iXY];                //[Kmol/Kgcat/s]
+            r[2] = k2*a*p[iTA];                //[Kmol/Kgcat/s]
+            r[3] = k3*a*p[iXY];                //[Kmol/Kgcat/s]
+            r[4] = k4*a*p[iXY];                //[Kmol/Kgcat/s]
+            r[5] = k5*a*p[iPD];                //[Kmol/Kgcat/s]
+        }
+
+        OpenSMOKE::OpenSMOKEVectorDouble *s;
+        s = new OpenSMOKE::OpenSMOKEVectorDouble[NC_];
+        {
+            for (unsigned int i=0;i<NC_;i++)
+            {
+                ChangeDimensions(NR, &s[i], true);
+                
+                for (unsigned int j=1;j<=NR;j++)
+                {
+                    s[i][j] = 0.;
+                }
+            }
+
+            // 0/ Oxygen
+            // 1/ o-Xylene              C8H10
+            // 2/ Phthalic anhydride    C8H4O3
+            // 3/ o-Tolualdehyde        C8H8O
+            // 4/ Phthalide             C8H6O2
+            // 5/ Carbon dioxide
+            // 6/ Nitrogen
+            // 7/ Water
+
+            // C8H10 + O2 -> C8H8O + H2O [1 + 0 -> 3 + 7]
+            {
+                s[1][1] = -1.;
+                s[0][1] = -1.;
+                s[3][1] =  1.;
+                s[7][1] =  1.;
+            }
+
+            // C8H8O + O2 -> C8H6O2 + H2O [3 + 0 -> 4 + 7]
+            {
+                s[3][2] = -1.;
+                s[0][2] = -1.;
+                s[4][2] =  1.;
+                s[7][2] =  1.;
+            }
+
+            // C8H10 + (21/2)O2 -> 8CO2 + 5H2O [1 + 0 -> 5 + 7]
+            {
+                s[1][3] = -1.;
+                s[0][3] = -21./2.;
+                s[5][3] =  9.;
+                s[7][3] =  5.;
+            }
+            
+            // C8H10 + 3O2 -> C8H4O3 + 3H2O [1 + 0 -> 2 + 7]
+            {
+                s[1][4] = -1.;
+                s[0][4] = -3.;
+                s[2][4] =  1.;
+                s[7][4] =  3.;
+            }
+
+            // C8H6O2 + O2 -> C8H4O3 + H2O [4 + 0 -> 2 + 7]
+            {
+                s[4][5] = -1.;
+                s[0][5] = -1.;
+                s[2][5] =  1.;
+                s[7][5] =  1.;
+            }
+
+
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                R[i] = 0.;
+                for (unsigned int j=1;j<=NR;j++)
+                {
+                    R[i] = R[i] + s[i-1][j]*r[j]*rhoC_*MW_[i];    //[Kmol/Kgcat/s] --> [Kg/m3cat/s]
+                }
+            }
+        }
+        delete [] s;
+    }
 
     return R;
 }
@@ -405,6 +514,55 @@ double ReactionHeat(const OpenSMOKE::OpenSMOKEVectorDouble omega,const double T,
     else if (  reactionType_ == "heat-generation" )
     {
         Q = Qext_;                                    //[W/m3cat]
+    }
+    else if ( reactionType_ == "O-xylene-to-phthalic-with-tolualdehyde" )
+    {
+        unsigned int NR = 5;
+        OpenSMOKE::OpenSMOKEVectorDouble r(NR);
+        OpenSMOKE::OpenSMOKEVectorDouble p(NC_);
+        {
+            double k1 = 6.917*std::exp(-61.379e03/(8.314*(T + 273.15))); // [kmol/(kg s bar)]
+            double k2 = 2.497*std::exp(-46.422e03/(8.314*(T + 273.15)));
+            double k3 = 0.419*std::exp(-51.170e03/(8.314*(T + 273.15)));
+            double k4 = 0.000*std::exp(-54.476e03/(8.314*(T + 273.15)));
+            double k5 = 57.00*std::exp(-57.907e03/(8.314*(T + 273.15)));
+            double MWmix = mixtureMolecularWeight(omega);
+
+            for (unsigned int i=1;i<=NC_;i++)
+            {
+                p[i] = omega[i]*MWmix*p_/(1.e05*MW_[i]);  // [bar]
+            }
+
+            unsigned int iO2 = 1;  // Oxygen
+            unsigned int iXY = 2;  // o-Xylene
+            unsigned int iPA = 3;  // Phthalic anhydride
+            unsigned int iTA = 4;  // o-Tolualdehyde
+            unsigned int iPD = 5;  // Phthalide
+
+			double kcpo2 = 0.722e-05;
+
+			double a = kcpo2/(kcpo2 + p[iXY]*(k1 + 6.5*k3 + 3*k4) + k2*p[iTA] + k5*p[iPD]);
+
+            r[1] = k1*a*p[iXY];                //[Kmol/Kgcat/s]
+            r[2] = k2*a*p[iTA];                //[Kmol/Kgcat/s]
+            r[3] = k3*a*p[iXY];                //[Kmol/Kgcat/s]
+            r[4] = k4*a*p[iXY];                //[Kmol/Kgcat/s]
+            r[5] = k5*a*p[iPD];                //[Kmol/Kgcat/s]
+        }
+        
+        OpenSMOKE::OpenSMOKEVectorDouble DHr(NR);
+        {
+            DHr[1] = -109*4.186*1e03/1e-03;                  //[J/Kmol]
+            DHr[2] = -99*4.186*1e03/1e-03;                   //[J/Kmol]
+            DHr[3] = -550*4.186*1e03/1e-03;                  //[J/Kmol]
+            DHr[4] = -296*4.186*1e03/1e-03;                  //[J/Kmol]
+            DHr[5] = -88*4.186*1e03/1e-03;                   //[J/Kmol]
+        }
+
+        for (unsigned int i=1;i<=NR;i++)
+        {
+            Q = Q + DHr[i]*r[i]*rhoC_;                //[J/Kgcat/s] --> [W/m3cat]
+        }
     }
 
     return Q;

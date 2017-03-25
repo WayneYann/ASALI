@@ -266,10 +266,34 @@ namespace ASALI
                     name_.resize(NC_);
                     name_[0] = "N2";
                 }
+                else if ( reactionType_ == "O-xylene-to-phthalic-with-tolualdehyde" )
+                {
+                    NC_    = 8;
+
+                    MW_.resize(NC_);
+                    MW_[0] = 32.;      //O2
+                    MW_[1] = 106.16;   //C8H10
+                    MW_[2] = 148.12;   //C8H4O3
+                    MW_[3] = 12.01*8. + 8. + 16.; //C8H8O
+                    MW_[4] = 12.01*2. + 6. + 32.; //C8H6O2
+                    MW_[5] = 44.;      //CO2
+                    MW_[6] = 28.;      //N2
+                    MW_[7] = 18.;      //H2O
+
+                    name_.resize(NC_);
+                    name_[0] = "O2";
+                    name_[1] = "XYLENE";
+                    name_[2] = "PHTHALIC";
+                    name_[3] = "TOLULDEHYDE";
+                    name_[4] = "PHTHALIDE";
+                    name_[5] = "CO2";
+                    name_[6] = "N2";
+                    name_[7] = "H2O";
+                }
                 else
                 {
                     error();
-                    std::cout << "node || reaction || could be only || O-xylene-to-phthalic || O-xylene-to-phthalic-complex || ethylene-partial-oxidation || heat-generation ||\n" << std::endl;
+                    std::cout << "node || reaction || could be only || O-xylene-to-phthalic || O-xylene-to-phthalic-complex || O-xylene-to-phthalic-with-tolualdehyde || ethylene-partial-oxidation || heat-generation ||\n" << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }
@@ -313,6 +337,17 @@ namespace ASALI
                     x[0] = tree.get<double>("mole.C2H4");
                     x[3] = tree.get<double>("mole.CO2");
                     x[4] = tree.get<double>("mole.CH4");
+                }
+                else if ( reactionType_ == "O-xylene-to-phthalic-with-tolualdehyde" )
+                {
+                    for (unsigned int i=0;i<NC_;i++)
+                    {
+                       x[i] = 0.;
+                    }
+
+                    x[0]     = tree.get<double>("mole.O2");
+                    x[1]     = tree.get<double>("mole.XYLENE");
+                    x[6]     = tree.get<double>("mole.N2");
                 }
                 else if ( reactionType_ == "heat-generation" )
                 {
