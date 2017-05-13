@@ -15,3 +15,7 @@ The compiled folder contains pre-compiled solvers, which can be used without any
 
     Intel MKL (https://software.intel.com/en-us/intel-mkl)
     BzzMath   (http://super.chem.polimi.it/)
+
+The CHEMKIN kinetic schemes required by ASALI can be compiled by using the chemikin-preprocessor distributed with:
+
+    catalyticFOAM (https://www.catalyticfoam.polimi.it)
