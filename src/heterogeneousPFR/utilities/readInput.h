@@ -58,6 +58,7 @@ namespace ASALI
             inline double getReactorLength()       const  { return Lcat_ + Linert_;};
             inline double getChannelDiameter()     const  { return Dchannel_;};
             inline double getParticleDiameter()    const  { return Dp_;};
+            inline double getStrutDiameter()       const  { return Ds_;};
             inline double getHoneycombDiameter()   const  { return Dmatrix_;};
             inline double getTubeDiameter()        const  { return Dmatrix_;};
             inline double getVoidFraction()        const  { return epsi_;};
@@ -100,6 +101,7 @@ namespace ASALI
             inline bool getGridType()              const  { return grow_;};
             inline bool getConstraints()           const  { return constraints_;};
             inline bool getDiffusion()             const  { return gasDiffusion_;};
+            inline bool getGnuplotFormat()         const  { return gnuplotFormat_;};
 
             inline std::vector<double> getFraction()                const { return inletValue_;};
             inline std::vector<double> getRestartBulk()             const { return restartBulk_;};
@@ -130,6 +132,7 @@ namespace ASALI
             double Linert_;
             double Dchannel_;
             double Dp_;
+            double Ds_;
             double Dmatrix_;
             double epsi_;
             double alfa_;
@@ -166,6 +169,7 @@ namespace ASALI
             bool grow_;
             bool gasDiffusion_;
             bool ex_;
+            bool gnuplotFormat_;
 
             const std::string& file_;
             const std::string& options_;
@@ -230,6 +234,7 @@ namespace ASALI
         addN_              = 0;
         restartN_          = 0;
         Dp_                = 0;
+        Ds_                = 0;
         absTol_            = 0;
         relTol_            = 0;
         tMax_              = 0;
@@ -258,6 +263,7 @@ namespace ASALI
         grow_              = false;
         gasDiffusion_      = false;
         ex_                = false;
+        gnuplotFormat_     = false;
 
         reactorIndex_      = 0;
         solverIndex_       = 0;
@@ -445,8 +451,8 @@ namespace ASALI
                 }
             }
 
-            std::vector<bool>        checkWord(12);
-            std::vector<std::string> words(12);
+            std::vector<bool>        checkWord(13);
+            std::vector<std::string> words(13);
 
             unsigned int absIndex;
             unsigned int relIndex;
@@ -459,6 +465,7 @@ namespace ASALI
             unsigned int diffIndex;
             unsigned int solverIndex;
             unsigned int exIndex;
+            unsigned int gnuplotIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
@@ -475,6 +482,7 @@ namespace ASALI
             words[9]  = "Diffusion in gas";
             words[10] = "Numerical solver";
             words[11] = "External heat exchange";
+            words[12] = "Gnuplot format";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
@@ -500,6 +508,8 @@ namespace ASALI
                 else if (dummyVector[i] == "External" &&
                          dummyVector[i+1] == "heat" &&
                          dummyVector[i+2] == "exchange")           {checkWord[11]  = true; exIndex          = i;}
+                else if (dummyVector[i] == "Gnuplot" &&
+                         dummyVector[i+1] == "format")             {checkWord[12] = true; gnuplotIndex      = i;}
             }
 
             for (unsigned int i=0;i<checkWord.size();i++)
@@ -546,6 +556,17 @@ namespace ASALI
                 ex_ = true;
             else
                 ex_ = false;
+
+            if ( dummyVector[gnuplotIndex+2] == "on" )
+                gnuplotFormat_ = true;
+            else if ( dummyVector[gnuplotIndex+2] == "true" )
+                gnuplotFormat_ = true;
+            else if ( dummyVector[gnuplotIndex+2] == "yes" )
+                gnuplotFormat_ = true;
+            else if ( dummyVector[gnuplotIndex+2] == "1" )
+                gnuplotFormat_ = true;
+            else
+                gnuplotFormat_ = false;
 
 
             if ( dummyVector[diffIndex+3] == "on" )
@@ -963,8 +984,8 @@ namespace ASALI
                 }
             }
             
-            std::vector<bool>        checkWord(11);
-            std::vector<std::string> words(11);
+            std::vector<bool>        checkWord(13);
+            std::vector<std::string> words(13);
 
             unsigned int inertIndex;
             unsigned int catIndex;
@@ -977,6 +998,8 @@ namespace ASALI
             unsigned int particleIndex;
             unsigned int tubeIndex;
             unsigned int washcoatIndex;
+            unsigned int strutIndex;
+            unsigned int svIndex;
 
             for (unsigned int i=0;i<checkWord.size();i++)
                 checkWord[i] = false;
@@ -992,6 +1015,8 @@ namespace ASALI
             words[8]  = "particle diameter";
             words[9]  = "washcoat thickness";
             words[10] = "tube shape";
+            words[11] = "strut diameter";
+            words[12] = "specific area-per-reactor volume";
 
             for (unsigned int i=0;i<dummyVector.size();i++)
             {
@@ -1016,6 +1041,11 @@ namespace ASALI
                          dummyVector[i+1] == "thickness")          {checkWord[9]  = true; washcoatIndex    = i;}
                 else if (dummyVector[i] == "tube" &&
                          dummyVector[i+1] == "shape")              {checkWord[10] = true; tubeIndex        = i;}
+                else if (dummyVector[i] == "strut" &&
+                         dummyVector[i+1] == "diameter")           {checkWord[11] = true; strutIndex       = i;}
+                else if (dummyVector[i] == "specific" &&
+                         dummyVector[i+1] == "area-per-reactor" &&
+                         dummyVector[i+2] == "volume")             {checkWord[12] = true; svIndex          = i;}
             }
 
             {
@@ -1026,6 +1056,8 @@ namespace ASALI
                     checkWord[8]  = true;
                     checkWord[9]  = true;
                     checkWord[10] = true;
+                    checkWord[11] = true;
+                    checkWord[12] = true;
                 }
                 else if ( reactorType_ == "packedBed" )
                 {
@@ -1034,18 +1066,31 @@ namespace ASALI
                     checkWord[5]  = true;
                     checkWord[9]  = true;
                     checkWord[10] = true;
+                    checkWord[11] = true;
+                    checkWord[12] = true;
                 }
                 else if ( reactorType_ == "tubular" )
                 {
-                    checkWord[3] = true;
-                    checkWord[4] = true;
-                    checkWord[5] = true;
-                    checkWord[8] = true;
+                    checkWord[3]  = true;
+                    checkWord[4]  = true;
+                    checkWord[5]  = true;
+                    checkWord[8]  = true;
+                    checkWord[11] = true;
+                    checkWord[12] = true;
+                }
+                else if ( reactorType_ == "foam" )
+                {
+                    checkWord[3]  = true;
+                    checkWord[4]  = true;
+                    checkWord[6]  = true;
+                    checkWord[8]  = true;
+                    checkWord[9]  = true;
+                    checkWord[10] = true;
                 }
                 else
                 {
                     error();
-                    std::cout << "key word ||" << " type " << "|| MUST be || honeyComb || packedBed || tubular ||\n" << std::endl;
+                    std::cout << "key word ||" << " type " << "|| MUST be || honeyComb || packedBed || tubular || foam || \n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
             }
@@ -1148,6 +1193,18 @@ namespace ASALI
                     std::cout << "key word ||" << " gas-to-particle solid " << "|| MUST be || massTransfer || chemicalRegime ||\n" << std::endl;
                     exit (EXIT_FAILURE);
                 }
+            }
+            else if ( reactorType_ == "foam" )
+            {
+                Ds_ = boost::lexical_cast<double>(dummyVector[strutIndex+2]);
+                std::string dimParticle = dummyVector[strutIndex+3];
+                ConvertsToMeter(Ds_, dimParticle);
+
+                epsi_ = boost::lexical_cast<double>(dummyVector[epsiIndex+2]);
+                
+                av_   = boost::lexical_cast<double>(dummyVector[svIndex+3]);
+                std::string dimSv = dummyVector[svIndex+4];
+                ConvertsToOneOnMeter(av_, dimSv);
             }
         }
     }
@@ -1855,6 +1912,11 @@ namespace ASALI
         else if ( reactorType_ == "packedBed" )
         {
             std::cout << "Particle diameter                        = " << Dp_ << "\t[m]" << std::endl;
+            std::cout << "Tube diameter                            = " << Dmatrix_ << "\t[m]" << std::endl;
+        }
+        else if ( reactorType_ == "foam" )
+        {
+            std::cout << "Strut diameter                           = " << Ds_ << "\t[m]" << std::endl;
             std::cout << "Tube diameter                            = " << Dmatrix_ << "\t[m]" << std::endl;
         }
         std::cout << "\n################################################################################################" << std::endl;

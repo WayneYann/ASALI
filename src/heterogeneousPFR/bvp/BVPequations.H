@@ -412,7 +412,9 @@
                                        - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1]) 
                                        + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                 }
-                else if ( reactorType_ == "packedBed" )
+                else if ( reactorType_ == "packedBed" || 
+                          reactorType_ == "tubular"   ||
+                          reactorType_ == "foam"   )
                 {
                     dyOS_[counter++] =(- G_/(rhoBulk_[i+1]*epsi_))*cbulk_[i+1]
                                        - h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(epsi_*rhoBulk_[i+1]*cp_[i+1])
@@ -494,7 +496,9 @@
                                            + QfromGas_/(rhoBulk_[i+1]*cp_[i+1]);//DIFFERENTIAL
                     }
                 }
-                else if ( reactorType_ == "packedBed" )
+                else if ( reactorType_ == "packedBed" || 
+                          reactorType_ == "tubular"   ||
+                          reactorType_ == "foam"   )
                 {
                     if ( gasDiffusion_ == true )
                     {
@@ -520,7 +524,9 @@
                                        + U_*aex_*(Tex_-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))
                                        + QfromSurface_*alfa_/(rhoSolid_*cpSolid_*(1-epsi_));//DIFFERENTIAL
                 }
-                else if ( reactorType_ == "packedBed" )
+                else if ( reactorType_ == "packedBed" || 
+                          reactorType_ == "tubular"   ||
+                          reactorType_ == "foam"   )
                 {
                     dyOS_[counter++] = + jwall_[i+1]/(rhoSolid_*cpSolid_)
                                        + h_*av_*(Tbulk_[i+1]-Twall_[i+1])/(cpSolid_*rhoSolid_*(1.-epsi_))

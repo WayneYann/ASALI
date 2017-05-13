@@ -185,6 +185,32 @@
     remove(pathVel);
     vel.open(pathVel,std::ios::out);
 
+    std::ofstream gnuB;
+    std::string fileNameGnuB = folderName + "/bulkSpecies.gnuplot";
+    const char *pathGnuB = fileNameGnuB.c_str();
+    remove(pathGnuB);
+    
+
+    std::ofstream gnuT;
+    std::string fileNameGnuT = folderName + "/temperature.gnuplot";
+    const char *pathGnuT = fileNameGnuT.c_str();
+    remove(pathGnuT);
+    
+
+    std::ofstream specieIndex;
+    std::string fileNameSI = folderName + "/speciesIndex.txt";
+    const char *pathSI = fileNameSI.c_str();
+    remove(pathSI);
+    
+    
+    if ( input.getGnuplotFormat() == true )
+    {
+        gnuB.open(pathGnuB,std::ios::out);
+        gnuT.open(pathGnuT,std::ios::out);
+        specieIndex.open(pathSI,std::ios::out);
+    }
+    
+
     {
         unsigned int WP = 6;
         bulk.setf(std::ios::scientific);
@@ -239,6 +265,12 @@
         bulk << thermodynamicsMapXML->NamesOfSpecies()[j-1] << "\t";
     bulk << std::endl;
 
+    if ( input.getGnuplotFormat() == true )
+    {
+        for (unsigned int j=1;j<=NC;j++)
+            specieIndex << j + 1 << "\t" << thermodynamicsMapXML->NamesOfSpecies()[j-1] << std::endl;
+    }
+
     for (unsigned int j=1;j<=NC;j++)
         wall << thermodynamicsMapXML->NamesOfSpecies()[j-1] << "\t";
     wall << std::endl;
@@ -266,6 +298,17 @@
             site << std::endl;
 
             temp << Tbulk[k+1] << "\t" << Twall[k+1] << std::endl;
+            
+            if ( input.getGnuplotFormat() == true )
+            {
+                gnuB << z[k] << "\t";
+                for (unsigned int j=1;j<=NC;j++)
+                    gnuB << omegaBulk[k][j] << "\t";
+                gnuB << std::endl;
+                
+                gnuT << z[k] << "\t" << Tbulk[k+1] << "\t" << Twall[k+1] << std::endl;
+            }
+            
         }
     }
     else if ( results == "mole" )
@@ -278,6 +321,17 @@
             for (unsigned int j=1;j<=NC;j++)
                 bulk << x[j] << "\t" ;
             bulk << std::endl;
+
+            if ( input.getGnuplotFormat() == true )
+            {
+                gnuB << z[k] << "\t";
+                for (unsigned int j=1;j<=NC;j++)
+                    gnuB << x[j] << "\t";
+                gnuB << std::endl;
+                
+                gnuT << z[k] << "\t" << Tbulk[k+1] << "\t" << Twall[k+1] << std::endl;
+            }
+
 
             thermodynamicsMapXML->MoleFractions_From_MassFractions(x, dummy,omegaWall[k]);
             for (unsigned int j=1;j<=NC;j++)
@@ -296,6 +350,14 @@
     wall.close();
     site.close();
     temp.close();
+
+    if ( input.getGnuplotFormat() == true )
+    {
+        gnuB.close();
+        gnuT.close();
+        specieIndex.close();
+    }
+
 
     for (unsigned int k=1;k<=N;k++)
     {

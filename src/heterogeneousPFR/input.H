@@ -395,6 +395,10 @@ if ( input.getStart() == "new"         ||
     {
         eq->setTubularProperties(input.getSherwood(),input.getTubeDiameter());
     }
+    else if ( input.getReactorType() == "foam" )
+    {
+        eq->setFoamProperties(input.getStrutDiameter(),input.getTubeDiameter());
+    }
 
     eq->setReactorGeometry(input.getAlfa(),        input.getVoidFraction(), input.getCatalyticLength(),
                            input.getInertLength(), input.getSpecificArea(), input.getExternalArea(),

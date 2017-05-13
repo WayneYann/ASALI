@@ -43,7 +43,7 @@ echo '  hydraulic diameter        24   mm' >> heterogeneousPFR.txt
 echo '  channel diameter          1.1  mm' >> heterogeneousPFR.txt
 echo '  channel shape             square' >> heterogeneousPFR.txt
 echo '  void fraction             0.75' >> heterogeneousPFR.txt
-echo '  gas-to-solid              massTransfer' >> heterogeneousPFR.txt
+echo '  gas-to-solid correlation  massTransfer' >> heterogeneousPFR.txt
 echo '}' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo 'Catalyst' >> heterogeneousPFR.txt
@@ -78,6 +78,8 @@ echo '  Absolute tollerance  1e-12' >> heterogeneousPFR.txt
 echo '  Relative tollerance  1e-07' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo '  Energy equation    on' >> heterogeneousPFR.txt
+echo ' ' >> heterogeneousPFR.txt
+echo '  Gnuplot format     on' >> heterogeneousPFR.txt
 echo ' ' >> heterogeneousPFR.txt
 echo '  Reactions' >> heterogeneousPFR.txt
 echo '  (' >> heterogeneousPFR.txt

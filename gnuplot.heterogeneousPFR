@@ -1,0 +1,15 @@
+set terminal emf
+set output 'file.emf'
+
+set title 'Specie profile'
+
+set ylabel 'mass fraction [-]'
+set xlabel 'reactor length [m]'
+
+
+plot 'results/path/bulkSpecies.gnuplot' u 1:index w l 
+
+# "path"  is the folder path to the bulkSpecies.gnuplot file
+# "index" is the index of the species to be plotted (see speciesIndex.txt)
+# "file"  is the file name
+

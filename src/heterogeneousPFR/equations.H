@@ -83,6 +83,8 @@ public:
     void setHoneyCombProperties(const double AsymptoticSh, const double Dh);
 
     void setTubularProperties(const double AsymptoticSh, const double Dh);
+    
+    void setFoamProperties(const double Ds, const double Dt);
 
     void setFeedValue(const double p, const double T0,
                       const OpenSMOKE::OpenSMOKEVectorDouble x0bulk);
@@ -375,6 +377,12 @@ void equationSystem::setTubularProperties(const double AsymptoticSh, const doubl
     AsymptoticSh_ = AsymptoticSh;
 }
 
+void equationSystem::setFoamProperties(const double Dh, const double Dt)
+{
+    Dt_ = Dt;
+    Dh_ = Dh;
+}
+
 void equationSystem::setFeedValue(const double p, const double T0,
                                   const OpenSMOKE::OpenSMOKEVectorDouble x0bulk)
 {
@@ -413,6 +421,10 @@ double equationSystem::EffectiveThermalConductivity(const double T, const double
         newCond = cond*krs;
     }
     else if ( reactorType_ == "tubular" )
+    {
+        newCond = condSolid_;
+    }
+    else if ( reactorType_ == "foam" )
     {
         newCond = condSolid_;
     }
@@ -455,6 +467,10 @@ double equationSystem::OverallHeatTransferCoefficient(const double cp, const dou
     {
         U = AsymptoticSh_*cond/Dh_;
     }
+    else if ( reactorType_ == "foam" )
+    {
+        U = 500.;
+    }
 
     return U;
 }
@@ -467,6 +483,10 @@ double equationSystem::TaylorArisDisperionCoefficient(const double Pe)
         diffTA = std::pow(Pe,2.)/192.;
     }
     else if ( reactorType_ == "packedBed" )
+    {
+        diffTA = 0.;
+    }
+    else if ( reactorType_ == "foam" )
     {
         diffTA = 0.;
     }
@@ -534,6 +554,13 @@ void equationSystem::HeatTransferCoefficient(const double z, const double cp, co
             double Nu = 2. + 1.1*std::pow(Re,0.6)*std::pow(Pr,(1./3.));
                    h_ = Nu*cond/Dh_;
         }
+    }
+    else if ( reactorType_ == "foam" )
+    {
+        double Re = G_*Dh_/eta;
+        double Pr = cp*eta/cond;
+        double Nu = 0.612*std::pow(Re,0.465)*std::pow(Pr,(1./3.));
+               h_ = Nu*cond/Dh_;
     }
 }
 
@@ -614,6 +641,18 @@ void equationSystem::MassTransferCoefficient(const double z, const double rho, c
                 Sh[i]    = 2. + 1.1*std::pow(Re,0.6)*std::pow(Sc[i],(1./3.));
                 Kmat_[i] = Sh[i]*dG[i]/Dh_;
             }
+        }
+    }
+    else if ( reactorType_ == "foam" )
+    {
+        double Re = G_*Dh_/eta;
+        OpenSMOKE::OpenSMOKEVectorDouble Sc(NC_);
+        OpenSMOKE::OpenSMOKEVectorDouble Sh(NC_);
+        for (unsigned int i=1;i<=NC_;i++)
+        {
+            Sc[i]    = eta/(rho*dG[i]);
+            Sh[i]    = 0.612*std::pow(Re,0.465)*std::pow(Sc[i],(1./3.));
+            Kmat_[i] = Sh[i]*dG[i]/Dh_;
         }
     }
 }
