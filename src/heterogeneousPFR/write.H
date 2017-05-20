@@ -301,12 +301,12 @@
             
             if ( input.getGnuplotFormat() == true )
             {
-                gnuB << z[k] << "\t";
+                gnuB << z[k+1] << "\t";
                 for (unsigned int j=1;j<=NC;j++)
                     gnuB << omegaBulk[k][j] << "\t";
                 gnuB << std::endl;
                 
-                gnuT << z[k] << "\t" << Tbulk[k+1] << "\t" << Twall[k+1] << std::endl;
+                gnuT << z[k+1] << "\t" << Tbulk[k+1] << "\t" << Twall[k+1] << std::endl;
             }
             
         }
@@ -324,12 +324,12 @@
 
             if ( input.getGnuplotFormat() == true )
             {
-                gnuB << z[k] << "\t";
+                gnuB << z[k+1] << "\t";
                 for (unsigned int j=1;j<=NC;j++)
                     gnuB << x[j] << "\t";
                 gnuB << std::endl;
                 
-                gnuT << z[k] << "\t" << Tbulk[k+1] << "\t" << Twall[k+1] << std::endl;
+                gnuT << z[k+1] << "\t" << Tbulk[k+1] << "\t" << Twall[k+1] << std::endl;
             }
 
 
